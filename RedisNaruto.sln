@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5AE4AC5C-B75B-4A3E-8543-F3980D59E9AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisNaruto", "src\RedisNaruto\RedisNaruto.csproj", "{C89EB8A0-5D19-4189-8343-92EEF5B5EE82}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{325A6DC5-2398-4DE7-9ABC-DA4FA0C958B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "test\TestProject1\TestProject1.csproj", "{1B7C58A6-CE45-4395-B14C-BC47548ED5E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82} = {5AE4AC5C-B75B-4A3E-8543-F3980D59E9AC}
+		{1B7C58A6-CE45-4395-B14C-BC47548ED5E1} = {325A6DC5-2398-4DE7-9ABC-DA4FA0C958B4}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B7C58A6-CE45-4395-B14C-BC47548ED5E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B7C58A6-CE45-4395-B14C-BC47548ED5E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B7C58A6-CE45-4395-B14C-BC47548ED5E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B7C58A6-CE45-4395-B14C-BC47548ED5E1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
