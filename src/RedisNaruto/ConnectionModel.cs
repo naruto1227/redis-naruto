@@ -5,6 +5,10 @@ namespace RedisNaruto;
 /// </summary>
 public class ConnectionModel
 {
+    public ConnectionModel()
+    {
+        DataBase = 0;
+    }
     /// <summary>
     /// 链接地址
     /// </summary>
@@ -19,4 +23,9 @@ public class ConnectionModel
     /// 密码
     /// </summary>
     public string Password { get; set; }
+
+    /// <summary>
+    /// 数据存储库
+    /// </summary>
+    public int DataBase { get; set; }
 }

@@ -28,14 +28,19 @@ internal sealed class RedisClient : IRedisClient
     private readonly TcpClient _tcpClient;
 
     /// <summary>
+    /// db访问库
+    /// </summary>
+    public int DB { get; }
+
+    /// <summary>
     /// 用户名
     /// </summary>
-    private string UserName { get; }
+    public string UserName { get; }
 
     /// <summary>
     /// 密码
     /// </summary>
-    private string Password { get; }
+    public string Password { get; }
 
     /// <summary>
     /// 是否授权
@@ -55,11 +60,12 @@ internal sealed class RedisClient : IRedisClient
     /// <summary>
     /// 
     /// </summary>
-    private RedisClient(TcpClient tcpClient, string userName, string password)
+    private RedisClient(TcpClient tcpClient, string userName, string password, int db)
     {
         _tcpClient = tcpClient;
         UserName = userName;
         Password = password;
+        DB = db;
     }
 
 
@@ -69,8 +75,10 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="hosts">主机信息</param>
     /// <param name="userName">用户名</param>
     /// <param name="password">密码</param>
+    /// <param name="db"></param>
+    /// <param name="hostParameter"></param>
     /// <returns></returns>
-    internal static async Task<RedisClient> ConnectionAsync(string[] hosts, string userName, string password,
+    internal static async Task<RedisClient> ConnectionAsync(string[] hosts, string userName, string password, int db,
         [CallerArgumentExpression("hosts")] string hostParameter = default)
     {
         if (hosts == null || hosts.Length <= 0)
@@ -86,7 +94,7 @@ internal sealed class RedisClient : IRedisClient
 
         var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(Dns.GetHostAddresses(hostString[0]), port);
-        return new RedisClient(tcpClient, userName, password);
+        return new RedisClient(tcpClient, userName, password, db);
     }
 
 
@@ -99,7 +107,7 @@ internal sealed class RedisClient : IRedisClient
     public async Task<TResult> ExecuteAsync<TResult>(Command command)
     {
         var stream =
-            await GetRequestStreamAsync(command.Cmd == RedisCommandName.Auth || command.Cmd == RedisCommandName.Quit);
+            await GetRequestStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await WriteArgAsync(stream, command.CombinArgs());
         var response = await GetResponseAsync(stream);
         switch (response)
@@ -109,6 +117,7 @@ internal sealed class RedisClient : IRedisClient
             case string obj:
                 return await _serializer.DeserializeAsync<TResult>(obj.ToEncode());
         }
+
         throw new InvalidOperationException();
     }
 
@@ -165,6 +174,7 @@ internal sealed class RedisClient : IRedisClient
                 if (!_isAuth)
                 {
                     _isAuth = await AuthAsync(UserName, Password);
+                    await SelectDb(DB);
                 }
             }
         }

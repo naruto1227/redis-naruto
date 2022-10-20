@@ -20,7 +20,7 @@ public partial class RedisCommand : IRedisCommand
     /// <returns></returns>
     internal static async Task<RedisCommand> ConnectionAsync(ConnectionModel config)
     {
-        var redisClient = await RedisClient.ConnectionAsync(config.Connection, config.UserName, config.Password);
+        var redisClient = await RedisClient.ConnectionAsync(config.Connection, config.UserName, config.Password,config.DataBase);
         var redisCommand = new RedisCommand(redisClient);
         //连接配置
         return redisCommand;

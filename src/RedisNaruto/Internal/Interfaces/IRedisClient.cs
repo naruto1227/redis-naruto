@@ -7,6 +7,22 @@ namespace RedisNaruto.Internal.Interfaces;
 /// </summary>
 internal interface IRedisClient : IAsyncDisposable
 {
+
+    /// <summary>
+    /// db访问库
+    /// </summary>
+    public int DB { get; }
+
+    /// <summary>
+    /// 用户
+    /// </summary>
+    public string UserName { get; }
+
+    /// <summary>
+    /// 密码
+    /// </summary>
+    public string Password { get; }
+
     /// <summary>
     /// 执行命令接口
     /// </summary>
