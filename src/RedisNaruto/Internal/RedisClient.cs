@@ -18,6 +18,11 @@ internal sealed class RedisClient : IRedisClient
     private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
 
     /// <summary>
+    /// 授权锁
+    /// </summary>
+    private readonly SemaphoreSlim _authLock = new(1);
+
+    /// <summary>
     /// tcp 客户端
     /// </summary>
     private readonly TcpClient _tcpClient;
@@ -102,9 +107,8 @@ internal sealed class RedisClient : IRedisClient
             case TResult result:
                 return result;
             case string obj:
-               return await _serializer.DeserializeAsync<TResult>(obj.ToEncode());
+                return await _serializer.DeserializeAsync<TResult>(obj.ToEncode());
         }
-
         throw new InvalidOperationException();
     }
 
@@ -126,6 +130,7 @@ internal sealed class RedisClient : IRedisClient
             else
                 list.Add(await _serializer.DeserializeAsync<TResult>(item.ToEncode()));
         }
+
         return list;
     }
 
@@ -155,7 +160,13 @@ internal sealed class RedisClient : IRedisClient
     {
         if (!_isAuth)
         {
-            _isAuth = await AuthAsync(UserName, Password);
+            using (await _authLock.LockAsync())
+            {
+                if (!_isAuth)
+                {
+                    _isAuth = await AuthAsync(UserName, Password);
+                }
+            }
         }
     }
 
@@ -223,10 +234,10 @@ internal sealed class RedisClient : IRedisClient
             {
                 var result = ReadMLine(stream);
                 return result;
-            } 
+            }
             case RespMessage.BulkStrings:
             {
-                _=ReadLine(stream);
+                _ = ReadLine(stream);
                 var result = ReadLine(stream);
                 return result;
             }
