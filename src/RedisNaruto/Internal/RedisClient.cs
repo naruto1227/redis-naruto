@@ -25,7 +25,7 @@ internal sealed class RedisClient : IRedisClient
     /// <summary>
     /// tcp 客户端
     /// </summary>
-    private readonly TcpClient _tcpClient;
+    private TcpClient _tcpClient;
 
     /// <summary>
     /// db访问库
@@ -57,15 +57,19 @@ internal sealed class RedisClient : IRedisClient
     /// </summary>
     private readonly ISerializer _serializer = new Serializer();
 
+    private Func<IRedisClient, Task> _disposeTask;
+
     /// <summary>
     /// 
     /// </summary>
-    internal RedisClient(TcpClient tcpClient, string userName, string password, int db)
+    internal RedisClient(TcpClient tcpClient, string userName, string password, int db,
+        Func<IRedisClient, Task> disposeTask)
     {
         _tcpClient = tcpClient;
         UserName = userName;
         Password = password;
         DB = db;
+        _disposeTask = disposeTask;
     }
 
 
@@ -79,18 +83,33 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="hostParameter"></param>
     /// <returns></returns>
     internal static async Task<RedisClient> ConnectionAsync(HostPort hostPort, string userName, string password, int db,
-        [CallerArgumentExpression("hosts")] string hostParameter = default)
+        Func<IRedisClient, Task> disposeTask, [CallerArgumentExpression("hosts")] string hostParameter = default)
     {
         var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(await Dns.GetHostAddressesAsync(hostPort.Host), hostPort.Port);
-        return new RedisClient(tcpClient, userName, password, db);
+        return new RedisClient(tcpClient, userName, password, db, disposeTask);
     }
 
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        _tcpClient.Dispose();
-        return new ValueTask();
+        await this.DisposeCoreAsync(true);
+    }
+
+    private async ValueTask DisposeCoreAsync(bool isDispose)
+    {
+        if (isDispose)
+        {
+            await _disposeTask?.Invoke(this);
+            _disposeTask = null;
+            GC.SuppressFinalize(this);
+        }
+    }
+
+    public void Close()
+    {
+        _tcpClient?.Dispose();
+        _tcpClient = null;
     }
 
     public async Task<TResult> ExecuteAsync<TResult>(Command command)

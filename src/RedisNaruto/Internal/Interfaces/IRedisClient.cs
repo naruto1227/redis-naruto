@@ -65,4 +65,9 @@ internal interface IRedisClient : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     Task<bool> QuitAsync();
+
+    /// <summary>
+    /// 关闭
+    /// </summary>
+    void Close();
 }

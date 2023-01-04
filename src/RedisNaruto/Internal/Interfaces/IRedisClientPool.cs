@@ -17,5 +17,5 @@ internal interface IRedisClientPool : IDisposable
     /// 归还
     /// </summary>
     /// <returns></returns>
-    Task ReturnAsync([NotNull]IRedisClient redisClient);
+    ValueTask ReturnAsync([NotNull]IRedisClient redisClient);
 }

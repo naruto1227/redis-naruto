@@ -95,19 +95,22 @@ internal class RedisClientPool : IRedisClientPool
         Interlocked.Increment(ref _currentUseCount);
         //随机获取一个主机信息
         var currentHostPort = _hostPorts.MinBy(a => Guid.NewGuid());
-        redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex);
+        redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex,
+            async (client) => { await this.ReturnAsync(client); });
         return redisClient;
     }
 
-    public async Task ReturnAsync([NotNull] IRedisClient redisClient)
+    public ValueTask ReturnAsync([NotNull] IRedisClient redisClient)
     {
         if (Interlocked.Decrement(ref _currentUseCount) < 0)
         {
             Interlocked.Increment(ref _currentUseCount);
+            _freeClients.Enqueue(redisClient);
         }
 
         //多余的就释放资源
-        await redisClient.DisposeAsync();
+        redisClient.Close();
+        return new ValueTask();
     }
 
 

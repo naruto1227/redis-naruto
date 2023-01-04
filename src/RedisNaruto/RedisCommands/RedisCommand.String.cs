@@ -23,7 +23,10 @@ public partial class RedisCommand : IRedisCommand
                 "PX",
                 timeSpan == default ? 0 : timeSpan.TotalMilliseconds
             };
-        var result= await (await _redisClientPool.RentAsync()).ExecuteAsync<string>(new Command(RedisCommandName.Set, argv));
+        await using var client = await _redisClientPool.RentAsync();
+
+        var result =
+            await client.ExecuteAsync<string>(new Command(RedisCommandName.Set, argv));
         return result == "OK";
     }
 
@@ -39,10 +42,15 @@ public partial class RedisCommand : IRedisCommand
     /// <returns></returns>
     public async Task<TResult> StringGet<TResult>(string key)
     {
-        return  await (await _redisClientPool.RentAsync()).ExecuteAsync<TResult>(new Command(RedisCommandName.Get, new object[]{key}));
+        await using var client = await _redisClientPool.RentAsync();
+        return await client.ExecuteAsync<TResult>(new Command(RedisCommandName.Get,
+            new object[] {key}));
     }
+
     public async Task<List<TResult>> StringMGet<TResult>(string[] key)
     {
-        return await (await _redisClientPool.RentAsync()).ExecuteMoreResultAsync<TResult>(new Command(RedisCommandName.MGET, key));
+        await using var client = await _redisClientPool.RentAsync();
+        return await client.ExecuteMoreResultAsync<TResult>(
+            new Command(RedisCommandName.MGET, key));
     }
 }
