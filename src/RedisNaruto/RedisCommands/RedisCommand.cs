@@ -7,11 +7,11 @@ namespace RedisNaruto;
 
 public partial class RedisCommand : IRedisCommand
 {
-    private IRedisClient _redisClient;
+    private IRedisClientPool _redisClientPool;
 
-    private RedisCommand(IRedisClient redisClient)
+    private RedisCommand(IRedisClientPool redisClientPool)
     {
-        _redisClient = redisClient;
+        _redisClientPool = redisClientPool;
     }
 
     /// <summary>
@@ -28,6 +28,6 @@ public partial class RedisCommand : IRedisCommand
 
     public ValueTask DisposeAsync()
     {
-        return _redisClient.DisposeAsync();
+        // return _redisClient.DisposeAsync();
     }
 }

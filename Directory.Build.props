@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <!--nuget 版本号-->
+        <NugetVersion>1.0.0</NugetVersion>
+        <RecyclableMemoryStreamVersion>2.2.1</RecyclableMemoryStreamVersion>
+    </PropertyGroup>
+</Project>
