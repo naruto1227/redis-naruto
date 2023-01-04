@@ -18,16 +18,18 @@ public partial class RedisCommand : IRedisCommand
     /// 
     /// </summary>
     /// <returns></returns>
-    internal static async Task<RedisCommand> ConnectionAsync(ConnectionModel config)
+    internal static ValueTask<RedisCommand> ConnectionAsync(ConnectionModel config)
     {
-        var redisClient = await RedisClient.ConnectionAsync(config.Connection, config.UserName, config.Password,config.DataBase);
-        var redisCommand = new RedisCommand(redisClient);
+        var redisCommand = new RedisCommand(new RedisClientPool(config.Connection, config.UserName, config.Password,
+            config.DataBase, config.ConnectionPoolCount));
         //连接配置
-        return redisCommand;
+        return new ValueTask<RedisCommand>(redisCommand);
     }
 
     public ValueTask DisposeAsync()
     {
+        //todo 
         // return _redisClient.DisposeAsync();
+        return new ValueTask();
     }
 }

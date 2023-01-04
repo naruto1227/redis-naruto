@@ -32,14 +32,47 @@ internal class RedisClientPool : IRedisClientPool
     /// <summary>
     /// 主机端口信息
     /// </summary>
-    private List<HostPort> _hostPorts;
+    private List<HostPort> _hostPorts = new();
+
+    /// <summary>
+    /// 用户名
+    /// </summary>
+    private readonly string _userName;
+
+    /// <summary>
+    /// 密码
+    /// </summary>
+    private readonly string _password;
+
+    /// <summary>
+    /// 默认的地址
+    /// </summary>
+    private readonly int _defaultDbIndex;
 
     /// <summary>
     /// 
     /// </summary>
-    public RedisClientPool(string[] connections,int maxCount)
+    public RedisClientPool(string[] connections, string userName, string password, int defaultDbIndex, int maxCount)
     {
+        this._userName = userName;
+        this._password = password;
+        _defaultDbIndex = defaultDbIndex;
         _maxCount = maxCount;
+        foreach (var item in connections)
+        {
+            if (item == null || item.Length <= 0)
+            {
+                throw new ArgumentNullException("连接地址异常");
+            }
+
+            var hostString = item.Split(":");
+            if (!int.TryParse(hostString[1], out var port))
+            {
+                port = 6349;
+            }
+
+            _hostPorts.Add(new HostPort(hostString[0], port));
+        }
         //todo 思考如何实现将空闲的客户端释放  
     }
 
@@ -51,28 +84,28 @@ internal class RedisClientPool : IRedisClientPool
             Interlocked.Increment(ref _currentUseCount);
             return redisClient;
         }
+
         //判断当前使用数量和最大数量比较
-        if (_currentUseCount>=_maxCount)
+        if (_currentUseCount >= _maxCount)
         {
             throw new InvalidOperationException("连接池已满");
         }
+
         //创建连接
         Interlocked.Increment(ref _currentUseCount);
-        //随机伙计一个主机信息
-       var currentHostPort= _hostPorts.MinBy(a => Guid.NewGuid());
-       var tcpClient = new TcpClient();
-       
-        redisClient = new RedisClient(tcpClient);
-        
+        //随机获取一个主机信息
+        var currentHostPort = _hostPorts.MinBy(a => Guid.NewGuid());
+        redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex);
+        return redisClient;
     }
 
     public async Task ReturnAsync([NotNull] IRedisClient redisClient)
     {
-        if (Interlocked.Decrement(ref _currentUseCount)<0)
+        if (Interlocked.Decrement(ref _currentUseCount) < 0)
         {
             Interlocked.Increment(ref _currentUseCount);
         }
-       
+
         //多余的就释放资源
         await redisClient.DisposeAsync();
     }

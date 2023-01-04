@@ -60,7 +60,7 @@ internal sealed class RedisClient : IRedisClient
     /// <summary>
     /// 
     /// </summary>
-    private RedisClient(TcpClient tcpClient, string userName, string password, int db)
+    internal RedisClient(TcpClient tcpClient, string userName, string password, int db)
     {
         _tcpClient = tcpClient;
         UserName = userName;
@@ -78,22 +78,11 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="db"></param>
     /// <param name="hostParameter"></param>
     /// <returns></returns>
-    internal static async Task<RedisClient> ConnectionAsync(string[] hosts, string userName, string password, int db,
+    internal static async Task<RedisClient> ConnectionAsync(HostPort hostPort, string userName, string password, int db,
         [CallerArgumentExpression("hosts")] string hostParameter = default)
     {
-        if (hosts == null || hosts.Length <= 0)
-        {
-            throw new ArgumentNullException(hostParameter);
-        }
-
-        var hostString = hosts.FirstOrDefault().Split(":");
-        if (!int.TryParse(hostString[1], out var port))
-        {
-            port = 6349;
-        }
-
         var tcpClient = new TcpClient();
-        await tcpClient.ConnectAsync(Dns.GetHostAddresses(hostString[0]), port);
+        await tcpClient.ConnectAsync(await Dns.GetHostAddressesAsync(hostPort.Host), hostPort.Port);
         return new RedisClient(tcpClient, userName, password, db);
     }
 
