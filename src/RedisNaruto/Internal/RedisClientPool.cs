@@ -15,9 +15,9 @@ internal class RedisClientPool : IRedisClientPool
     private readonly ConcurrentQueue<IRedisClient> _freeClients = new();
 
     /// <summary>
-    /// 当前使用数
+    /// 空闲数
     /// </summary>
-    private int _currentUseCount = 0;
+    private int _freeCount = 0;
 
     /// <summary>
     /// 最大创建数
@@ -80,19 +80,12 @@ internal class RedisClientPool : IRedisClientPool
     {
         //从队列中获取
         if (_freeClients.TryDequeue(out var redisClient))
-        {
-            Interlocked.Increment(ref _currentUseCount);
+        { 
+            //池内 空闲数减少
+            Interlocked.Decrement(ref _freeCount);
             return redisClient;
         }
 
-        //判断当前使用数量和最大数量比较
-        if (_currentUseCount >= _maxCount)
-        {
-            throw new InvalidOperationException("连接池已满");
-        }
-
-        //创建连接
-        Interlocked.Increment(ref _currentUseCount);
         //随机获取一个主机信息
         var currentHostPort = _hostPorts.MinBy(a => Guid.NewGuid());
         redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex,
@@ -100,16 +93,23 @@ internal class RedisClientPool : IRedisClientPool
         return redisClient;
     }
 
+    /// <summary>
+    /// 归还
+    /// </summary>
+    /// <param name="redisClient"></param>
+    /// <returns></returns>
     public ValueTask ReturnAsync([NotNull] IRedisClient redisClient)
     {
-        if (Interlocked.Decrement(ref _currentUseCount) < 0)
+        //递增当前池中的数量 验证 是否小于等于 最大的数量
+        if (Interlocked.Increment(ref _freeCount) <=_maxCount)
         {
-            Interlocked.Increment(ref _currentUseCount);
+            //入队
             _freeClients.Enqueue(redisClient);
+            return new ValueTask();
         }
-
         //多余的就释放资源
         redisClient.Close();
+        Interlocked.Decrement(ref _freeCount);
         return new ValueTask();
     }
 

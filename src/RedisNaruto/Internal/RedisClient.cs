@@ -100,9 +100,7 @@ internal sealed class RedisClient : IRedisClient
     {
         if (isDispose)
         {
-            await _disposeTask?.Invoke(this);
-            _disposeTask = null;
-            GC.SuppressFinalize(this);
+            await _disposeTask.Invoke(this);
         }
     }
 
@@ -113,6 +111,7 @@ internal sealed class RedisClient : IRedisClient
     {
         _tcpClient?.Dispose();
         _tcpClient = null;
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
