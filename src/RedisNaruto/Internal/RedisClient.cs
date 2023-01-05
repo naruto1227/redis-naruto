@@ -111,6 +111,7 @@ internal sealed class RedisClient : IRedisClient
     {
         _tcpClient?.Dispose();
         _tcpClient = null;
+        _disposeTask = null;
         GC.SuppressFinalize(this);
     }
 
