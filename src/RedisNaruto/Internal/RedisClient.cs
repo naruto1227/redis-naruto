@@ -106,12 +106,22 @@ internal sealed class RedisClient : IRedisClient
         }
     }
 
+    /// <summary>
+    /// 关闭连接
+    /// </summary>
     public void Close()
     {
         _tcpClient?.Dispose();
         _tcpClient = null;
     }
 
+    /// <summary>
+    /// 执行命令
+    /// </summary>
+    /// <param name="command"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<TResult> ExecuteAsync<TResult>(Command command)
     {
         var stream =
