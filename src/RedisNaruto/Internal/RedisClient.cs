@@ -127,13 +127,7 @@ internal sealed class RedisClient : IRedisClient
         var stream =
             await GetRequestStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await WriteArgAsync(stream, command.CombinArgs());
-        var response = await GetResponseAsync(stream);
-        return response switch
-        {
-            TResult result => result,
-            string obj => await _serializer.DeserializeAsync<TResult>(obj.ToEncode()),
-            _ => throw new InvalidOperationException()
-        };
+        return await ReadMessageAsync<TResult>();
     }
 
     /// <summary>
