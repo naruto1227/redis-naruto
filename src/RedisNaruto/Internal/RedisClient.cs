@@ -137,6 +137,23 @@ internal sealed class RedisClient : IRedisClient
     }
 
     /// <summary>
+    /// 读取消息
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<TResult> ReadMessageAsync<TResult>()
+    {
+        var response = await GetResponseAsync(this._tcpClient.GetStream());
+        return response switch
+        {
+            TResult result => result,
+            string obj => await _serializer.DeserializeAsync<TResult>(obj.ToEncode()),
+            _ => throw new InvalidOperationException()
+        };
+    }
+
+    /// <summary>
     /// 返回多结果集
     /// </summary>
     /// <param name="command"></param>

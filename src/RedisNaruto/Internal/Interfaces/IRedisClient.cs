@@ -7,7 +7,6 @@ namespace RedisNaruto.Internal.Interfaces;
 /// </summary>
 internal interface IRedisClient : IAsyncDisposable
 {
-
     /// <summary>
     /// db访问库
     /// </summary>
@@ -38,6 +37,13 @@ internal interface IRedisClient : IAsyncDisposable
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     Task<List<TResult>> ExecuteMoreResultAsync<TResult>(Command command);
+
+    /// <summary>
+    /// 读取
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    Task<TResult> ReadMessageAsync<TResult>();
 
     /// <summary>
     /// 选择 db库

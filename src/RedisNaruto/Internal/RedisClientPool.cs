@@ -18,21 +18,20 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// 空闲数
     /// </summary>
     private int _freeCount = 0;
-
     /// <summary>
     /// 最大创建数
     /// </summary>
-    private int _maxCount;
+    private readonly int _maxCount;
 
-    /// <summary>
-    /// 等待创建事件 300 ms
-    /// </summary>
-    private readonly int _waitTime = 300;
+    // /// <summary>
+    // /// 等待创建事件 300 ms
+    // /// </summary>
+    // private readonly int WaitTime = 300;
 
     /// <summary>
     /// 主机端口信息
     /// </summary>
-    private List<HostPort> _hostPorts = new();
+    private readonly List<HostPort> _hostPorts = new();
 
     /// <summary>
     /// 用户名
@@ -85,7 +84,6 @@ internal sealed class RedisClientPool : IRedisClientPool
             Interlocked.Decrement(ref _freeCount);
             return redisClient;
         }
-
         //随机获取一个主机信息
         var currentHostPort = _hostPorts.MinBy(a => Guid.NewGuid());
         redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex,

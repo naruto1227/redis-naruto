@@ -40,5 +40,21 @@ internal static class RedisCommandName
     public const string Get = "GET";
 
     #endregion
-   
+
+
+    #region 发布订阅
+
+    /// <summary>
+    /// 发送消息 到频道
+    /// </summary>
+    public const string Pub = "PUBLISH";
+
+
+    /// <summary>
+    /// 订阅频道
+    /// </summary>
+    public const string Sub = "SUBSCRIBE";
+
+    #endregion
+
 }
