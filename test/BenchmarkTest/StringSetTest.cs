@@ -28,15 +28,11 @@ public class StringSetTest
     [Benchmark()]
     public async Task StringSet()
     {
-        for (int i = 0; i < 1_000; i++)
+        await _redisCommand.StringSet("testobj",new TestModel
         {
-            await _redisCommand.StringSet("testobj",new TestModel
-            {
-                Id = Guid.NewGuid(),
-                Name = "123",
-                Time = DateTime.Now
-            });
-        }
-       
+            Id = Guid.NewGuid(),
+            Name = "123",
+            Time = DateTime.Now
+        });
     }
 }

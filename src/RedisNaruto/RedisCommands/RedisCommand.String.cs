@@ -11,12 +11,12 @@ public partial class RedisCommand : IRedisCommand
     public async Task<bool> StringSet(string key, object value, TimeSpan timeSpan = default)
     {
         var argv = timeSpan == default
-            ? new object[]
+            ? new[]
             {
                 key,
                 value
             }
-            : new object[]
+            : new[]
             {
                 key,
                 value,

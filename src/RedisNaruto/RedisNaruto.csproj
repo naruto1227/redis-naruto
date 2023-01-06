@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <Version>$(NugetVersion)</Version>
         <Authors>naruto</Authors>
         <Description>redis客户端库</Description>

@@ -128,15 +128,12 @@ internal sealed class RedisClient : IRedisClient
             await GetRequestStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await WriteArgAsync(stream, command.CombinArgs());
         var response = await GetResponseAsync(stream);
-        switch (response)
+        return response switch
         {
-            case TResult result:
-                return result;
-            case string obj:
-                return await _serializer.DeserializeAsync<TResult>(obj.ToEncode());
-        }
-
-        throw new InvalidOperationException();
+            TResult result => result,
+            string obj => await _serializer.DeserializeAsync<TResult>(obj.ToEncode()),
+            _ => throw new InvalidOperationException()
+        };
     }
 
     /// <summary>
@@ -247,7 +244,7 @@ internal sealed class RedisClient : IRedisClient
     {
         //获取首位的 符号 判断消息回复类型
         var bytes = new byte[1];
-        await stream.ReadAsync(bytes);
+        _ = await stream.ReadAsync(bytes);
         var head = (char) bytes[0];
         switch (head)
         {

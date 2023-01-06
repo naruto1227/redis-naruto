@@ -7,7 +7,7 @@ using RedisNaruto.Internal.Models;
 
 namespace RedisNaruto.Internal;
 
-internal class RedisClientPool : IRedisClientPool
+internal sealed class RedisClientPool : IRedisClientPool
 {
     /// <summary>
     ///空闲的客户端
@@ -80,7 +80,7 @@ internal class RedisClientPool : IRedisClientPool
     {
         //从队列中获取
         if (_freeClients.TryDequeue(out var redisClient))
-        { 
+        {
             //池内 空闲数减少
             Interlocked.Decrement(ref _freeCount);
             return redisClient;
@@ -101,12 +101,13 @@ internal class RedisClientPool : IRedisClientPool
     public ValueTask ReturnAsync([NotNull] IRedisClient redisClient)
     {
         //递增当前池中的数量 验证 是否小于等于 最大的数量
-        if (Interlocked.Increment(ref _freeCount) <=_maxCount)
+        if (Interlocked.Increment(ref _freeCount) <= _maxCount)
         {
             //入队
             _freeClients.Enqueue(redisClient);
             return new ValueTask();
         }
+
         //多余的就释放资源
         redisClient.Close();
         Interlocked.Decrement(ref _freeCount);
@@ -122,7 +123,7 @@ internal class RedisClientPool : IRedisClientPool
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool isDispose)
+    private void Dispose(bool isDispose)
     {
         if (isDispose)
         {
