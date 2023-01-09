@@ -2,7 +2,7 @@ using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 
-namespace RedisNaruto;
+namespace RedisNaruto.RedisCommands;
 
 public partial class RedisCommand : IRedisCommand
 {

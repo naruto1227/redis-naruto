@@ -1,6 +1,9 @@
 namespace RedisNaruto;
 
-public class RedisConnection
+/// <summary>
+/// 连接对象
+/// </summary>
+public static class RedisConnection
 {
     /// <summary>
     /// 
@@ -8,6 +11,6 @@ public class RedisConnection
     /// <returns></returns>
     public static async Task<IRedisCommand> ConnectionAsync(ConnectionModel config)
     {
-        return await RedisCommand.ConnectionAsync(config);
+        return await RedisCommands.RedisCommand.ConnectionAsync(config);
     }
 }

@@ -2,7 +2,7 @@ using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
 
-namespace RedisNaruto;
+namespace RedisNaruto.RedisCommands;
 
 /// <summary>
 /// 字符串操作
