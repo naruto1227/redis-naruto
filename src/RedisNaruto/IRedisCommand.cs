@@ -13,7 +13,54 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeSpan"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> StringSet(string key, Object value, TimeSpan timeSpan = default,CancellationToken cancellationToken = default);
+    Task<bool> SetAsync(string key, Object value, TimeSpan timeSpan = default,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 批量设置值
+    /// </summary>
+    /// <param name="vals"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> MSetAsync(Dictionary<string, string> vals,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 如果key不存在 才添加值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> SetNxAsync(string key, object value,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回字符串的长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> StrLenAsync(string key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 覆盖字符串的值 从指定的偏移量开始
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    Task<long> SetRangeAsync(string key, long offset, string value,
+        CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 查询字符串
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> GetAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 查询字符串
@@ -21,15 +68,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<string> StringGet(string key,CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// 查询字符串
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<TResult> StringGet<TResult>(string key,CancellationToken cancellationToken = default);
+    Task<TResult> GetAsync<TResult>(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 批量获取
@@ -37,8 +76,81 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<TResult>> StringMGet<TResult>(string[] key,CancellationToken cancellationToken = default);
+    Task<List<TResult>> MGetAsync<TResult>(string[] key, CancellationToken cancellationToken = default);
 
+    ///  <summary>
+    /// 如果key已经存在并且是一个字符串，此命令将value在字符串末尾附加。如果key不存在，则创建它并将其设置为空字符串，因此与这种特殊情况APPEND 类似SET。
+    ///  </summary>
+    ///  <param name="key"></param>
+    ///  <param name="val">值</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task AppendAsync(string key, string val, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 按照指定的值递减
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="val">递减的值</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> DecrByAsync(string key, long val = 1, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 按照指定的值递增
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="val"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> IncrByAsync(string key, long val = 1, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 查询指定的键值 如果存在就删除
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> GetDelAsync(string key, CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 查询key的值 并设置过期时间
+    ///  </summary>
+    ///  <param name="key"></param>
+    ///  <param name="expireTime">过期时间</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<string> GetExAsync(string key, TimeSpan expireTime,
+        CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 获取字符串 指定区间的值
+    ///  </summary>
+    ///  <param name="key"></param>
+    ///  <param name="end">字符串的结束下标</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <param name="begin">字符串的开始下标</param>
+    ///  <returns></returns>
+    Task<string> GetRangeAsync(string key, int begin, int end,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 匹配两个字符串的相似程度 返回匹配成功的内容
+    /// </summary>
+    /// <param name="key1"></param>
+    /// <param name="key2"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> LcsWithStringAsync(string key1, string key2,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 匹配两个字符串的相似程度 返回匹配成功的内容的长度
+    /// </summary>
+    /// <param name="key1"></param>
+    /// <param name="key2"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> LcsWithLenAsync(string key1, string key2, CancellationToken cancellationToken = default);
     /// <summary>
     /// 发布消息
     /// </summary>
@@ -46,7 +158,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>收到消息的客户端数量</returns>
-    Task<int> PublishAsync(string topic, string message,CancellationToken cancellationToken = default);
+    Task<int> PublishAsync(string topic, string message, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 订阅消息
@@ -54,7 +166,8 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="topics"></param>
     /// <param name="reciveMessage"></param>
     /// <param name="cancellationToken"></param>
-    Task SubscribeAsync(string[] topics,Func<string,string,Task> reciveMessage,CancellationToken cancellationToken=default);
+    Task SubscribeAsync(string[] topics, Func<string, string, Task> reciveMessage,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 取消订阅消息

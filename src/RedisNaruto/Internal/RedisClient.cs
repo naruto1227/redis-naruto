@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.IO;
+using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Serialization;
@@ -282,7 +283,7 @@ internal sealed class RedisClient : IRedisClient
             {
                 //错误
                 var result = ReadLine(stream);
-                throw new Exception(result);
+                throw new RedisExecException(result);
             }
         }
     }
