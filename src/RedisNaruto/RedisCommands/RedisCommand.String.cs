@@ -33,7 +33,7 @@ public partial class RedisCommand : IRedisCommand
                 "PX",
                 timeSpan == default ? 0 : timeSpan.TotalMilliseconds
             };
-        await using var client = await _redisClientPool.RentAsync();
+        await using var client = await _redisClientPool.RentAsync(cancellationToken);
 
         var result =
             await client.ExecuteAsync<string>(new Command(RedisCommandName.Set, argv));
@@ -61,7 +61,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<TResult> StringGet<TResult>(string key,CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await _redisClientPool.RentAsync();
+        await using var client = await _redisClientPool.RentAsync(cancellationToken);
         return await client.ExecuteAsync<TResult>(new Command(RedisCommandName.Get,
             new object[] {key}));
     }
@@ -76,7 +76,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<List<TResult>> StringMGet<TResult>(string[] key,CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await _redisClientPool.RentAsync();
+        await using var client = await _redisClientPool.RentAsync(cancellationToken);
         return await (client.ExecuteMoreResultAsync<TResult>(
             new Command(RedisCommandName.MGET, key))).ToListAsync();
     }
