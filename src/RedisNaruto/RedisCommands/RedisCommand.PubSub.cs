@@ -11,9 +11,11 @@ public partial class RedisCommand : IRedisCommand
     /// </summary>
     /// <param name="topic"></param>
     /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>收到消息的客户端数量</returns>
-    public async Task<int> PublishAsync(string topic, string message)
+    public async Task<int> PublishAsync(string topic, string message, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await using var client = await _redisClientPool.RentAsync();
         var result =
             await client.ExecuteAsync<int>(new Command(RedisCommandName.Pub, new object[]
@@ -29,6 +31,7 @@ public partial class RedisCommand : IRedisCommand
     /// 订阅客户端
     /// </summary>
     private IRedisClient _subscribeClient;
+
     /// <summary>
     /// 订阅消息
     /// </summary>
@@ -71,10 +74,11 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_subscribeClient==default)
+        if (_subscribeClient == default)
         {
             throw new InvalidOperationException("需要先订阅才能取消订阅");
         }
+
         _ = await _subscribeClient.ExecuteAsync<object>(new Command(RedisCommandName.UnSub, topics));
     }
 }

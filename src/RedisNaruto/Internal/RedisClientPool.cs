@@ -18,6 +18,7 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// 空闲数
     /// </summary>
     private int _freeCount = 0;
+
     /// <summary>
     /// 最大创建数
     /// </summary>
@@ -75,8 +76,9 @@ internal sealed class RedisClientPool : IRedisClientPool
         //todo 思考如何实现将空闲的客户端释放  
     }
 
-    public async Task<IRedisClient> RentAsync()
+    public async Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         //从队列中获取
         if (_freeClients.TryDequeue(out var redisClient))
         {
@@ -84,10 +86,11 @@ internal sealed class RedisClientPool : IRedisClientPool
             Interlocked.Decrement(ref _freeCount);
             return redisClient;
         }
+
         //随机获取一个主机信息
         var currentHostPort = _hostPorts.MinBy(a => Guid.NewGuid());
         redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex,
-            async (client) => { await this.ReturnAsync(client); });
+            async (client) => { await this.ReturnAsync(client); }, cancellationToken);
         return redisClient;
     }
 

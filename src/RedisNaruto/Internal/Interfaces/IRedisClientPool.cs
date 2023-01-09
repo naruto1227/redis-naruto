@@ -11,7 +11,7 @@ internal interface IRedisClientPool : IDisposable
     /// 租用
     /// </summary>
     /// <returns></returns>
-    Task<IRedisClient> RentAsync();
+    Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 归还

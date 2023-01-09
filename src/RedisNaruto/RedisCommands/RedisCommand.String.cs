@@ -9,8 +9,17 @@ namespace RedisNaruto;
 /// </summary>
 public partial class RedisCommand : IRedisCommand
 {
-    public async Task<bool> StringSet(string key, object value, TimeSpan timeSpan = default)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="timeSpan"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> StringSet(string key, object value, TimeSpan timeSpan = default,CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var argv = timeSpan == default
             ? new[]
             {
@@ -31,25 +40,42 @@ public partial class RedisCommand : IRedisCommand
         return result == "OK";
     }
 
-    public async Task<string> StringGet(string key)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<string> StringGet(string key,CancellationToken cancellationToken = default)
     {
-        return await StringGet<string>(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        return await StringGet<string>(key,cancellationToken);
     }
 
     /// <summary>
     /// 查询字符串
     /// </summary>
     /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<TResult> StringGet<TResult>(string key)
+    public async Task<TResult> StringGet<TResult>(string key,CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await using var client = await _redisClientPool.RentAsync();
         return await client.ExecuteAsync<TResult>(new Command(RedisCommandName.Get,
             new object[] {key}));
     }
 
-    public async Task<List<TResult>> StringMGet<TResult>(string[] key)
+    /// <summary>
+    /// 批量获取
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    public async Task<List<TResult>> StringMGet<TResult>(string[] key,CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await using var client = await _redisClientPool.RentAsync();
         return await (client.ExecuteMoreResultAsync<TResult>(
             new Command(RedisCommandName.MGET, key))).ToListAsync();

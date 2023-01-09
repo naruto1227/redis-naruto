@@ -80,13 +80,17 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="userName">用户名</param>
     /// <param name="password">密码</param>
     /// <param name="db"></param>
+    /// <param name="cancellationToken"></param>
     /// <param name="hostParameter"></param>
     /// <returns></returns>
     internal static async Task<RedisClient> ConnectionAsync(HostPort hostPort, string userName, string password, int db,
-        Func<IRedisClient, Task> disposeTask, [CallerArgumentExpression("hosts")] string hostParameter = default)
+        Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default,
+        [CallerArgumentExpression("hosts")] string hostParameter = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var tcpClient = new TcpClient();
-        await tcpClient.ConnectAsync(await Dns.GetHostAddressesAsync(hostPort.Host), hostPort.Port);
+        await tcpClient.ConnectAsync(await Dns.GetHostAddressesAsync(hostPort.Host, cancellationToken), hostPort.Port,
+            cancellationToken);
         return new RedisClient(tcpClient, userName, password, db, disposeTask);
     }
 
