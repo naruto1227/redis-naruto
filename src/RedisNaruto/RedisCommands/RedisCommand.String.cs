@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto;
 
@@ -50,7 +51,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<List<TResult>> StringMGet<TResult>(string[] key)
     {
         await using var client = await _redisClientPool.RentAsync();
-        return await client.ExecuteMoreResultAsync<TResult>(
-            new Command(RedisCommandName.MGET, key));
+        return await (client.ExecuteMoreResultAsync<TResult>(
+            new Command(RedisCommandName.MGET, key))).ToListAsync();
     }
 }

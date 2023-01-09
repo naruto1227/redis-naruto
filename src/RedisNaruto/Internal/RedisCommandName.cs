@@ -55,6 +55,12 @@ internal static class RedisCommandName
     /// </summary>
     public const string Sub = "SUBSCRIBE";
 
+
+    /// <summary>
+    /// 取消订阅
+    /// </summary>
+    public const string UnSub = "UNSUBSCRIBE";
+
     #endregion
 
 }

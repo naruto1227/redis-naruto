@@ -153,20 +153,17 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="command"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public async Task<List<TResult>> ExecuteMoreResultAsync<TResult>(Command command)
+    public async IAsyncEnumerable<TResult> ExecuteMoreResultAsync<TResult>(Command command)
     {
         var resultList = await ExecuteAsync<List<Object>>(command);
-        List<TResult> list = new List<TResult>();
         var isStr = typeof(TResult) == typeof(string);
         foreach (var item in resultList)
         {
             if (isStr)
-                list.Add((TResult) item);
+                yield return (TResult) item;
             else
-                list.Add(await _serializer.DeserializeAsync<TResult>(item.ToEncode()));
+                yield return await _serializer.DeserializeAsync<TResult>(item.ToEncode());
         }
-
-        return list;
     }
 
     /// <summary>

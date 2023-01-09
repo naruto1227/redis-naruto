@@ -36,7 +36,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// <param name="command"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<List<TResult>> ExecuteMoreResultAsync<TResult>(Command command);
+    IAsyncEnumerable<TResult> ExecuteMoreResultAsync<TResult>(Command command);
 
     /// <summary>
     /// 读取

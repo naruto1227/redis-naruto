@@ -50,4 +50,12 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="reciveMessage"></param>
     /// <param name="cancellationToken"></param>
     Task SubscribeAsync(string[] topics,Func<string,string,Task> reciveMessage,CancellationToken cancellationToken=default);
+
+    /// <summary>
+    /// 取消订阅消息
+    /// </summary>
+    /// <param name="topics"></param>
+    /// <param name="cancellationToken"></param>
+    Task UnSubscribeAsync(string[] topics,
+        CancellationToken cancellationToken = default);
 }
