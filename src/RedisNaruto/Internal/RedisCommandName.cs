@@ -156,5 +156,9 @@ internal static class RedisCommandName
     /// </summary>
     public const string EvalSha = "EVALSHA";
 
+    /// <summary>
+    /// 将script 存储到redis lua缓存中 返回 存储的sha值
+    /// </summary>
+    public const string Script = "SCRIPT";
     #endregion
 }

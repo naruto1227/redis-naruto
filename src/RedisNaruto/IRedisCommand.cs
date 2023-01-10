@@ -208,4 +208,24 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<object> EvalAsync(string script, object[] keys, object[] argvs,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 执行指定的 sha值的 lua缓存脚本 调用 SCRIPT LOAD 脚本返回的 sha值
+    /// </summary>
+    /// <param name="sha"></param>
+    /// <param name="keys"></param>
+    /// <param name="argvs"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<object> EvalShaAsync(string sha, object[] keys, object[] argvs,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 将script 存储到redis lua缓存中
+    /// </summary>
+    /// <param name="script"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> ScriptLoadAsync(string script,
+        CancellationToken cancellationToken = default);
 }
