@@ -197,4 +197,15 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     Task<long> DbSizeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 执行script脚本
+    /// </summary>
+    /// <param name="script"></param>
+    /// <param name="keys"></param>
+    /// <param name="argvs"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<object> EvalAsync(string script, object[] keys, object[] argvs,
+        CancellationToken cancellationToken = default);
 }

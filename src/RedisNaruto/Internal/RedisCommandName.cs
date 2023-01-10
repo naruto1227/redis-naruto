@@ -144,4 +144,17 @@ internal static class RedisCommandName
 
     #endregion
 
+    #region script
+
+    /// <summary>
+    /// 执行lua脚本
+    /// </summary>
+    public const string Eval = "EVAL";
+
+    /// <summary>
+    /// 执行指定的 sha值的 lua缓存脚本 调用 SCRIPT LOAD 脚本返回的 sha值
+    /// </summary>
+    public const string EvalSha = "EVALSHA";
+
+    #endregion
 }
