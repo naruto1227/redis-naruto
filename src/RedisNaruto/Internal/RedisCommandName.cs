@@ -2,26 +2,6 @@ namespace RedisNaruto.Internal;
 
 internal static class RedisCommandName
 {
-    /// <summary>
-    /// 登陆
-    /// </summary>
-    public const string Auth = "AUTH";
-
-    /// <summary>
-    /// 退出
-    /// </summary>
-    public const string Quit = "QUIT";
-
-    /// <summary>
-    /// 选择 db
-    /// </summary>
-    public const string Select = "SELECT";
-    
-    /// <summary>
-    /// Ping
-    /// </summary>
-    public const string Ping = "PING";
-
     #region 字符串
 
     /// <summary>
@@ -123,6 +103,44 @@ internal static class RedisCommandName
     /// 取消订阅
     /// </summary>
     public const string UnSub = "UNSUBSCRIBE";
+
+    #endregion
+
+    #region client
+
+    /// <summary>
+    /// 客户端信息
+    /// </summary>
+    public const string Client = "CLIENT";
+
+    /// <summary>
+    /// 登陆
+    /// </summary>
+    public const string Auth = "AUTH";
+
+    /// <summary>
+    /// 退出
+    /// </summary>
+    public const string Quit = "QUIT";
+
+    /// <summary>
+    /// 选择 db
+    /// </summary>
+    public const string Select = "SELECT";
+    
+    /// <summary>
+    /// Ping
+    /// </summary>
+    public const string Ping = "PING";
+    
+    #endregion
+
+    #region server
+
+    /// <summary>
+    /// 返回选择数据库的 key数量
+    /// </summary>
+    public const string DbSize = "DBSIZE";
 
     #endregion
 
