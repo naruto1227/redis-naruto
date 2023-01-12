@@ -22,4 +22,14 @@ internal static class StringUtil
         int.TryParse(source, out var res);
         return res;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    public static long ToLong(this string source)
+    {
+        long.TryParse(source, out var res);
+        return res;
+    }
 }

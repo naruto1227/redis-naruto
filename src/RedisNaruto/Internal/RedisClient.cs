@@ -270,7 +270,7 @@ internal sealed class RedisClient : IRedisClient
             //数组
             case RespMessage.ArrayString:
             {
-                var result = ReadMLine(stream);
+                var result = await ReadMLineAsync(stream);
                 return result;
             }
             case RespMessage.BulkStrings:
@@ -321,17 +321,36 @@ internal sealed class RedisClient : IRedisClient
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private List<Object> ReadMLine(Stream stream)
+    private async Task<List<Object>> ReadMLineAsync(Stream stream)
     {
         List<Object> resultList = new();
 
         //读取数组的长度
         var length = ReadLine(stream).ToInt();
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
-            //第一位为数据长度 
-            _ = ReadLine(stream);
-            resultList.Add(ReadLine(stream));
+            //获取 符号 判断消息类型 是字符串还是 数字 
+            var bytes = new byte[1];
+            _ = await stream.ReadAsync(bytes);
+            var head = (char) bytes[0];
+            switch (head)
+            {
+                case RespMessage.Number:
+                {
+                    var result = ReadLine(stream).ToLong();
+                    resultList.Add(result);
+                    break;
+                }
+                case RespMessage.BulkStrings:
+                {
+                    //去除第一位的长度
+                    _ = ReadLine(stream);
+                    //读取结果
+                    var result = ReadLine(stream);
+                    resultList.Add(result);
+                    break;
+                }
+            }
         }
 
         return resultList;

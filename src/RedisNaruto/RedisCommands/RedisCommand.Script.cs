@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
 
@@ -36,7 +37,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="argvs"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<object> EvalShaAsync(string sha,object[] keys, object[] argvs,
+    public async Task<object> EvalShaAsync(string sha, object[] keys, object[] argvs,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -67,5 +68,30 @@ public partial class RedisCommand : IRedisCommand
             "LOAD",
             script
         }));
+    }
+
+    /// <summary>
+    /// 验证lua脚本 是否已经缓存
+    /// </summary>
+    /// <param name="sha"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<bool>> ScriptExistsAsync(string[] sha,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await _redisClientPool.RentAsync(cancellationToken);
+
+        var result = (client.ExecuteMoreResultAsync<int>(new Command(RedisCommandName.Script,
+            new string[1]
+            {
+                "EXISTS"
+            }.Union(sha).ToArray())).WithCancellation(cancellationToken));
+        var resList = new List<bool>();
+        await foreach (var itemResult in result)
+        {
+            resList.Add(itemResult==1);
+        }
+        return resList;
     }
 }

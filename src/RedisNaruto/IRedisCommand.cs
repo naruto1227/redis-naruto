@@ -228,4 +228,13 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<string> ScriptLoadAsync(string script,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 验证lua脚本 是否已经缓存
+    /// </summary>
+    /// <param name="sha"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<bool>> ScriptExistsAsync(string[] sha,
+        CancellationToken cancellationToken = default);
 }
