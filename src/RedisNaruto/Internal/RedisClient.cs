@@ -144,6 +144,11 @@ internal sealed class RedisClient : IRedisClient
     public async Task<TResult> ReadMessageAsync<TResult>()
     {
         var response = await GetResponseAsync(this._tcpClient.GetStream());
+        if (response == default)
+        {
+            return default;
+        }
+
         return response switch
         {
             TResult result => result,
@@ -275,7 +280,13 @@ internal sealed class RedisClient : IRedisClient
             }
             case RespMessage.BulkStrings:
             {
-                _ = ReadLine(stream);
+                var strlen = ReadLine(stream);
+                //如果为null
+                if (strlen == "-1")
+                {
+                    return default;
+                }
+
                 var result = ReadLine(stream);
                 return result;
             }
@@ -344,7 +355,13 @@ internal sealed class RedisClient : IRedisClient
                 case RespMessage.BulkStrings:
                 {
                     //去除第一位的长度
-                    _ = ReadLine(stream);
+                    var strlen = ReadLine(stream);
+                    //如果为null
+                    if (strlen == "-1")
+                    {
+                        return default;
+                    }
+
                     //读取结果
                     var result = ReadLine(stream);
                     resultList.Add(result);
