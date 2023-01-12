@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.IO;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Utils;
@@ -13,11 +14,6 @@ namespace RedisNaruto.Internal;
 
 internal sealed class RedisClient : IRedisClient
 {
-    /// <summary>
-    /// 池
-    /// </summary>
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
-
     /// <summary>
     /// 授权锁
     /// </summary>
@@ -47,16 +43,18 @@ internal sealed class RedisClient : IRedisClient
     /// 是否授权
     /// </summary>
     private bool _isAuth;
-
-    /// <summary>
-    /// 换行
-    /// </summary>
-    private static readonly byte[] NewLine = "\r\n".ToEncode();
-
     /// <summary>
     /// 序列化
     /// </summary>
     private readonly ISerializer _serializer = new Serializer();
+
+    /// <summary>
+    /// 消息传输
+    /// </summary>
+    private readonly IMessageTransport _messageTransport = new MessageTransport();
+    /// <summary>
+    /// 
+    /// </summary>
 
     private Func<IRedisClient, Task> _disposeTask;
 
@@ -131,7 +129,7 @@ internal sealed class RedisClient : IRedisClient
     {
         var stream =
             await GetRequestStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await WriteArgAsync(stream, command.CombinArgs());
+        await _messageTransport.SendAsync(stream, command.CombinArgs());
         return await ReadMessageAsync<TResult>();
     }
 
@@ -143,7 +141,7 @@ internal sealed class RedisClient : IRedisClient
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<TResult> ReadMessageAsync<TResult>()
     {
-        var response = await GetResponseAsync(this._tcpClient.GetStream());
+        var response = await _messageTransport.ReciveAsync(this._tcpClient.GetStream());
         if (response == default)
         {
             return default;
@@ -237,8 +235,6 @@ internal sealed class RedisClient : IRedisClient
         return (await ExecuteAsync<string>(new Command(RedisCommandName.Quit, default))) == "OK";
     }
 
-    #region private
-
     /// <summary>
     /// 获取流
     /// </summary>
@@ -252,156 +248,4 @@ internal sealed class RedisClient : IRedisClient
 
         return _tcpClient.GetStream();
     }
-
-    /// <summary>
-    /// 获取结果信息
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    private async Task<object> GetResponseAsync(Stream stream)
-    {
-        //获取首位的 符号 判断消息回复类型
-        var bytes = new byte[1];
-        _ = await stream.ReadAsync(bytes);
-        var head = (char) bytes[0];
-        switch (head)
-        {
-            case RespMessage.SimpleString:
-            case RespMessage.Number:
-            {
-                var result = ReadLine(stream);
-                return result;
-            }
-            //数组
-            case RespMessage.ArrayString:
-            {
-                var result = await ReadMLineAsync(stream);
-                return result;
-            }
-            case RespMessage.BulkStrings:
-            {
-                var strlen = ReadLine(stream);
-                //如果为null
-                if (strlen == "-1")
-                {
-                    return default;
-                }
-
-                var result = ReadLine(stream);
-                return result;
-            }
-            default:
-            {
-                //错误
-                var result = ReadLine(stream);
-                throw new RedisExecException(result);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 读取行数据
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    private string ReadLine(Stream stream)
-    {
-        var stringBuilder = new StringBuilder();
-        while (true)
-        {
-            var msg = stream.ReadByte();
-            if (msg < 0) break;
-            //判断是否为换行 \r\n
-            if (msg == '\r')
-            {
-                var msg2 = stream.ReadByte();
-                if (msg2 < 0) break;
-                if (msg2 == '\n') break;
-                stringBuilder.Append((char) msg);
-                stringBuilder.Append((char) msg2);
-            }
-            else
-                stringBuilder.Append((char) msg);
-        }
-
-        return stringBuilder.ToString();
-    }
-
-    /// <summary>
-    /// 多行读取
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    private async Task<List<Object>> ReadMLineAsync(Stream stream)
-    {
-        List<Object> resultList = new();
-
-        //读取数组的长度
-        var length = ReadLine(stream).ToInt();
-        for (var i = 0; i < length; i++)
-        {
-            //获取 符号 判断消息类型 是字符串还是 数字 
-            var bytes = new byte[1];
-            _ = await stream.ReadAsync(bytes);
-            var head = (char) bytes[0];
-            switch (head)
-            {
-                case RespMessage.Number:
-                {
-                    var result = ReadLine(stream).ToLong();
-                    resultList.Add(result);
-                    break;
-                }
-                case RespMessage.BulkStrings:
-                {
-                    //去除第一位的长度
-                    var strlen = ReadLine(stream);
-                    //如果为null
-                    if (strlen == "-1")
-                    {
-                        return default;
-                    }
-
-                    //读取结果
-                    var result = ReadLine(stream);
-                    resultList.Add(result);
-                    break;
-                }
-            }
-        }
-
-        return resultList;
-    }
-
-    /// <summary>
-    /// 写入参数
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <param name="args"></param>
-    private async Task WriteArgAsync(Stream stream, object[] args)
-    {
-        if (args == null || args.Length <= 0)
-        {
-            return;
-        }
-
-        await using var ms = MemoryStreamManager.GetStream();
-        ms.Position = 0;
-        await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.ArrayString}{args.Length}"));
-        await ms.WriteAsync(NewLine);
-        //判断参数长度
-        foreach (var item in args)
-        {
-            var argBytes = await _serializer.SerializeAsync(item);
-            await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
-            await ms.WriteAsync(NewLine);
-            await ms.WriteAsync(argBytes);
-            await ms.WriteAsync(NewLine);
-        }
-
-        ms.Position = 0;
-        await ms.CopyToAsync(stream);
-    }
-
-    #endregion
 }
