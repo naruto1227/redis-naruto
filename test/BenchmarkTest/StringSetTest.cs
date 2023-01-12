@@ -28,7 +28,7 @@ public class StringSetTest
     [Benchmark()]
     public async Task StringSet()
     {
-        await _redisCommand.StringSet("testobj",new TestModel
+        await _redisCommand.SetAsync("testobj",new TestModel
         {
             Id = Guid.NewGuid(),
             Name = "123",
