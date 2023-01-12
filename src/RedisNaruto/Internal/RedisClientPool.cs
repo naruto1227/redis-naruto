@@ -30,49 +30,18 @@ internal sealed class RedisClientPool : IRedisClientPool
     // private readonly int WaitTime = 300;
 
     /// <summary>
-    /// 主机端口信息
+    /// 连接信息
     /// </summary>
-    private readonly List<HostPort> _hostPorts = new();
-
-    /// <summary>
-    /// 用户名
-    /// </summary>
-    private readonly string _userName;
-
-    /// <summary>
-    /// 密码
-    /// </summary>
-    private readonly string _password;
-
-    /// <summary>
-    /// 默认的地址
-    /// </summary>
-    private readonly int _defaultDbIndex;
+    private readonly ConnectionModel _connectionModel;
 
     /// <summary>
     /// 
     /// </summary>
-    public RedisClientPool(string[] connections, string userName, string password, int defaultDbIndex, int maxCount)
+    public RedisClientPool(ConnectionModel connectionModel)
     {
-        this._userName = userName;
-        this._password = password;
-        _defaultDbIndex = defaultDbIndex;
-        _maxCount = maxCount;
-        foreach (var item in connections)
-        {
-            if (item == null || item.Length <= 0)
-            {
-                throw new ArgumentNullException("连接地址异常");
-            }
+        _connectionModel = connectionModel;
+        _maxCount = connectionModel.ConnectionPoolCount;
 
-            var hostString = item.Split(":");
-            if (!int.TryParse(hostString[1], out var port))
-            {
-                port = 6349;
-            }
-
-            _hostPorts.Add(new HostPort(hostString[0], port));
-        }
         //todo 思考如何实现将空闲的客户端释放  
     }
 
@@ -87,9 +56,7 @@ internal sealed class RedisClientPool : IRedisClientPool
             return redisClient;
         }
 
-        //随机获取一个主机信息
-        var currentHostPort = _hostPorts.MinBy(a => Guid.NewGuid());
-        redisClient = await RedisClient.ConnectionAsync(currentHostPort, _userName, _password, _defaultDbIndex,
+        redisClient = await RedisClient.ConnectionAsync(_connectionModel,
             async (client) => { await this.ReturnAsync(client); }, cancellationToken);
         return redisClient;
     }

@@ -25,24 +25,23 @@ internal sealed class RedisClient : IRedisClient
     private TcpClient _tcpClient;
 
     /// <summary>
-    /// db访问库
+    /// 
     /// </summary>
-    public int DB { get; }
+    public ConnectionModel ConnectionModel { get; }
 
     /// <summary>
-    /// 用户名
+    /// 当前连接的主机信息
     /// </summary>
-    public string UserName { get; }
-
+    public string CurrentHost { get; }
     /// <summary>
-    /// 密码
+    /// 当前连接的端口信息
     /// </summary>
-    public string Password { get; }
-
+    public int CurrentPort { get; }
     /// <summary>
     /// 是否授权
     /// </summary>
     private bool _isAuth;
+
     /// <summary>
     /// 序列化
     /// </summary>
@@ -52,22 +51,24 @@ internal sealed class RedisClient : IRedisClient
     /// 消息传输
     /// </summary>
     private readonly IMessageTransport _messageTransport = new MessageTransport();
+
+    private static readonly Random Random = new Random();
+
     /// <summary>
     /// 
     /// </summary>
-
     private Func<IRedisClient, Task> _disposeTask;
 
     /// <summary>
     /// 
     /// </summary>
-    internal RedisClient(TcpClient tcpClient, string userName, string password, int db,
+    private RedisClient(TcpClient tcpClient, ConnectionModel connectionModel,string currentHost,int currentPort,
         Func<IRedisClient, Task> disposeTask)
     {
         _tcpClient = tcpClient;
-        UserName = userName;
-        Password = password;
-        DB = db;
+        CurrentHost = currentHost;
+        CurrentPort = currentPort;
+        ConnectionModel = connectionModel;
         _disposeTask = disposeTask;
     }
 
@@ -75,22 +76,29 @@ internal sealed class RedisClient : IRedisClient
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="hosts">主机信息</param>
-    /// <param name="userName">用户名</param>
-    /// <param name="password">密码</param>
-    /// <param name="db"></param>
     /// <param name="cancellationToken"></param>
     /// <param name="hostParameter"></param>
+    /// <param name="connectionModel"></param>
     /// <returns></returns>
-    internal static async Task<RedisClient> ConnectionAsync(HostPort hostPort, string userName, string password, int db,
+    internal static async Task<RedisClient> ConnectionAsync(ConnectionModel connectionModel,
         Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default,
         [CallerArgumentExpression("hosts")] string hostParameter = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var current= connectionModel.Connection[Random.Next(connectionModel.Connection.Length)];
+        var hostString = current.Split(":");
+        if (!int.TryParse(hostString[1], out var port))
+        {
+            port = 6349;
+        }
+        //初始化tcp客户端
         var tcpClient = new TcpClient();
-        await tcpClient.ConnectAsync(await Dns.GetHostAddressesAsync(hostPort.Host, cancellationToken), hostPort.Port,
+        //获取ip地址
+        var ips = await Dns.GetHostAddressesAsync(hostString[0], cancellationToken);
+        await tcpClient.ConnectAsync(ips, port,
             cancellationToken);
-        return new RedisClient(tcpClient, userName, password, db, disposeTask);
+        var currentHost = string.Join(',', ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
+        return new RedisClient(tcpClient, connectionModel,currentHost,port, disposeTask);
     }
 
 
@@ -204,8 +212,8 @@ internal sealed class RedisClient : IRedisClient
             {
                 if (!_isAuth)
                 {
-                    _isAuth = await AuthAsync(UserName, Password);
-                    await SelectDb(DB);
+                    _isAuth = await AuthAsync(ConnectionModel.UserName, ConnectionModel.Password);
+                    await SelectDb(ConnectionModel.DataBase);
                 }
             }
         }

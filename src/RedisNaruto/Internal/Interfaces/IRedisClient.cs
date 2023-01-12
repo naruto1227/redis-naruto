@@ -8,19 +8,19 @@ namespace RedisNaruto.Internal.Interfaces;
 internal interface IRedisClient : IAsyncDisposable
 {
     /// <summary>
-    /// db访问库
+    /// 连接信息
     /// </summary>
-    public int DB { get; }
+    ConnectionModel ConnectionModel { get; }
 
     /// <summary>
-    /// 用户
+    /// 当前连接的主机信息
     /// </summary>
-    public string UserName { get; }
+    string CurrentHost { get; }
 
     /// <summary>
-    /// 密码
+    /// 当前连接的端口信息
     /// </summary>
-    public string Password { get; }
+    int CurrentPort { get; }
 
     /// <summary>
     /// 执行命令接口

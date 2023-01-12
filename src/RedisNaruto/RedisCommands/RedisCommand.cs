@@ -18,8 +18,7 @@ public partial class RedisCommand : IRedisCommand
     /// <returns></returns>
     internal static ValueTask<RedisCommand> ConnectionAsync(ConnectionModel config)
     {
-        var redisCommand = new RedisCommand(new RedisClientPool(config.Connection, config.UserName, config.Password,
-            config.DataBase, config.ConnectionPoolCount));
+        var redisCommand = new RedisCommand(new RedisClientPool(config));
         //连接配置
         return new ValueTask<RedisCommand>(redisCommand);
     }
