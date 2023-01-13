@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.ObjectPool;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Internal.Sentinels;
 
 namespace RedisNaruto.Internal;
 
@@ -34,6 +35,8 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// </summary>
     private readonly ConnectionModel _connectionModel;
 
+    private readonly IRedisClientFactory _redisClientFactory;
+
     /// <summary>
     /// 
     /// </summary>
@@ -41,8 +44,8 @@ internal sealed class RedisClientPool : IRedisClientPool
     {
         _connectionModel = connectionModel;
         _maxCount = connectionModel.ConnectionPoolCount;
-
-        //todo 思考如何实现将空闲的客户端释放  
+        _redisClientFactory = new RedisClientFactory(connectionModel);
+        //todo 思考如何实现将空闲的客户端释放
     }
 
     public async Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default)
@@ -53,11 +56,12 @@ internal sealed class RedisClientPool : IRedisClientPool
         {
             //池内 空闲数减少
             Interlocked.Decrement(ref _freeCount);
-            return redisClient;
         }
-
-        redisClient = await RedisClient.ConnectionAsync(_connectionModel,
-            async (client) => { await this.ReturnAsync(client); }, cancellationToken);
+        else
+        {
+            redisClient = await _redisClientFactory.GetAsync(async (client) => { await this.ReturnAsync(client); },
+                cancellationToken);
+        }
         return redisClient;
     }
 

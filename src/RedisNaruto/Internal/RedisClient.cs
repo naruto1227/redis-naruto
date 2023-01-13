@@ -12,7 +12,7 @@ using RedisNaruto.Utils;
 
 namespace RedisNaruto.Internal;
 
-internal sealed class RedisClient : IRedisClient
+internal class RedisClient : IRedisClient
 {
     /// <summary>
     /// 授权锁
@@ -33,10 +33,12 @@ internal sealed class RedisClient : IRedisClient
     /// 当前连接的主机信息
     /// </summary>
     public string CurrentHost { get; }
+
     /// <summary>
     /// 当前连接的端口信息
     /// </summary>
     public int CurrentPort { get; }
+
     /// <summary>
     /// 是否授权
     /// </summary>
@@ -57,19 +59,23 @@ internal sealed class RedisClient : IRedisClient
     /// <summary>
     /// 
     /// </summary>
-    private Func<IRedisClient, Task> _disposeTask;
+    protected Func<IRedisClient, Task> DisposeTask;
+
+    protected RedisClient()
+    {
+    }
 
     /// <summary>
     /// 
     /// </summary>
-    private RedisClient(TcpClient tcpClient, ConnectionModel connectionModel,string currentHost,int currentPort,
+    public RedisClient(TcpClient tcpClient, ConnectionModel connectionModel, string currentHost, int currentPort,
         Func<IRedisClient, Task> disposeTask)
     {
         _tcpClient = tcpClient;
         CurrentHost = currentHost;
         CurrentPort = currentPort;
         ConnectionModel = connectionModel;
-        _disposeTask = disposeTask;
+        DisposeTask = disposeTask;
     }
 
 
@@ -85,20 +91,22 @@ internal sealed class RedisClient : IRedisClient
         [CallerArgumentExpression("hosts")] string hostParameter = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var current= connectionModel.Connection[Random.Next(connectionModel.Connection.Length)];
+        var current = connectionModel.Connection[Random.Next(connectionModel.Connection.Length)];
         var hostString = current.Split(":");
         if (!int.TryParse(hostString[1], out var port))
         {
             port = 6349;
         }
+
         //初始化tcp客户端
         var tcpClient = new TcpClient();
         //获取ip地址
         var ips = await Dns.GetHostAddressesAsync(hostString[0], cancellationToken);
         await tcpClient.ConnectAsync(ips, port,
             cancellationToken);
-        var currentHost = string.Join(',', ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
-        return new RedisClient(tcpClient, connectionModel,currentHost,port, disposeTask);
+        var currentHost = string.Join(',',
+            ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
+        return new RedisClient(tcpClient, connectionModel, currentHost, port, disposeTask);
     }
 
 
@@ -107,11 +115,11 @@ internal sealed class RedisClient : IRedisClient
         await this.DisposeCoreAsync(true);
     }
 
-    private async ValueTask DisposeCoreAsync(bool isDispose)
+    protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
         if (isDispose)
         {
-            await _disposeTask.Invoke(this);
+            await DisposeTask.Invoke(this);
         }
     }
 
@@ -122,7 +130,7 @@ internal sealed class RedisClient : IRedisClient
     {
         _tcpClient?.Dispose();
         _tcpClient = null;
-        _disposeTask = null;
+        DisposeTask = null;
         GC.SuppressFinalize(this);
     }
 
@@ -133,7 +141,7 @@ internal sealed class RedisClient : IRedisClient
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task<TResult> ExecuteAsync<TResult>(Command command)
+    public virtual async Task<TResult> ExecuteAsync<TResult>(Command command)
     {
         var stream =
             await GetRequestStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
@@ -147,7 +155,7 @@ internal sealed class RedisClient : IRedisClient
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task<TResult> ReadMessageAsync<TResult>()
+    public virtual async Task<TResult> ReadMessageAsync<TResult>()
     {
         var response = await _messageTransport.ReciveAsync(this._tcpClient.GetStream());
         if (response == default)
@@ -169,7 +177,7 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="command"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public async IAsyncEnumerable<TResult> ExecuteMoreResultAsync<TResult>(Command command)
+    public virtual async IAsyncEnumerable<TResult> ExecuteMoreResultAsync<TResult>(Command command)
     {
         var resultList = await ExecuteAsync<List<Object>>(command);
         var isStr = typeof(TResult) == typeof(string);
@@ -187,7 +195,7 @@ internal sealed class RedisClient : IRedisClient
     /// </summary>
     /// <param name="db"></param>
     /// <returns></returns>
-    public async Task<bool> SelectDb(int db)
+    public virtual async Task<bool> SelectDb(int db)
     {
         return (await ExecuteAsync<string>(new Command(RedisCommandName.Select, new Object[] {db}))) == "OK";
     }
@@ -196,7 +204,7 @@ internal sealed class RedisClient : IRedisClient
     /// 
     /// </summary>
     /// <returns></returns>
-    public async Task<bool> PingAsync()
+    public virtual async Task<bool> PingAsync()
     {
         return (await ExecuteAsync<string>(new Command(RedisCommandName.Ping, default))) == "PONG";
     }
@@ -225,7 +233,7 @@ internal sealed class RedisClient : IRedisClient
     /// <param name="userName"></param>
     /// <param name="password"></param>
     /// <returns></returns>
-    public async Task<bool> AuthAsync(string userName, string password)
+    public virtual async Task<bool> AuthAsync(string userName, string password)
     {
         if (userName.IsNullOrWhiteSpace())
             return (await ExecuteAsync<string>(new Command(RedisCommandName.Auth, new object[] {password}))) == "OK";
@@ -238,7 +246,7 @@ internal sealed class RedisClient : IRedisClient
     /// 退出
     /// </summary>
     /// <returns></returns>
-    public async Task<bool> QuitAsync()
+    public virtual async Task<bool> QuitAsync()
     {
         return (await ExecuteAsync<string>(new Command(RedisCommandName.Quit, default))) == "OK";
     }

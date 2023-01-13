@@ -16,6 +16,16 @@ public sealed class ConnectionModel
     public string[] Connection { get; set; }
 
     /// <summary>
+    /// 是否启用哨兵
+    /// </summary>
+    public bool IsEnableSentinel { get; set; }
+
+    /// <summary>
+    /// 主节点名称 用于哨兵
+    /// </summary>
+    public string MasterName { get; set; }
+
+    /// <summary>
     /// 用户名
     /// </summary>
     public string UserName { get; set; }
@@ -29,7 +39,7 @@ public sealed class ConnectionModel
     /// 数据存储库
     /// </summary>
     public int DataBase { get; set; }
-
+    
     /// <summary>
     /// 连接池
     /// </summary>

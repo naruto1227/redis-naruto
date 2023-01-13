@@ -161,4 +161,18 @@ internal static class RedisCommandName
     /// </summary>
     public const string Script = "SCRIPT";
     #endregion
+
+    #region Sentinel
+
+    /// <summary>
+    /// 哨兵命令
+    /// </summary>
+    public const string Sentinel = "SENTINEL";
+
+    #endregion
+
+    /// <summary>
+    /// 获取实例的角色信息 
+    /// </summary>
+    public const string Role = "ROLE";
 }

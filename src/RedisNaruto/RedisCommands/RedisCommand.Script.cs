@@ -83,7 +83,7 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await _redisClientPool.RentAsync(cancellationToken);
 
         var result = (client.ExecuteMoreResultAsync<int>(new Command(RedisCommandName.Script,
-            new string[1]
+            new object[1]
             {
                 "EXISTS"
             }.Union(sha).ToArray())).WithCancellation(cancellationToken));
