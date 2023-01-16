@@ -13,7 +13,7 @@ internal static class RedisCommandName
     /// 批量获取字符串
     /// </summary>
     public const string MGET = "MGET";
-    
+
     /// <summary>
     /// 获取字符串
     /// </summary>
@@ -82,6 +82,7 @@ internal static class RedisCommandName
     /// 覆盖字符串的值 从指定的偏移量开始
     /// </summary>
     public const string SetRange = "SETRANGE";
+
     #endregion
 
 
@@ -127,12 +128,12 @@ internal static class RedisCommandName
     /// 选择 db
     /// </summary>
     public const string Select = "SELECT";
-    
+
     /// <summary>
     /// Ping
     /// </summary>
     public const string Ping = "PING";
-    
+
     #endregion
 
     #region server
@@ -160,6 +161,7 @@ internal static class RedisCommandName
     /// 将script 存储到redis lua缓存中 返回 存储的sha值
     /// </summary>
     public const string Script = "SCRIPT";
+
     #endregion
 
     #region Sentinel
@@ -175,4 +177,19 @@ internal static class RedisCommandName
     /// 获取实例的角色信息 
     /// </summary>
     public const string Role = "ROLE";
+
+
+    #region tran
+
+    /// <summary>
+    /// 开启事务
+    /// </summary>
+    public const string Multi = "MULTI";
+
+    /// <summary>
+    /// 提交事务
+    /// </summary>
+    public const string Exec = "EXEC";
+
+    #endregion
 }
