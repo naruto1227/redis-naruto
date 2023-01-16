@@ -5,7 +5,7 @@ namespace RedisNaruto.Internal.Sentinels;
 /// <summary>
 /// 哨兵连接
 /// </summary>
-internal interface ISentinelConnection
+internal interface ISentinelConnection : IDisposable
 {
     /// <summary>
     /// 获取master节点信息

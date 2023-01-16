@@ -18,11 +18,11 @@ internal sealed class SentinelConnection : ISentinelConnection
     private readonly IMessageTransport _messageTransport = new MessageTransport();
 
     private static readonly Random Random = new Random();
-
+    
     /// <summary>
     /// 哨兵客户端
     /// </summary>
-    private static readonly TcpClient _sentinelTcpClient = new();
+    private TcpClient _sentinelTcpClient = new();
 
     /// <summary>
     /// 
@@ -81,5 +81,12 @@ internal sealed class SentinelConnection : ISentinelConnection
         }
 
         throw new RedisSentinelException("获取主节点异常");
+    }
+
+    public void Dispose()
+    {
+        _sentinelTcpClient?.Close();
+        _sentinelTcpClient = null;
+        GC.SuppressFinalize(this);
     }
 }

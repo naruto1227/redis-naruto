@@ -10,7 +10,7 @@ namespace RedisNaruto.Internal.Serialization;
 /// <summary>
 /// 
 /// </summary>
-internal sealed class Serializer : ISerializer
+public sealed class Serializer : ISerializer
 {
     public async Task<byte[]> SerializeAsync(object source)
     {

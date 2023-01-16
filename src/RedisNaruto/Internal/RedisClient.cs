@@ -22,7 +22,7 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// tcp 客户端
     /// </summary>
-    private TcpClient _tcpClient;
+    protected TcpClient TcpClient { get; set; }
 
     /// <summary>
     /// 
@@ -42,7 +42,7 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 是否授权
     /// </summary>
-    private bool _isAuth;
+    protected bool IsAuth { get; set; }
 
     /// <summary>
     /// 序列化
@@ -71,7 +71,7 @@ internal class RedisClient : IRedisClient
     public RedisClient(TcpClient tcpClient, ConnectionModel connectionModel, string currentHost, int currentPort,
         Func<IRedisClient, Task> disposeTask)
     {
-        _tcpClient = tcpClient;
+        TcpClient = tcpClient;
         CurrentHost = currentHost;
         CurrentPort = currentPort;
         ConnectionModel = connectionModel;
@@ -128,8 +128,8 @@ internal class RedisClient : IRedisClient
     /// </summary>
     public void Close()
     {
-        _tcpClient?.Dispose();
-        _tcpClient = null;
+        TcpClient?.Dispose();
+        TcpClient = null;
         DisposeTask = null;
         GC.SuppressFinalize(this);
     }
@@ -144,7 +144,7 @@ internal class RedisClient : IRedisClient
     public virtual async Task<TResult> ExecuteAsync<TResult>(Command command)
     {
         var stream =
-            await GetRequestStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
+            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await _messageTransport.SendAsync(stream, command.CombinArgs());
         return await ReadMessageAsync<TResult>();
     }
@@ -157,7 +157,7 @@ internal class RedisClient : IRedisClient
     /// <exception cref="InvalidOperationException"></exception>
     public virtual async Task<TResult> ReadMessageAsync<TResult>()
     {
-        var response = await _messageTransport.ReciveAsync(this._tcpClient.GetStream());
+        var response = await _messageTransport.ReciveAsync(this.TcpClient.GetStream());
         if (response == default)
         {
             return default;
@@ -214,13 +214,13 @@ internal class RedisClient : IRedisClient
     /// </summary>
     private async Task AuthAsync()
     {
-        if (!_isAuth)
+        if (!IsAuth)
         {
             using (await _authLock.LockAsync())
             {
-                if (!_isAuth)
+                if (!IsAuth)
                 {
-                    _isAuth = await AuthAsync(ConnectionModel.UserName, ConnectionModel.Password);
+                    IsAuth = await AuthAsync(ConnectionModel.UserName, ConnectionModel.Password);
                     await SelectDb(ConnectionModel.DataBase);
                 }
             }
@@ -252,16 +252,25 @@ internal class RedisClient : IRedisClient
     }
 
     /// <summary>
+    /// 重置
+    /// </summary>
+    /// <returns></returns>
+    public virtual Task ResetAsync(CancellationToken cancellationToken=default)
+    {
+        //todo ping当 ping不通的话，设置当前连接失效重新设置有效的连接,这里连接需要有对应的状态
+        return Task.CompletedTask;
+    }
+    /// <summary>
     /// 获取流
     /// </summary>
     /// <returns></returns>
-    private async Task<Stream> GetRequestStreamAsync(bool isAuth)
+    private async Task<Stream> GetStreamAsync(bool isAuth)
     {
         if (!isAuth)
         {
             await AuthAsync();
         }
 
-        return _tcpClient.GetStream();
+        return TcpClient.GetStream();
     }
 }

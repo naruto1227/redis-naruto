@@ -3,7 +3,7 @@ namespace RedisNaruto.Internal.Serialization;
 /// <summary>
 /// 序列化
 /// </summary>
-internal interface ISerializer
+public interface ISerializer
 {
     /// <summary>
     /// 序列化

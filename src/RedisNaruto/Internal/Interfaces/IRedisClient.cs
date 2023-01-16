@@ -73,6 +73,12 @@ internal interface IRedisClient : IAsyncDisposable
     Task<bool> QuitAsync();
 
     /// <summary>
+    /// 重置
+    /// </summary>
+    /// <returns></returns>
+    Task ResetAsync(CancellationToken cancellationToken=default);
+
+    /// <summary>
     /// 关闭
     /// </summary>
     void Close();
