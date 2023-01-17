@@ -91,7 +91,13 @@ internal sealed class MessageTransport : IMessageTransport
         //判断参数长度
         foreach (var item in args)
         {
-            var argBytes = await _serializer.SerializeAsync(item);
+            if (item is byte[] argBytes)
+            {
+            }
+            else
+            {
+                argBytes = await _serializer.SerializeAsync(item);
+            }
             await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
             await ms.WriteAsync(NewLine);
             await ms.WriteAsync(argBytes);
@@ -101,7 +107,7 @@ internal sealed class MessageTransport : IMessageTransport
         ms.Position = 0;
         await ms.CopyToAsync(stream);
     }
-    
+
     /// <summary>
     /// 读取行数据
     /// </summary>
@@ -175,5 +181,4 @@ internal sealed class MessageTransport : IMessageTransport
 
         return resultList;
     }
-    
 }
