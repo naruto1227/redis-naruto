@@ -1,6 +1,6 @@
 namespace RedisNaruto.Internal.Models;
 
-public struct HostPort
+internal struct HostPort
 {
     public HostPort(string host,int port)
     {
