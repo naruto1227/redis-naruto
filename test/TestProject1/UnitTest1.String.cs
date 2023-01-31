@@ -13,17 +13,6 @@ public partial class UnitTest1 : BaseUnit
     public UnitTest1(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-        var res = Type.GetTypeCode(typeof(UnitTest1));
-        var res1 = Type.GetTypeCode(typeof(string));
-        var res2 = Type.GetTypeCode(typeof(int));
-        var res3 = Type.GetTypeCode(typeof(double));
-        var res4 = Type.GetTypeCode(typeof(DateTime));
-        var res5 = Type.GetTypeCode(typeof(DateOnly));
-        var res6 = Type.GetTypeCode(typeof(byte));
-        var res7 = Type.GetTypeCode(typeof(byte[]));
-        object date = DateOnly.MaxValue;
-        var dateOnly = ((DateOnly) date).ToString("yyyy-MM-dd");
-        ;
     }
 
     [Fact]
@@ -43,7 +32,14 @@ public partial class UnitTest1 : BaseUnit
             Time = DateTime.Now
         });
     }
-
+    
+    [Fact]
+    public async Task Test_StringSetBytes()
+    {
+        var redisCommand = await GetRedisAsync();
+        await redisCommand.SetAsync("testbytes", Encoding.Default.GetBytes("hello word"));
+    }
+    
     [Fact]
     public async Task Test_StringMGet()
     {
@@ -53,6 +49,14 @@ public partial class UnitTest1 : BaseUnit
             "testobj",
             "testobj2"
         });
+        if (res!=null)
+        {
+            foreach (var VARIABLE in res)
+            {
+                _testOutputHelper.WriteLine(VARIABLE.ToString());
+            }
+        }
+
     }
 
     [Fact]

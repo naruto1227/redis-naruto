@@ -11,7 +11,16 @@ public class BaseUnit
                 "127.0.0.1:55000"
             },
             UserName = null,
-            Password = "redispw"
+            Password = "redispw",
+            
+            // Connection = new string[]
+            // {
+            //     "opendotnet.cn:26180"
+            // },
+            // UserName = null,
+            // Password = "redispw",
+            // IsEnableSentinel = true,
+            // MasterName = "mymaster"
         });
         return redisCommand;
     }
