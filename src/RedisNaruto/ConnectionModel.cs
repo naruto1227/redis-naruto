@@ -10,6 +10,7 @@ public sealed class ConnectionModel
         DataBase = 0;
         ConnectionPoolCount = Environment.ProcessorCount * 2;
     }
+
     /// <summary>
     /// 连接地址
     /// </summary>
@@ -19,6 +20,11 @@ public sealed class ConnectionModel
     /// 是否启用哨兵
     /// </summary>
     public bool IsEnableSentinel { get; set; }
+
+    /// <summary>
+    /// 是否启用集群
+    /// </summary>
+    public bool IsEnableCluster { get; set; }
 
     /// <summary>
     /// 主节点名称 用于哨兵
@@ -39,7 +45,7 @@ public sealed class ConnectionModel
     /// 数据存储库
     /// </summary>
     public int DataBase { get; set; }
-    
+
     /// <summary>
     /// 连接池
     /// </summary>

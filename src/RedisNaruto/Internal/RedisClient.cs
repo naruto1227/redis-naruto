@@ -233,7 +233,6 @@ internal class RedisClient : IRedisClient
         {
             return;
         }
-
         //设置连接状态无效
         ConnectionStateManage.SetInVaild(ConnectionId);
         //切换新的连接 这里需要把此连接设置成无效状态 

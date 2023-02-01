@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using RedisNaruto.Internal.Cluster;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Sentinels;
 
 namespace RedisNaruto.Internal;
@@ -43,6 +45,11 @@ internal class RedisClientFactory : IRedisClientFactory
             return await CreateSentinelClient(disposeTask, cancellationToken);
         }
 
+        if (_connectionModel.IsEnableCluster)
+        {
+            return await CreateClusterClient(disposeTask, cancellationToken);
+        }
+
         return await CreateSimpleClient(disposeTask, cancellationToken);
     }
 
@@ -51,6 +58,35 @@ internal class RedisClientFactory : IRedisClientFactory
     /// </summary>
     /// <returns></returns>
     private async Task<IRedisClient> CreateSimpleClient(Func<IRedisClient, Task> disposeTask,
+        CancellationToken cancellationToken)
+    {
+        var connectionInfo = await GetConnectionInfo(cancellationToken);
+        return new RedisClient(connectionInfo.connectionId, connectionInfo.tcpClient, _connectionModel,
+            connectionInfo.currentHost,
+            connectionInfo.port,
+            disposeTask);
+    }
+
+    /// <summary>
+    /// 创建集群客户端
+    /// </summary>
+    /// <returns></returns>
+    private async Task<IRedisClient> CreateClusterClient(Func<IRedisClient, Task> disposeTask,
+        CancellationToken cancellationToken)
+    {
+        var connectionInfo = await GetConnectionInfo(cancellationToken);
+        return new ClusterRedisClient(connectionInfo.connectionId, connectionInfo.tcpClient, _connectionModel,
+            connectionInfo.currentHost,
+            connectionInfo.port,
+            disposeTask);
+    }
+
+    /// <summary>
+    /// 获取连接信息
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task<(Guid connectionId, TcpClient tcpClient, string currentHost, int port)> GetConnectionInfo(
         CancellationToken cancellationToken)
     {
         var hostInfo = ConnectionStateManage.Get();
@@ -62,8 +98,8 @@ internal class RedisClientFactory : IRedisClientFactory
             cancellationToken);
         var currentHost = string.Join(',',
             ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
-        return new RedisClient(hostInfo.connectionId, tcpClient, _connectionModel, currentHost, hostInfo.hostPort.Port,
-            disposeTask);
+
+        return (hostInfo.connectionId, tcpClient, currentHost, hostInfo.hostPort.Port);
     }
 
     /// <summary>
