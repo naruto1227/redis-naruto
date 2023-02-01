@@ -62,7 +62,8 @@ internal class RedisClientFactory : IRedisClientFactory
             cancellationToken);
         var currentHost = string.Join(',',
             ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
-        return new RedisClient(tcpClient, _connectionModel, currentHost, hostInfo.hostPort.Port, disposeTask);
+        return new RedisClient(hostInfo.connectionId, tcpClient, _connectionModel, currentHost, hostInfo.hostPort.Port,
+            disposeTask);
     }
 
     /// <summary>
@@ -78,7 +79,7 @@ internal class RedisClientFactory : IRedisClientFactory
         await tcpClient.ConnectAsync(hostPort.Host, hostPort.Port,
             cancellationToken);
         var sentinelClient =
-            new SentinelRedisClient(tcpClient, _connectionModel, hostPort.Host, hostPort.Port, disposeTask);
+            new SentinelRedisClient(default, tcpClient, _connectionModel, hostPort.Host, hostPort.Port, disposeTask);
         //当不是master节点的时候重新走流程
         if (await sentinelClient.IsMaterAsync()) return sentinelClient;
         //等待100ms

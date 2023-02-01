@@ -14,9 +14,11 @@ internal class SentinelRedisClient : RedisClient
     /// <summary>
     /// 
     /// </summary>
-    public SentinelRedisClient(TcpClient tcpClient, ConnectionModel connectionModel, string currentHost,
+    public SentinelRedisClient(Guid connectionId, TcpClient tcpClient, ConnectionModel connectionModel,
+        string currentHost,
         int currentPort,
-        Func<IRedisClient, Task> disposeTask) : base(tcpClient, connectionModel, currentHost, currentPort, disposeTask)
+        Func<IRedisClient, Task> disposeTask) : base(connectionId, tcpClient, connectionModel, currentHost, currentPort,
+        disposeTask)
     {
         _sentinelConnection = new SentinelConnection(connectionModel.MasterName);
     }

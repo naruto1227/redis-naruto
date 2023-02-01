@@ -13,6 +13,11 @@ internal interface IRedisClient : IAsyncDisposable
     ConnectionModel ConnectionModel { get; }
 
     /// <summary>
+    /// 连接id
+    /// </summary>
+    Guid ConnectionId { get; }
+
+    /// <summary>
     /// 当前连接的主机信息
     /// </summary>
     string CurrentHost { get; }
@@ -76,7 +81,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// 重置
     /// </summary>
     /// <returns></returns>
-    Task ResetAsync(CancellationToken cancellationToken=default);
+    Task ResetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 关闭

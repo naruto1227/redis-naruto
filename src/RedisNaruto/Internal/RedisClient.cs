@@ -30,6 +30,11 @@ internal class RedisClient : IRedisClient
     public ConnectionModel ConnectionModel { get; }
 
     /// <summary>
+    /// 连接id
+    /// </summary>
+    public Guid ConnectionId { get; }
+
+    /// <summary>
     /// 当前连接的主机信息
     /// </summary>
     public string CurrentHost { get; }
@@ -61,14 +66,11 @@ internal class RedisClient : IRedisClient
     /// </summary>
     protected Func<IRedisClient, Task> DisposeTask;
 
-    protected RedisClient()
-    {
-    }
-
     /// <summary>
     /// 
     /// </summary>
-    public RedisClient(TcpClient tcpClient, ConnectionModel connectionModel, string currentHost, int currentPort,
+    public RedisClient(Guid connectionId, TcpClient tcpClient, ConnectionModel connectionModel, string currentHost,
+        int currentPort,
         Func<IRedisClient, Task> disposeTask)
     {
         TcpClient = tcpClient;
@@ -76,39 +78,8 @@ internal class RedisClient : IRedisClient
         CurrentPort = currentPort;
         ConnectionModel = connectionModel;
         DisposeTask = disposeTask;
+        ConnectionId = connectionId;
     }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <param name="hostParameter"></param>
-    /// <param name="connectionModel"></param>
-    /// <returns></returns>
-    internal static async Task<RedisClient> ConnectionAsync(ConnectionModel connectionModel,
-        Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default,
-        [CallerArgumentExpression("hosts")] string hostParameter = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        var current = connectionModel.Connection[Random.Next(connectionModel.Connection.Length)];
-        var hostString = current.Split(":");
-        if (!int.TryParse(hostString[1], out var port))
-        {
-            port = 6349;
-        }
-
-        //初始化tcp客户端
-        var tcpClient = new TcpClient();
-        //获取ip地址
-        var ips = await Dns.GetHostAddressesAsync(hostString[0], cancellationToken);
-        await tcpClient.ConnectAsync(ips, port,
-            cancellationToken);
-        var currentHost = string.Join(',',
-            ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
-        return new RedisClient(tcpClient, connectionModel, currentHost, port, disposeTask);
-    }
-
 
     public async ValueTask DisposeAsync()
     {
@@ -263,6 +234,8 @@ internal class RedisClient : IRedisClient
             return;
         }
 
+        //设置连接状态无效
+        ConnectionStateManage.SetInVaild(ConnectionId);
         //切换新的连接 这里需要把此连接设置成无效状态 
         var hostInfo = ConnectionStateManage.Get();
         IsAuth = false;
