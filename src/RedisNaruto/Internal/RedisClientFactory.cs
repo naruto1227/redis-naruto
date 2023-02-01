@@ -11,8 +11,6 @@ namespace RedisNaruto.Internal;
 /// </summary>
 internal class RedisClientFactory : IRedisClientFactory
 {
-    private static readonly Random Random = new Random();
-
     /// <summary>
     /// 
     /// </summary>
@@ -23,9 +21,10 @@ internal class RedisClientFactory : IRedisClientFactory
     public RedisClientFactory(ConnectionModel connectionModel)
     {
         _connectionModel = connectionModel;
+        ConnectionStateManage.Init(connectionModel.Connection);
         if (connectionModel.IsEnableSentinel)
         {
-            _sentinelConnection = new SentinelConnection(connectionModel.Connection, _connectionModel.MasterName);
+            _sentinelConnection = new SentinelConnection(_connectionModel.MasterName);
         }
     }
 
@@ -54,22 +53,16 @@ internal class RedisClientFactory : IRedisClientFactory
     private async Task<IRedisClient> CreateSimpleClient(Func<IRedisClient, Task> disposeTask,
         CancellationToken cancellationToken)
     {
-        var current = _connectionModel.Connection[Random.Next(_connectionModel.Connection.Length)];
-        var hostString = current.Split(":");
-        if (!int.TryParse(hostString[1], out var port))
-        {
-            port = 6349;
-        }
-
+        var hostInfo = ConnectionStateManage.Get();
         //初始化tcp客户端
         var tcpClient = new TcpClient();
         //获取ip地址
-        var ips = await Dns.GetHostAddressesAsync(hostString[0], cancellationToken);
-        await tcpClient.ConnectAsync(ips, port,
+        var ips = await Dns.GetHostAddressesAsync(hostInfo.hostPort.Host, cancellationToken);
+        await tcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
             cancellationToken);
         var currentHost = string.Join(',',
             ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
-        return new RedisClient(tcpClient, _connectionModel, currentHost, port, disposeTask);
+        return new RedisClient(tcpClient, _connectionModel, currentHost, hostInfo.hostPort.Port, disposeTask);
     }
 
     /// <summary>
@@ -89,7 +82,7 @@ internal class RedisClientFactory : IRedisClientFactory
         //当不是master节点的时候重新走流程
         if (await sentinelClient.IsMaterAsync()) return sentinelClient;
         //等待100ms
-        await Task.Delay(100,cancellationToken).ConfigureAwait(false);
+        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
         return await CreateSentinelClient(disposeTask, cancellationToken).ConfigureAwait(false);
     }
 }

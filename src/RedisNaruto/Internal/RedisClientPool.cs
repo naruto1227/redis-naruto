@@ -30,11 +30,6 @@ internal sealed class RedisClientPool : IRedisClientPool
     // /// </summary>
     // private readonly int WaitTime = 300;
 
-    /// <summary>
-    /// 连接信息
-    /// </summary>
-    private readonly ConnectionModel _connectionModel;
-
     private readonly IRedisClientFactory _redisClientFactory;
 
     /// <summary>
@@ -42,7 +37,6 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// </summary>
     public RedisClientPool(ConnectionModel connectionModel)
     {
-        _connectionModel = connectionModel;
         _maxCount = connectionModel.ConnectionPoolCount;
         _redisClientFactory = new RedisClientFactory(connectionModel);
         //todo 思考如何实现将空闲的客户端释放

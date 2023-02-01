@@ -12,12 +12,12 @@ namespace RedisNaruto.Internal;
 /// </summary>
 internal static class ConnectionStateManage
 {
-    public static ConcurrentDictionary<Guid, ConnectionState> _connectionStates;
+    private static ConcurrentDictionary<Guid, ConnectionState> _connectionStates = new();
 
     /// <summary>
     /// 锁
     /// </summary>
-    private static object _lock = new object();
+    private static object _lock = new();
 
     /// <summary>
     /// 初始化

@@ -255,11 +255,26 @@ internal class RedisClient : IRedisClient
     /// 重置
     /// </summary>
     /// <returns></returns>
-    public virtual Task ResetAsync(CancellationToken cancellationToken=default)
+    public virtual async Task ResetAsync(CancellationToken cancellationToken = default)
     {
-        //todo ping当 ping不通的话，设置当前连接失效重新设置有效的连接,这里连接需要有对应的状态
-        return Task.CompletedTask;
+        //检查连接是否有效
+        if (await this.PingAsync())
+        {
+            return;
+        }
+
+        //切换新的连接 这里需要把此连接设置成无效状态 
+        var hostInfo = ConnectionStateManage.Get();
+        IsAuth = false;
+        //释放连接
+        TcpClient.Dispose();
+        TcpClient = null;
+        //重新打开一个新的连接
+        var localClient = new TcpClient();
+        await localClient.ConnectAsync(hostInfo.hostPort.Host, hostInfo.hostPort.Port, cancellationToken);
+        TcpClient = localClient;
     }
+
     /// <summary>
     /// 获取流
     /// </summary>

@@ -16,18 +16,10 @@ internal sealed class SentinelConnection : ISentinelConnection
     /// 消息传输
     /// </summary>
     private readonly IMessageTransport _messageTransport = new MessageTransport();
-
-    private static readonly Random Random = new Random();
-    
     /// <summary>
     /// 哨兵客户端
     /// </summary>
     private TcpClient _sentinelTcpClient = new();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly string[] _sentinelConnections;
 
     /// <summary>
     /// 
@@ -37,11 +29,9 @@ internal sealed class SentinelConnection : ISentinelConnection
     /// <summary>
     /// 哨兵
     /// </summary>
-    /// <param name="sentinelConnections"></param>
     /// <param name="masterName"></param>
-    public SentinelConnection(string[] sentinelConnections, string masterName)
+    public SentinelConnection(string masterName)
     {
-        _sentinelConnections = sentinelConnections;
         _masterName = masterName;
     }
 
@@ -55,17 +45,10 @@ internal sealed class SentinelConnection : ISentinelConnection
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        //随机获取
-        var current = _sentinelConnections[Random.Next(_sentinelConnections.Length)];
-        var hostString = current.Split(":");
-        if (!int.TryParse(hostString[1], out var port))
-        {
-            port = 6349;
-        }
-
+        var hostInfo = ConnectionStateManage.Get();
         //获取ip地址
-        var ips = await Dns.GetHostAddressesAsync(hostString[0], cancellationToken);
-        await _sentinelTcpClient.ConnectAsync(ips, port,
+        var ips = await Dns.GetHostAddressesAsync(hostInfo.hostPort.Host, cancellationToken);
+        await _sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
             cancellationToken);
         //执行获取主节点地址
         await _messageTransport.SendAsync(_sentinelTcpClient.GetStream(), new object[]
