@@ -9,22 +9,18 @@ public sealed class ConnectionModel
     {
         DataBase = 0;
         ConnectionPoolCount = Environment.ProcessorCount * 2;
+        ServerType = ServerType.Standalone;
     }
+
+    /// <summary>
+    /// 服务类型
+    /// </summary>
+    public ServerType ServerType { get; set; }
 
     /// <summary>
     /// 连接地址
     /// </summary>
     public string[] Connection { get; set; }
-
-    /// <summary>
-    /// 是否启用哨兵
-    /// </summary>
-    public bool IsEnableSentinel { get; set; }
-
-    /// <summary>
-    /// 是否启用集群
-    /// </summary>
-    public bool IsEnableCluster { get; set; }
 
     /// <summary>
     /// 主节点名称 用于哨兵

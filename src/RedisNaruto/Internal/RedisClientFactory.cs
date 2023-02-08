@@ -24,7 +24,7 @@ internal class RedisClientFactory : IRedisClientFactory
     {
         _connectionModel = connectionModel;
         ConnectionStateManage.Init(connectionModel.Connection);
-        if (connectionModel.IsEnableSentinel)
+        if (connectionModel.ServerType==ServerType.Sentinel)
         {
             _sentinelConnection = new SentinelConnection(_connectionModel.MasterName);
         }
@@ -40,12 +40,12 @@ internal class RedisClientFactory : IRedisClientFactory
         Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_connectionModel.IsEnableSentinel)
+        if (_connectionModel.ServerType==ServerType.Sentinel)
         {
             return await CreateSentinelClient(disposeTask, cancellationToken);
         }
 
-        if (_connectionModel.IsEnableCluster)
+        if (_connectionModel.ServerType==ServerType.Cluster)
         {
             return await CreateClusterClient(disposeTask, cancellationToken);
         }
