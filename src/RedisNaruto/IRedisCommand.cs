@@ -1,4 +1,6 @@
 using RedisNaruto.RedisCommands;
+using RedisNaruto.RedisCommands.Pipe;
+using RedisNaruto.RedisCommands.Transaction;
 
 namespace RedisNaruto;
 
@@ -265,4 +267,11 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task WatchAsync(string[] keys, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 开启流水线
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IPipeRedisCommand> BeginPipeAsync(CancellationToken cancellationToken = default);
 }

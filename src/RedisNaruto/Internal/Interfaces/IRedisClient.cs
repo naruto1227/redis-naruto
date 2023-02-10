@@ -51,6 +51,12 @@ internal interface IRedisClient : IAsyncDisposable
     Task<TResult> ReadMessageAsync<TResult>();
 
     /// <summary>
+    /// 流水线消息读取
+    /// </summary>
+    /// <returns></returns>
+    Task<object[]> PipeReadMessageAsync();
+
+    /// <summary>
     /// 选择 db库
     /// </summary>
     /// <param name="db"></param>
@@ -87,4 +93,14 @@ internal interface IRedisClient : IAsyncDisposable
     /// 关闭
     /// </summary>
     void Close();
+
+    /// <summary>
+    /// 开启流水线
+    /// </summary>
+    void BeginPipe();
+
+    /// <summary>
+    /// 结束流水线
+    /// </summary>
+    void EndPipe();
 }

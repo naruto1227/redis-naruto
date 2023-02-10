@@ -23,19 +23,19 @@ internal class Command
     /// <summary>
     /// 参数
     /// </summary>
-    public object[] Args { get; }
+    private object[] Args { get; }
+
     /// <summary>
     /// 组合参数
     /// </summary>
     /// <returns></returns>
-
     internal object[] CombinArgs()
     {
-        var res = new object[(Args?.Length??0) + 1];
+        var res = new object[(Args?.Length ?? 0) + 1];
         res[0] = Cmd;
-        if (Args!=null && Args.Length>0)
+        if (Args is {Length: > 0})
         {
-            for (int i = 0; i < Args.Length; i++)
+            for (var i = 0; i < Args.Length; i++)
             {
                 res[i + 1] = Args[i];
             }

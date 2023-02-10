@@ -66,6 +66,34 @@ internal class RedisClient : IRedisClient
     /// </summary>
     protected Func<IRedisClient, Task> DisposeTask;
 
+
+    /// <summary>
+    ///是否开启流水线
+    /// </summary>
+    private bool _isBeginPipe = false;
+
+    /// <summary>
+    /// 流水线命令数
+    /// </summary>
+    private int _pipeCommand = 0;
+
+    /// <summary>
+    /// 开启流水线
+    /// </summary>
+    public void BeginPipe()
+    {
+        _isBeginPipe = true;
+    }
+
+    /// <summary>
+    /// 结束流水线
+    /// </summary>
+    public void EndPipe()
+    {
+        Interlocked.Exchange(ref _pipeCommand, 0);
+        _isBeginPipe = false;
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -117,7 +145,35 @@ internal class RedisClient : IRedisClient
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await _messageTransport.SendAsync(stream, command.CombinArgs());
+        //判断是否开启了 流水线 并且 不是在授权的方法中调用
+        if (_isBeginPipe &&
+            _authLock.CurrentCount != 0)
+        {
+            Interlocked.Increment(ref _pipeCommand);
+            return default;
+        }
+
         return await ReadMessageAsync<TResult>();
+    }
+
+    /// <summary>
+    /// 流水线消息读取
+    /// </summary>
+    /// <returns></returns>
+    public async Task<object[]> PipeReadMessageAsync()
+    {
+        if (_pipeCommand <= 0)
+        {
+            return default;
+        }
+
+        var result = new object[_pipeCommand];
+        for (var i = 0; i < _pipeCommand; i++)
+        {
+            result[i] = await ReadMessageAsync<object>();
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -157,6 +213,7 @@ internal class RedisClient : IRedisClient
         {
             yield break;
         }
+
         var isStr = typeof(TResult) == typeof(string);
         foreach (var item in resultList)
         {
