@@ -5,11 +5,37 @@ namespace RedisNaruto.RedisCommands;
 
 public partial class RedisCommand : IRedisCommand
 {
-    private IRedisClientPool _redisClientPool;
+    internal IRedisClientPool _redisClientPool;
+
+    internal IRedisClient _redisClient;
+
+    protected RedisCommand()
+    {
+    }
 
     private RedisCommand(IRedisClientPool redisClientPool)
     {
         _redisClientPool = redisClientPool;
+    }
+
+    internal void ChangeRedisClient(IRedisClient redisClient)
+    {
+        _redisClient = redisClient;
+    }
+
+
+    /// <summary>
+    /// 获取redis客户端
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    internal async Task<IRedisClient> GetRedisClient(CancellationToken cancellationToken)
+    {
+        if (_redisClient != default)
+        {
+            return _redisClient;
+        }
+        return await _redisClientPool.RentAsync(cancellationToken);
     }
 
     /// <summary>
@@ -23,10 +49,19 @@ public partial class RedisCommand : IRedisCommand
         return new ValueTask<RedisCommand>(redisCommand);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         //todo 
         // return _redisClient.DisposeAsync();
+        await DisposeCoreAsync(true);
+    }
+
+    protected virtual ValueTask DisposeCoreAsync(bool isDispose)
+    {
+        if (isDispose)
+        {
+        }
+
         return new ValueTask();
     }
 }

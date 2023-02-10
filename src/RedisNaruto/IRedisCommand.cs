@@ -1,3 +1,5 @@
+using RedisNaruto.RedisCommands;
+
 namespace RedisNaruto;
 
 /// <summary>
@@ -54,6 +56,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> SetRangeAsync(string key, long offset, string value,
         CancellationToken cancellationToken = default);
+
     /// <summary>
     /// 查询字符串
     /// </summary>
@@ -104,6 +107,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<long> IncrByAsync(string key, long val = 1, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// 查询指定的键值 如果存在就删除
     /// </summary>
@@ -151,6 +155,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<long> LcsWithLenAsync(string key1, string key2, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// 发布消息
     /// </summary>
@@ -237,4 +242,11 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<bool>> ScriptExistsAsync(string[] sha,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 开启事务
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ITransactionRedisCommand> MultiAsync(CancellationToken cancellationToken = default);
 }

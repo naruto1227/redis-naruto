@@ -16,7 +16,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<int> PublishAsync(string topic, string message, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await _redisClientPool.RentAsync(cancellationToken);
+        await using var client = await GetRedisClient(cancellationToken);
         var result =
             await client.ExecuteAsync<int>(new Command(RedisCommandName.Pub, new object[]
             {
@@ -42,7 +42,7 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         // await using var client = await _redisClientPool.RentAsync();
-        _subscribeClient = await _redisClientPool.RentAsync(cancellationToken);
+        _subscribeClient = await GetRedisClient(cancellationToken);
         //订阅消息
         _ = await _subscribeClient.ExecuteAsync<object>(new Command(RedisCommandName.Sub, topics));
         while (!cancellationToken.IsCancellationRequested)

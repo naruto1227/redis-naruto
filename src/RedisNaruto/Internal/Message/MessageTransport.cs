@@ -98,6 +98,7 @@ internal sealed class MessageTransport : IMessageTransport
             {
                 argBytes = await _serializer.SerializeAsync(item);
             }
+
             await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
             await ms.WriteAsync(NewLine);
             await ms.WriteAsync(argBytes);
@@ -155,6 +156,12 @@ internal sealed class MessageTransport : IMessageTransport
             var head = (char) bytes[0];
             switch (head)
             {
+                case RespMessage.SimpleString:
+                {
+                    var result = ReadLine(stream);
+                    resultList.Add(result);
+                    break;
+                }
                 case RespMessage.Number:
                 {
                     var result = ReadLine(stream).ToLong();
@@ -173,6 +180,13 @@ internal sealed class MessageTransport : IMessageTransport
 
                     //读取结果
                     var result = ReadLine(stream);
+                    resultList.Add(result);
+                    break;
+                }
+                //数组
+                case RespMessage.ArrayString:
+                {
+                    var result = await ReadMLineAsync(stream);
                     resultList.Add(result);
                     break;
                 }

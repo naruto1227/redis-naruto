@@ -25,7 +25,7 @@ public partial class RedisCommand : IRedisCommand
             script,
             keys.Length
         }.Union(keys).Union(argvs).ToArray();
-        await using var client = await _redisClientPool.RentAsync(cancellationToken);
+        await using var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync<object>(new Command(RedisCommandName.Eval, param));
     }
 
@@ -48,7 +48,7 @@ public partial class RedisCommand : IRedisCommand
             sha,
             keys.Length
         }.Union(keys).Union(argvs).ToArray();
-        await using var client = await _redisClientPool.RentAsync(cancellationToken);
+        await using var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync<object>(new Command(RedisCommandName.EvalSha, param));
     }
 
@@ -62,7 +62,7 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await _redisClientPool.RentAsync(cancellationToken);
+        await using var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync<string>(new Command(RedisCommandName.Script, new object[]
         {
             "LOAD",
@@ -80,7 +80,7 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await _redisClientPool.RentAsync(cancellationToken);
+        await using var client = await GetRedisClient(cancellationToken);
 
         var result = (client.ExecuteMoreResultAsync<int>(new Command(RedisCommandName.Script,
             new object[1]

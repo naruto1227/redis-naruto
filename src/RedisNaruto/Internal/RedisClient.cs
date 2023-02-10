@@ -129,17 +129,19 @@ internal class RedisClient : IRedisClient
     public virtual async Task<TResult> ReadMessageAsync<TResult>()
     {
         var response = await _messageTransport.ReciveAsync(this.TcpClient.GetStream());
-        if (response == default)
+        switch (response)
         {
-            return default;
+            case null:
+            case InternalConsts.TranQueuedResult: //如果是处于事务中的状态的话 直接返回默认值
+                return default;
+            default:
+                return response switch
+                {
+                    TResult result => result,
+                    string obj => await _serializer.DeserializeAsync<TResult>(obj.ToEncode()),
+                    _ => throw new InvalidOperationException()
+                };
         }
-
-        return response switch
-        {
-            TResult result => result,
-            string obj => await _serializer.DeserializeAsync<TResult>(obj.ToEncode()),
-            _ => throw new InvalidOperationException()
-        };
     }
 
     /// <summary>
@@ -151,6 +153,10 @@ internal class RedisClient : IRedisClient
     public virtual async IAsyncEnumerable<TResult> ExecuteMoreResultAsync<TResult>(Command command)
     {
         var resultList = await ExecuteAsync<List<Object>>(command);
+        if (resultList == null)
+        {
+            yield break;
+        }
         var isStr = typeof(TResult) == typeof(string);
         foreach (var item in resultList)
         {
@@ -233,6 +239,7 @@ internal class RedisClient : IRedisClient
         {
             return;
         }
+
         //设置连接状态无效
         ConnectionStateManage.SetInVaild(ConnectionId);
         //切换新的连接 这里需要把此连接设置成无效状态 
