@@ -259,6 +259,7 @@ public interface IRedisCommand : IAsyncDisposable
 
     /// <summary>
     /// 监视指定的 key,如果 之后key的值被修改了， 则影响事务的exec 命令执行失败 返回null
+    /// https://redis.io/docs/manual/transactions/
     /// </summary>
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
