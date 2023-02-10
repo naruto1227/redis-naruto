@@ -191,5 +191,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string Exec = "EXEC";
 
+    /// <summary>
+    /// 事务丢弃
+    /// </summary>
+    public const string DisCard = "DISCARD";
+
     #endregion
 }

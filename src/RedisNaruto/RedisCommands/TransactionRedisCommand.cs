@@ -26,6 +26,17 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
         return await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.Exec, default));
     }
 
+    /// <summary>
+    /// 取消事务
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    public async Task DiscardAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        _ = await client.ExecuteAsync<object>(new Command(RedisCommandName.DisCard, default));
+    }
+
     protected override async ValueTask DisposeCoreAsync(bool isDispose)
     {
         await base.DisposeCoreAsync(isDispose);
