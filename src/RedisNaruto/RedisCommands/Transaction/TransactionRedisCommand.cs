@@ -22,7 +22,7 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
     public async Task<List<object>> ExecAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
+        var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.Exec, default));
     }
 
@@ -33,7 +33,7 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
     public async Task DiscardAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
+        var client = await GetRedisClient(cancellationToken);
         _ = await client.ExecuteAsync<object>(new Command(RedisCommandName.DisCard, default));
     }
 }
