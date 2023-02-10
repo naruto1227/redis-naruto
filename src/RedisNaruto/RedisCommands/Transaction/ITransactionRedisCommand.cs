@@ -1,4 +1,4 @@
-namespace RedisNaruto;
+namespace RedisNaruto.RedisCommands.Transaction;
 
 public interface ITransactionRedisCommand : IRedisCommand
 {

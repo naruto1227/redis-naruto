@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.RedisCommands.Transaction;
 
 namespace RedisNaruto.RedisCommands;
 
