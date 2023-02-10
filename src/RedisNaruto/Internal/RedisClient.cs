@@ -78,6 +78,27 @@ internal class RedisClient : IRedisClient
     private int _pipeCommand = 0;
 
     /// <summary>
+    /// 是否开启事务
+    /// </summary>
+    private bool isBeginTran = false;
+
+    /// <summary>
+    /// 开启事务
+    /// </summary>
+    public void BeginTran()
+    {
+        isBeginTran = true;
+    }
+
+    /// <summary>
+    /// 结束事务
+    /// </summary>
+    private void EndTran()
+    {
+        isBeginTran = false;
+    }
+
+    /// <summary>
     /// 开启流水线
     /// </summary>
     public void BeginPipe()
@@ -116,7 +137,7 @@ internal class RedisClient : IRedisClient
 
     protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
-        if (isDispose)
+        if (isDispose && !isBeginTran && !_isBeginPipe)
         {
             await DisposeTask.Invoke(this);
         }
@@ -142,6 +163,17 @@ internal class RedisClient : IRedisClient
     /// <exception cref="InvalidOperationException"></exception>
     public virtual async Task<TResult> ExecuteAsync<TResult>(Command command)
     {
+        //开启结束事务
+        switch (command.Cmd)
+        {
+            case RedisCommandName.Multi:
+                this.BeginTran();
+                break;
+            case RedisCommandName.Exec or RedisCommandName.DisCard:
+                this.EndTran();
+                break;
+        }
+
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await _messageTransport.SendAsync(stream, command.CombinArgs());
