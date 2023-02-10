@@ -196,5 +196,16 @@ internal static class RedisCommandName
     /// </summary>
     public const string DisCard = "DISCARD";
 
+    /// <summary>
+    /// 标记要监视的给定键以进行有条件的 交易执行。
+    /// </summary>
+    public const string Watch = "WATCH";
+
+    /// <summary>
+    /// 刷新所有先前监视的交易密钥。
+    /// 如果您调用EXECor DISCARD，则无需手动调用UNWATCH.
+    /// </summary>
+    public const string UnWatch = "UNWATCH";
+
     #endregion
 }

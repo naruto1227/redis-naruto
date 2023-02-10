@@ -249,4 +249,19 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<ITransactionRedisCommand> MultiAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 取消key的监视
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UnWatchAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 监视指定的 key,如果 之后key的值被修改了， 则影响事务的exec 命令执行失败 返回null
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task WatchAsync(string[] keys, CancellationToken cancellationToken = default);
 }
