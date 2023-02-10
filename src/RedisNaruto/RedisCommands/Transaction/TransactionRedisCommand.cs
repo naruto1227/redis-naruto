@@ -50,10 +50,4 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         _ = await client.ExecuteAsync<string>(new Command(RedisCommandName.Watch, keys));
     }
-
-    protected override async ValueTask DisposeCoreAsync(bool isDispose)
-    {
-        await base.DisposeCoreAsync(isDispose);
-        await _redisClientPool.ReturnAsync(_redisClient);
-    }
 }

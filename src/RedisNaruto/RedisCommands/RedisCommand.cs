@@ -35,6 +35,7 @@ public partial class RedisCommand : IRedisCommand
         {
             return _redisClient;
         }
+
         return await _redisClientPool.RentAsync(cancellationToken);
     }
 
@@ -51,17 +52,16 @@ public partial class RedisCommand : IRedisCommand
 
     public async ValueTask DisposeAsync()
     {
-        //todo 
-        // return _redisClient.DisposeAsync();
         await DisposeCoreAsync(true);
+        GC.SuppressFinalize(this);
     }
 
-    protected virtual ValueTask DisposeCoreAsync(bool isDispose)
+    protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
-        if (isDispose)
+        if (isDispose && _redisClient != default)
         {
+            await _redisClientPool.ReturnAsync(_redisClient);
+            _redisClient = null;
         }
-
-        return new ValueTask();
     }
 }
