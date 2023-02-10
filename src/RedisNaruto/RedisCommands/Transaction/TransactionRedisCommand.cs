@@ -36,18 +36,4 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         _ = await client.ExecuteAsync<object>(new Command(RedisCommandName.DisCard, default));
     }
-
-    public async Task UnWatchAsync(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync<string>(new Command(RedisCommandName.UnWatch, default));
-    }
-
-    public async Task WatchAsync(string[] keys, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync<string>(new Command(RedisCommandName.Watch, keys));
-    }
 }
