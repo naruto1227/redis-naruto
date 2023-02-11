@@ -11,7 +11,7 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
 {
     internal TransactionRedisCommand(IRedisClientPool redisClientPool)
     {
-        _redisClientPool = redisClientPool;
+        RedisClientPool = redisClientPool;
     }
 
     /// <summary>

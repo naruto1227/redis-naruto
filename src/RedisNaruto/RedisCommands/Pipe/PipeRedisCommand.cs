@@ -6,7 +6,7 @@ public class PipeRedisCommand : RedisCommand, IPipeRedisCommand
 {
     internal PipeRedisCommand(IRedisClientPool redisClientPool)
     {
-        _redisClientPool = redisClientPool;
+        RedisClientPool = redisClientPool;
     }
 
     public async Task<object[]> EndPipeAsync(CancellationToken cancellationToken = default)
@@ -21,6 +21,6 @@ public class PipeRedisCommand : RedisCommand, IPipeRedisCommand
     protected override async ValueTask DisposeCoreAsync(bool isDispose)
     {
         await base.DisposeCoreAsync(isDispose);
-        await _redisClientPool.ReturnAsync(_redisClient);
+        await RedisClientPool.ReturnAsync(RedisClient);
     }
 }

@@ -5,9 +5,9 @@ namespace RedisNaruto.RedisCommands;
 
 public partial class RedisCommand : IRedisCommand
 {
-    internal IRedisClientPool _redisClientPool;
+    internal IRedisClientPool RedisClientPool;
 
-    internal IRedisClient _redisClient;
+    internal IRedisClient RedisClient;
 
     protected RedisCommand()
     {
@@ -15,12 +15,12 @@ public partial class RedisCommand : IRedisCommand
 
     private RedisCommand(IRedisClientPool redisClientPool)
     {
-        _redisClientPool = redisClientPool;
+        RedisClientPool = redisClientPool;
     }
 
-    internal void ChangeRedisClient(IRedisClient redisClient)
+    private void ChangeRedisClient(IRedisClient redisClient)
     {
-        _redisClient = redisClient;
+        RedisClient = redisClient;
     }
 
 
@@ -31,12 +31,12 @@ public partial class RedisCommand : IRedisCommand
     /// <returns></returns>
     internal async Task<IRedisClient> GetRedisClient(CancellationToken cancellationToken)
     {
-        if (_redisClient != default)
+        if (RedisClient != default)
         {
-            return _redisClient;
+            return RedisClient;
         }
 
-        return await _redisClientPool.RentAsync(cancellationToken);
+        return await RedisClientPool.RentAsync(cancellationToken);
     }
 
     /// <summary>
@@ -58,10 +58,10 @@ public partial class RedisCommand : IRedisCommand
 
     protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
-        if (isDispose && _redisClient != default)
+        if (isDispose && RedisClient != default)
         {
-            await _redisClientPool.ReturnAsync(_redisClient);
-            _redisClient = null;
+            await RedisClientPool.ReturnAsync(RedisClient);
+            RedisClient = null;
         }
     }
 }

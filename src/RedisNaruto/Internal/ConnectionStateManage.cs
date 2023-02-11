@@ -12,7 +12,7 @@ namespace RedisNaruto.Internal;
 /// </summary>
 internal static class ConnectionStateManage
 {
-    private static ConcurrentDictionary<Guid, ConnectionState> _connectionStates = new();
+    private static readonly ConcurrentDictionary<Guid, ConnectionState> _connectionStates = new();
 
     /// <summary>
     /// 锁
@@ -23,7 +23,7 @@ internal static class ConnectionStateManage
     /// 初始化
     /// </summary>
     /// <param name="connections"></param>
-    public static void Init(string[] connections)
+    public static void Init(IEnumerable<string> connections)
     {
         if (_connectionStates is {Count: > 0})
         {
