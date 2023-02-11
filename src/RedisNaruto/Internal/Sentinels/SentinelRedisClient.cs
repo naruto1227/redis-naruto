@@ -6,10 +6,7 @@ namespace RedisNaruto.Internal.Sentinels;
 
 internal class SentinelRedisClient : RedisClient
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly ISentinelConnection _sentinelConnection;
+    private readonly string _masterName;
 
     /// <summary>
     /// 
@@ -20,7 +17,7 @@ internal class SentinelRedisClient : RedisClient
         Func<IRedisClient, Task> disposeTask) : base(connectionId, tcpClient, connectionModel, currentHost, currentPort,
         disposeTask)
     {
-        _sentinelConnection = new SentinelConnection(connectionModel.MasterName);
+        _masterName = connectionModel.MasterName;
     }
 
     /// <summary>
@@ -48,7 +45,7 @@ internal class SentinelRedisClient : RedisClient
     public override async Task ResetAsync(CancellationToken cancellationToken = default)
     {
         //判断master库 是否切换
-        var hostPort = await _sentinelConnection.GetMaserHostPort(cancellationToken);
+        var hostPort = await SentinelConnection.GetMaserAddressAsync(_masterName, cancellationToken);
         if (this.CurrentHost == hostPort.Host && this.CurrentPort == hostPort.Port)
         {
             return;

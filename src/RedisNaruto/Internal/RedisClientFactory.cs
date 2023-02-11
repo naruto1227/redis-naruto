@@ -13,21 +13,12 @@ namespace RedisNaruto.Internal;
 /// </summary>
 internal class RedisClientFactory : IRedisClientFactory
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly ISentinelConnection _sentinelConnection;
-
     private readonly ConnectionModel _connectionModel;
 
     public RedisClientFactory(ConnectionModel connectionModel)
     {
         _connectionModel = connectionModel;
         ConnectionStateManage.Init(connectionModel.Connection);
-        if (connectionModel.ServerType==ServerType.Sentinel)
-        {
-            _sentinelConnection = new SentinelConnection(_connectionModel.MasterName);
-        }
     }
 
     /// <summary>
@@ -104,7 +95,7 @@ internal class RedisClientFactory : IRedisClientFactory
     private async Task<IRedisClient> CreateSentinelClient(Func<IRedisClient, Task> disposeTask,
         CancellationToken cancellationToken)
     {
-        var hostPort = await _sentinelConnection.GetMaserHostPort(cancellationToken);
+        var hostPort = await SentinelConnection.GetMaserAddressAsync(_connectionModel.MasterName, cancellationToken);
         //初始化tcp客户端
         var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(hostPort.Host, hostPort.Port,
