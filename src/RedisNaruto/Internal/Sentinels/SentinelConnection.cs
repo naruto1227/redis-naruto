@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.ObjectPool;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
@@ -17,9 +18,14 @@ internal static class SentinelConnection
     /// </summary>
     private static readonly IMessageTransport MessageTransport = new MessageTransport();
 
+    private static readonly ObjectPool<TcpClient> ObjectPool;
+
     static SentinelConnection()
     {
         //初始化
+        ObjectPool = new DefaultObjectPool<TcpClient>(new DefaultPooledObjectPolicy<TcpClient>()
+        {
+        });
     }
 
     /// <summary>
@@ -36,22 +42,35 @@ internal static class SentinelConnection
         var hostInfo = ConnectionStateManage.Get();
         //获取ip地址
         var ips = await Dns.GetHostAddressesAsync(hostInfo.hostPort.Host, cancellationToken);
-        using var sentinelTcpClient = new TcpClient();
-        await sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
-            cancellationToken);
-        //执行获取主节点地址
-        await MessageTransport.SendAsync(sentinelTcpClient.GetStream(), new object[]
+        TcpClient sentinelTcpClient = null;
+        try
         {
-            RedisCommandName.Sentinel,
-            "get-master-addr-by-name",
-            // "sentinels",
-            // "master",
-            masterName
-        });
-        var result = await MessageTransport.ReciveAsync(sentinelTcpClient.GetStream());
-        if (result is List<object> list)
+            sentinelTcpClient = ObjectPool.Get();
+            await sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
+                cancellationToken);
+            //执行获取主节点地址
+            await MessageTransport.SendAsync(sentinelTcpClient.GetStream(), new object[]
+            {
+                RedisCommandName.Sentinel,
+                "get-master-addr-by-name",
+                // "sentinels",
+                // "master",
+                masterName
+            });
+            var result = await MessageTransport.ReciveAsync(sentinelTcpClient.GetStream());
+            if (result is List<object> list)
+            {
+                return new HostPort(list[0].ToString(), list[1].ToString().ToInt());
+            }
+        }
+        catch (Exception e)
         {
-            return new HostPort(list[0].ToString(), list[1].ToString().ToInt());
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            ObjectPool.Return(sentinelTcpClient!);
         }
 
         throw new RedisSentinelException("获取主节点异常");
