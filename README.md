@@ -10,12 +10,11 @@ c#版本的redis客户端
 - Lua
 - tran
 - pipelining
-### todo
-- 余下命令
 - 哨兵
 - 集群
+### todo
+- 余下命令
 - function
 - 资源释放
 - 减少哨兵的连接
 - 哨兵连接池？
-- 连接状态管理
