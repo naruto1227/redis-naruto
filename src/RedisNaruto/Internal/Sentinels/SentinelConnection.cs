@@ -46,8 +46,18 @@ internal static class SentinelConnection
         try
         {
             sentinelTcpClient = ObjectPool.Get();
-            await sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
-                cancellationToken);
+            if (sentinelTcpClient.Connected && !await sentinelTcpClient.IsVaildAsync())
+            {
+                sentinelTcpClient = new TcpClient();
+                await sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
+                    cancellationToken);
+            }
+            if (!sentinelTcpClient.Connected)
+            {
+                await sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
+                    cancellationToken);
+            }
+
             //执行获取主节点地址
             await MessageTransport.SendAsync(sentinelTcpClient.GetStream(), new object[]
             {
@@ -74,5 +84,26 @@ internal static class SentinelConnection
         }
 
         throw new RedisSentinelException("获取主节点异常");
+    }
+
+    /// <summary>
+    /// 是否有效
+    /// </summary>
+    /// <param name="tcpClient"></param>
+    /// <returns></returns>
+    private static async Task<bool> IsVaildAsync(this TcpClient tcpClient)
+    {
+        //ping
+        await MessageTransport.SendAsync(tcpClient.GetStream(), new object[]
+        {
+            "ping"
+        });
+        var result = await MessageTransport.ReciveAsync(tcpClient.GetStream());
+        if (result != null && !string.Equals(result.ToString(), "PONG", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
     }
 }
