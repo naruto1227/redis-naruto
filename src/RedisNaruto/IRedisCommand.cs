@@ -274,4 +274,41 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IPipeRedisCommand> BeginPipeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash删除
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="fields"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> HDelAsync(string key, string[] fields, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash存储
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="fields"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> HSetAsync(string key, Dictionary<string, object> fields,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash存在
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="field"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> HExistsAsync(string key, string field, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash获取
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="field"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> HGetAsync(string key, string field, CancellationToken cancellationToken = default);
 }

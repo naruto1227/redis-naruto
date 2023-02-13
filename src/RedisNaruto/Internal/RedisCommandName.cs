@@ -208,4 +208,28 @@ internal static class RedisCommandName
     public const string UnWatch = "UNWATCH";
 
     #endregion
+
+    #region hash
+
+    /// <summary>
+    /// 删除hash
+    /// </summary>
+    public const string HDel = "HDEL";
+
+    /// <summary>
+    /// hash存储
+    /// </summary>
+    public const string HSet = "HSET";
+
+    /// <summary>
+    /// hash是否存在
+    /// </summary>
+    public const string HExists = "HEXISTS";
+
+    /// <summary>
+    /// hash获取
+    /// </summary>
+    public const string HGet = "HGET";
+
+    #endregion
 }
