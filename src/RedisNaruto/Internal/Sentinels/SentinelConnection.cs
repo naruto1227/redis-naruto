@@ -48,6 +48,8 @@ internal static class SentinelConnection
             sentinelTcpClient = ObjectPool.Get();
             if (sentinelTcpClient.Connected && !await sentinelTcpClient.IsVaildAsync())
             {
+                var localSentinelTcpClient = sentinelTcpClient;
+                localSentinelTcpClient.Dispose();
                 sentinelTcpClient = new TcpClient();
                 await sentinelTcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
                     cancellationToken);
