@@ -269,5 +269,15 @@ internal static class RedisCommandName
     /// </summary>
     public const string HRandField = "HRANDFIELD";
 
+    /// <summary>
+    /// 获取hash的所有值
+    /// </summary>
+    public const string HVals = "HVALS";
+
+    /// <summary>
+    /// 获取hash 字段对应值的长度
+    /// </summary>
+    public const string HStrLen = "HSTRLEN";
+
     #endregion
 }

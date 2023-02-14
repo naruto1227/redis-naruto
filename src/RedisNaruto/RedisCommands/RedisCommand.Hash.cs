@@ -243,4 +243,54 @@ public partial class RedisCommand : IRedisCommand
                 count
             })).ToListAsync();
     }
+
+    /// <summary>
+    /// 获取hash的值信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<string>> HValsAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace())
+        {
+            return default;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HVals,
+            new object[]
+            {
+                key,
+            })).ToListAsync();
+    }
+
+    /// <summary>
+    /// 获取hash字段对应值的长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    public async Task<long> HStrLenAsync(string key, string field,
+        CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace() || field.IsNullOrWhiteSpace())
+        {
+            return default;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        return await client.ExecuteAsync<long>(new Command(RedisCommandName.HStrLen,
+            new object[]
+            {
+                key,
+                field
+            }));
+    }
 }

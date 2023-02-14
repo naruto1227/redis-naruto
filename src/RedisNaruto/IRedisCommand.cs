@@ -379,4 +379,23 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<string>> HRandFieldAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 获取hash的值信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<string>> HValsAsync(string key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 获取hash字段对应值的长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    Task<long> HStrLenAsync(string key, string field,
+        CancellationToken cancellationToken = default);
 }
