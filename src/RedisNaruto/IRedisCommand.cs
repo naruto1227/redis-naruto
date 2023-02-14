@@ -320,4 +320,15 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<Dictionary<string, string>> HGetAllAsync(string key,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash 递增
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="field"></param>
+    /// <param name="increment">递增的值</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> HIncrByAsync(string key, string field, long increment = 1,
+        CancellationToken cancellationToken = default);
 }

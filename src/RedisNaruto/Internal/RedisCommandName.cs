@@ -237,5 +237,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string HGetAll = "HGETALL";
 
+    /// <summary>
+    /// 递增
+    /// </summary>
+    public const string HIncrBy = "HINCRBY";
+
     #endregion
 }

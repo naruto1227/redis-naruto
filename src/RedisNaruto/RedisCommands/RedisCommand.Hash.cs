@@ -131,4 +131,25 @@ public partial class RedisCommand : IRedisCommand
 
         return res;
     }
+
+    /// <summary>
+    /// hash 递增
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="field"></param>
+    /// <param name="increment">递增的值</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> HIncrByAsync(string key, string field, long increment = 1,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        return
+            await client.ExecuteAsync<long>(new Command(RedisCommandName.HIncrBy,
+                new object[]
+                {
+                    key, field, increment
+                }));
+    }
 }
