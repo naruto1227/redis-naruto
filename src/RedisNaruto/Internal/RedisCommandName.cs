@@ -242,5 +242,15 @@ internal static class RedisCommandName
     /// </summary>
     public const string HIncrBy = "HINCRBYFLOAT";
 
+    /// <summary>
+    /// 获取hash的key信息
+    /// </summary>
+    public const string HKeys = "HKEYS";
+
+    /// <summary>
+    /// hash长度
+    /// </summary>
+    public const string HLen = "HLEN";
+
     #endregion
 }

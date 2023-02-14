@@ -152,4 +152,49 @@ public partial class RedisCommand : IRedisCommand
                     key, field, increment
                 }));
     }
+
+    /// <summary>
+    /// hash 的field 信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<string>> HKeysAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        var list = client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HKeys,
+            new object[]
+            {
+                key
+            }));
+        var result = new List<string>();
+        await foreach (var item in list.WithCancellation(cancellationToken))
+        {
+            result.Add(item);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// hash 长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> HLenAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        return await client.ExecuteAsync<long>(new Command(RedisCommandName.HLen,
+            new object[]
+            {
+                key
+            }));
+    }
 }

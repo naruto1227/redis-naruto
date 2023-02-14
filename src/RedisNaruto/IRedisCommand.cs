@@ -331,4 +331,22 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<double> HIncrByAsync(string key, string field, double increment = 1,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash 的field 信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<string>> HKeysAsync(string key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// hash 长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> HLenAsync(string key,
+        CancellationToken cancellationToken = default);
 }
