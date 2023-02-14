@@ -240,7 +240,7 @@ internal static class RedisCommandName
     /// <summary>
     /// 递增
     /// </summary>
-    public const string HIncrBy = "HINCRBY";
+    public const string HIncrBy = "HINCRBYFLOAT";
 
     #endregion
 }

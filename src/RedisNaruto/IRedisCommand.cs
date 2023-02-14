@@ -329,6 +329,6 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="increment">递增的值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> HIncrByAsync(string key, string field, long increment = 1,
+    Task<double> HIncrByAsync(string key, string field, double increment = 1,
         CancellationToken cancellationToken = default);
 }

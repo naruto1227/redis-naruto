@@ -140,13 +140,13 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="increment">递增的值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<long> HIncrByAsync(string key, string field, long increment = 1,
+    public async Task<double> HIncrByAsync(string key, string field, double increment = 1,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return
-            await client.ExecuteAsync<long>(new Command(RedisCommandName.HIncrBy,
+            await client.ExecuteAsync<double>(new Command(RedisCommandName.HIncrBy,
                 new object[]
                 {
                     key, field, increment
