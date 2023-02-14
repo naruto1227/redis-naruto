@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
 
@@ -196,5 +197,34 @@ public partial class RedisCommand : IRedisCommand
             {
                 key
             }));
+    }
+
+    /// <summary>
+    /// 批量获取
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="fields"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<string>> HMGetAsync(string key, string[] fields,
+        CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace() || fields is not {Length: > 0})
+        {
+            return default;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        var list = client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HMGet,
+            new object[] {key}.Union(fields).ToArray()));
+        var result = new List<string>();
+        await foreach (var item in list.WithCancellation(cancellationToken))
+        {
+            result.Add(item);
+        }
+
+        return result;
     }
 }

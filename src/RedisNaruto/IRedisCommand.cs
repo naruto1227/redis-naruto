@@ -349,4 +349,14 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> HLenAsync(string key,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 批量获取
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="fields"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<string>> HMGetAsync(string key, string[] fields,
+        CancellationToken cancellationToken = default);
 }

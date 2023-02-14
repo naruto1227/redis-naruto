@@ -252,5 +252,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string HLen = "HLEN";
 
+    
+    /// <summary>
+    /// 批量获取
+    /// </summary>
+    public const string HMGet = "HMGET";
+
     #endregion
 }
