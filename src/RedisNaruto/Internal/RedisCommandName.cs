@@ -279,5 +279,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string HStrLen = "HSTRLEN";
 
+    /// <summary>
+    /// 设置hast的值 如果不存在的话 就添加
+    /// </summary>
+    public const string HSetNx = "HSETNX";
+
     #endregion
 }

@@ -293,4 +293,32 @@ public partial class RedisCommand : IRedisCommand
                 field
             }));
     }
+
+    /// <summary>
+    /// 设置hast的值 如果不存在的话 就添加
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value">具体的值</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    public async Task<bool> HSetNxAsync(string key, string field, object value,
+        CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace() || field.IsNullOrWhiteSpace())
+        {
+            return default;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        return await client.ExecuteAsync<long>(new Command(RedisCommandName.HSetNx,
+            new[]
+            {
+                key,
+                field,
+                value
+            })) == 1;
+    }
 }

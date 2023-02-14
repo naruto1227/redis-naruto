@@ -398,4 +398,15 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> HStrLenAsync(string key, string field,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 设置hast的值 如果不存在的话 就添加
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value">具体的值</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    Task<bool> HSetNxAsync(string key, string field, object value,
+        CancellationToken cancellationToken = default);
 }
