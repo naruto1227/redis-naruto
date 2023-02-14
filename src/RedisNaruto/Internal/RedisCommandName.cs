@@ -252,11 +252,22 @@ internal static class RedisCommandName
     /// </summary>
     public const string HLen = "HLEN";
 
-    
+
     /// <summary>
     /// 批量获取
     /// </summary>
     public const string HMGet = "HMGET";
+
+    /// <summary>
+    /// 返回hash的随机数据
+    ///
+    /// 当仅使用key参数调用时，从存储在 的哈希值中返回一个随机字段key。
+    /// 如果提供的参数为正，则返回不同字段count的数组。数组的长度或者是散列的字段数 ( )，以较小者为准。countHLEN
+    /// 如果用否定调用，行为会改变并且允许命令多次count返回相同的字段。在这种情况下，返回的字段数是指定的绝对值。count
+    /// 可选WITHVALUES修饰符更改回复，使其包含随机选择的哈希字段的相应值。
+    /// 6.2.0
+    /// </summary>
+    public const string HRandField = "HRANDFIELD";
 
     #endregion
 }

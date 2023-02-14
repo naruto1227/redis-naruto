@@ -102,35 +102,12 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        var resultList =
+        return await
             client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HGetAll,
                 new object[]
                 {
                     key
-                }));
-        //下标
-        var i = 1;
-        //上一个值
-        var preName = "";
-        var res = new Dictionary<string, string>();
-        await foreach (var item in resultList.WithCancellation(cancellationToken))
-        {
-            //双数为值
-            if (i % 2 == 0)
-            {
-                res[preName] = item;
-            }
-            //单数为key
-            else
-            {
-                preName = item;
-                res[item] = "";
-            }
-
-            i++;
-        }
-
-        return res;
+                })).ToDicAsync();
     }
 
     /// <summary>
@@ -166,18 +143,11 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        var list = client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HKeys,
+        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HKeys,
             new object[]
             {
                 key
-            }));
-        var result = new List<string>();
-        await foreach (var item in list.WithCancellation(cancellationToken))
-        {
-            result.Add(item);
-        }
-
-        return result;
+            })).ToListAsync();
     }
 
     /// <summary>
@@ -217,14 +187,60 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        var list = client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HMGet,
-            new object[] {key}.Union(fields).ToArray()));
-        var result = new List<string>();
-        await foreach (var item in list.WithCancellation(cancellationToken))
+        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HMGet,
+            new object[] {key}.Union(fields).ToArray())).ToListAsync();
+    }
+
+    /// <summary>
+    /// 随机获取hash数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">数量</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Dictionary<string, string>> HRandFieldWithValueAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace())
         {
-            result.Add(item);
+            return default;
         }
 
-        return result;
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HRandField,
+            new object[]
+            {
+                key,
+                count,
+                "WITHVALUES"
+            })).ToDicAsync();
+    }
+
+    /// <summary>
+    /// 随机获取hash数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">数量</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<string>> HRandFieldAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace())
+        {
+            return default;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+
+        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HRandField,
+            new object[]
+            {
+                key,
+                count
+            })).ToListAsync();
     }
 }

@@ -1,6 +1,6 @@
 namespace RedisNaruto.Utils;
 
-public static class AsyncEnumerableUtil
+internal static class AsyncEnumerableUtil
 {
     /// <summary>
     /// 
@@ -27,6 +27,49 @@ public static class AsyncEnumerableUtil
             }
 
             return list;
+        }
+    }
+
+    /// <summary>
+    /// 转换
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static Task<Dictionary<string, string>> ToDicAsync(this IAsyncEnumerable<string> source)
+    {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return ExecuteAsync();
+
+        async Task<Dictionary<string, string>> ExecuteAsync()
+        {
+            //下标
+            var i = 1;
+            //上一个值
+            var preName = "";
+            var res = new Dictionary<string, string>();
+            await foreach (var item in source)
+            {
+                //双数为值
+                if (i % 2 == 0)
+                {
+                    res[preName] = item;
+                }
+                //单数为key
+                else
+                {
+                    preName = item;
+                    res[item] = "";
+                }
+
+                i++;
+            }
+
+            return res;
         }
     }
 }

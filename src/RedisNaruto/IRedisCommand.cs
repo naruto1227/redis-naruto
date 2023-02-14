@@ -359,4 +359,24 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<string>> HMGetAsync(string key, string[] fields,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 随机获取hash数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">数量</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Dictionary<string, string>> HRandFieldWithValueAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 随机获取hash数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">数量</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<string>> HRandFieldAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
 }
