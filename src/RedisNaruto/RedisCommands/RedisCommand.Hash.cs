@@ -89,4 +89,46 @@ public partial class RedisCommand : IRedisCommand
                     key, field
                 }));
     }
+
+    /// <summary>
+    /// 获取所有的hash数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Dictionary<string, string>> HGetAllAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var resultList =
+            client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HGetAll,
+                new object[]
+                {
+                    key
+                }));
+        //下标
+        var i = 1;
+        //上一个值
+        var preName = "";
+        var res = new Dictionary<string, string>();
+        await foreach (var item in resultList.WithCancellation(cancellationToken))
+        {
+            //双数为值
+            if (i % 2 == 0)
+            {
+                res[preName] = item;
+            }
+            //单数为key
+            else
+            {
+                preName = item;
+                res[item] = "";
+            }
+
+            i++;
+        }
+
+        return res;
+    }
 }

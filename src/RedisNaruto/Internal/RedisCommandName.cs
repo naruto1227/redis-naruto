@@ -231,5 +231,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string HGet = "HGET";
 
+
+    /// <summary>
+    /// 获取所有的hash数据
+    /// </summary>
+    public const string HGetAll = "HGETALL";
+
     #endregion
 }

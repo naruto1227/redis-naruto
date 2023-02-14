@@ -311,4 +311,13 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<string> HGetAsync(string key, string field, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 获取所有的hash数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Dictionary<string, string>> HGetAllAsync(string key,
+        CancellationToken cancellationToken = default);
 }
