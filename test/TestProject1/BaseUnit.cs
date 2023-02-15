@@ -12,15 +12,6 @@ public class BaseUnit
             },
             UserName = null,
             Password = "redispw",
-            
-            // Connection = new string[]
-            // {
-            //     "opendotnet.cn:26180"
-            // },
-            // UserName = null,
-            // Password = "redispw",
-            // IsEnableSentinel = true,
-            // MasterName = "mymaster"
         });
         return redisCommand;
     }

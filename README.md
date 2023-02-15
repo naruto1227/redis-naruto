@@ -6,6 +6,7 @@ c#版本的redis客户端
 ## 已完成
 
 - String
+- Hash
 - PubSub
 - Lua
 - tran
@@ -16,5 +17,3 @@ c#版本的redis客户端
 - 余下命令
 - function
 - 资源释放
-- 减少哨兵的连接
-- 哨兵连接池？
