@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
@@ -320,5 +321,62 @@ public partial class RedisCommand : IRedisCommand
                 field,
                 value
             })) == 1;
+    }
+
+    /// <summary>
+    /// 扫码hash的数据
+    /// https://redis.io/commands/scan/
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">条数</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="matchPattern">匹配条件</param>
+    /// <returns></returns>
+    public async IAsyncEnumerable<Dictionary<string, string>> HScanAsync(string key,
+        string matchPattern = "*", int count = 10,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (key.IsNullOrWhiteSpace())
+        {
+            yield break;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        //游标位置
+        var cursor = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var resultList = await client.ExecuteAsync<object>(new Command(RedisCommandName.HScan,
+                new object[]
+                {
+                    key,
+                    cursor,
+                    "MATCH",
+                    matchPattern,
+                    "COUNT",
+                    count
+                }));
+            if (resultList is not List<object> {Count: >= 2} list)
+            {
+                yield break;
+            }
+
+            //更新游标
+            cursor = list[0].ToString().ToInt();
+            if (list[1] is List<object> datas)
+            {
+                yield return datas.ToDic();
+            }
+            else
+            {
+                yield break;
+            }
+
+            if (cursor == 0)
+            {
+                yield break;
+            }
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using RedisNaruto.RedisCommands;
 using RedisNaruto.RedisCommands.Pipe;
 using RedisNaruto.RedisCommands.Transaction;
@@ -409,4 +410,17 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> HSetNxAsync(string key, string field, object value,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 扫码hash的数据
+    /// https://redis.io/commands/scan/
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">条数</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="matchPattern">匹配条件</param>
+    /// <returns></returns>
+    IAsyncEnumerable<Dictionary<string, string>> HScanAsync(string key,
+        string matchPattern = "*", int count = 10,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default);
 }

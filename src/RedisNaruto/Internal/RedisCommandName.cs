@@ -284,5 +284,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string HSetNx = "HSETNX";
 
+    /// <summary>
+    /// 扫描
+    /// </summary>
+    public const string HScan = "HSCAN";
+
     #endregion
 }
