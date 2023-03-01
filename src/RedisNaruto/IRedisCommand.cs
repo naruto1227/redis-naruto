@@ -423,4 +423,14 @@ public interface IRedisCommand : IAsyncDisposable
     IAsyncEnumerable<Dictionary<string, string>> HScanAsync(string key,
         string matchPattern = "*", int count = 10,
         [EnumeratorCancellation] CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> SAddAsync(string key, object value,
+        CancellationToken cancellationToken = default);
 }

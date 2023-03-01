@@ -290,4 +290,14 @@ internal static class RedisCommandName
     public const string HScan = "HSCAN";
 
     #endregion
+
+    #region set
+
+    /// <summary>
+    /// 添加
+    /// 将指定的成员添加到存储在 的集合中key。已经是该集合成员的指定成员将被忽略。如果key不存在，则在添加指定成员之前创建一个新集。
+    /// </summary>
+    public const string SAdd = "SADD";
+
+    #endregion
 }
