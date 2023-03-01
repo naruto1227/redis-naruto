@@ -299,5 +299,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string SAdd = "SADD";
 
+    /// <summary>
+    /// 返回set里面集合的长度
+    /// </summary>
+    public const string SCard = "SCARD";
+
     #endregion
 }

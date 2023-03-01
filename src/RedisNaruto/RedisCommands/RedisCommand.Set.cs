@@ -28,4 +28,23 @@ public partial class RedisCommand : IRedisCommand
             }));
         return result == 1;
     }
+
+    /// <summary>
+    /// 返回set中集合的长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> SCardAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<long>(new Command(RedisCommandName.SCard, new[]
+            {
+                key,
+            }));
+        return result;
+    }
 }

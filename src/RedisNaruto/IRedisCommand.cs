@@ -433,4 +433,13 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> SAddAsync(string key, object value,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回set中集合的长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> SCardAsync(string key,
+        CancellationToken cancellationToken = default);
 }
