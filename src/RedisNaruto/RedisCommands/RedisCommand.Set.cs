@@ -47,4 +47,20 @@ public partial class RedisCommand : IRedisCommand
             }));
         return result;
     }
+    /// <summary>
+    /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
+    /// 类似 except
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<object>> SDiffAsync(string[] key,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.SDiff, key));
+        return result;
+    }
 }

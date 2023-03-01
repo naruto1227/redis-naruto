@@ -442,4 +442,14 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> SCardAsync(string key,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
+    /// 类似 except
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> SDiffAsync(string[] key,
+        CancellationToken cancellationToken = default);
 }

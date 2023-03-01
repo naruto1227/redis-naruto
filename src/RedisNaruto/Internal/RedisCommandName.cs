@@ -304,5 +304,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string SCard = "SCARD";
 
+    /// <summary>
+    /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
+    /// 类似 except
+    /// </summary>
+    public const string SDiff = "SDIFF";
+
     #endregion
 }
