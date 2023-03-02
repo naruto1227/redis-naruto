@@ -472,4 +472,14 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<object>> SInterAsync(string[] key,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回交集的值数量 类似与 SInter，SInter返回具体的交集数据，SInterCard返回数
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="limit">默认情况下，该命令计算所有给定集的交集的基数。当提供可选LIMIT参数（默认为 0，表示无限制）时，如果交集基数在计算中途达到 limit，则算法将退出并产生 limit 作为基数。这样的实现确保了限制低于实际交集基数的查询的显着加速。</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> SInterCardAsync(string[] key, int limit = 0,
+        CancellationToken cancellationToken = default);
 }

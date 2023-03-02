@@ -321,5 +321,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string SInter = "SINTER";
 
+    /// <summary>
+    /// 7.0.0
+    /// 返回交集的值数量 类似与 SInter，SInter返回具体的交集数据，SInterCard返回数
+    /// </summary>
+    public const string SInterCard = "SINTERCARD";
+
     #endregion
 }
