@@ -310,5 +310,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string SDiff = "SDIFF";
 
+    /// <summary>
+    /// 此命令等于SDIFF，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标key
+    /// </summary>
+    public const string SDiffStore = "SDIFFSTORE";
+
     #endregion
 }

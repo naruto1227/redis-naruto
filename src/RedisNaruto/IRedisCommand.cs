@@ -452,4 +452,15 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<object>> SDiffAsync(string[] key,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令等于SDIFF，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标destination
+    /// </summary>
+    /// <param name="destination"></param>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> SDiffStoreAsync(string destination, string[] keys,
+        CancellationToken cancellationToken = default);
 }

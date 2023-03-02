@@ -47,6 +47,7 @@ public partial class RedisCommand : IRedisCommand
             }));
         return result;
     }
+
     /// <summary>
     /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
     /// 类似 except
@@ -61,6 +62,25 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         var result =
             await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.SDiff, key));
+        return result;
+    }
+
+    /// <summary>
+    /// 此命令等于SDIFF，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标destination
+    /// </summary>
+    /// <param name="destination"></param>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> SDiffStoreAsync(string destination, string[] keys,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.SDiffStore,
+                new object[] {destination}.Union(keys).ToArray()));
         return result;
     }
 }
