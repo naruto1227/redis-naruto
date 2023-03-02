@@ -327,5 +327,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string SInterCard = "SINTERCARD";
 
+    /// <summary>
+    /// 此命令等于SINTER，但不是返回结果集，而是存储在destination.
+    /// 如果destination已经存在，则将其覆盖
+    /// </summary>
+    public const string SInterStore = "SINTERSTORE";
+
     #endregion
 }

@@ -482,4 +482,15 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> SInterCardAsync(string[] key, int limit = 0,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令等于SInter，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标destination
+    /// </summary>
+    /// <param name="destination"></param>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> SInterStoreAsync(string destination, string[] keys,
+        CancellationToken cancellationToken = default);
 }

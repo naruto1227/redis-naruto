@@ -126,4 +126,23 @@ public partial class RedisCommand : IRedisCommand
                     key).Union(new[] {"LIMIT", limit.ToString()}).ToArray()));
         return result;
     }
+    
+    /// <summary>
+    /// 此命令等于SInter，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标destination
+    /// </summary>
+    /// <param name="destination"></param>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> SInterStoreAsync(string destination, string[] keys,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.SInterStore,
+                new object[] {destination}.Union(keys).ToArray()));
+        return result;
+    }
 }
