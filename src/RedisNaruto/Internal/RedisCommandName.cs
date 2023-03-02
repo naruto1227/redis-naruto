@@ -316,5 +316,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string SDiffStore = "SDIFFSTORE";
 
+    /// <summary>
+    /// 返回由所有给定集的交集产生的集的成员。
+    /// </summary>
+    public const string SInter = "SINTER";
+
     #endregion
 }

@@ -83,4 +83,19 @@ public partial class RedisCommand : IRedisCommand
                 new object[] {destination}.Union(keys).ToArray()));
         return result;
     }
+    /// <summary>
+    /// 返回由所有给定集的交集产生的集的成员。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<object>> SInterAsync(string[] key,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.SInter, key));
+        return result;
+    }
 }
