@@ -431,7 +431,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="value"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> SAddAsync(string key, object value,
+    Task<bool> SAddAsync(string key, object[] value,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -493,4 +493,110 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> SInterStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 判断值是否存在
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> SisMemberAsync(string key, object member,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 获取set的数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> SMembersAsync(string key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 判断值是否存在set中
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="members"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<int>> SmisMemberAsync(string key, object[] members,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 将值从 source 移动到 destination
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="destination"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> SMoveAsync(string source, string destination, object member,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 随机移除 指定数量的值 原子性操作
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> SPopAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 返回随机对象
+    /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是集合的基数 ( ) 之一，以较小者为准。
+    /// 如果用否调整使用count，行为会改变，命可以多次返回相同的元素。在这种情况下，返回的元数是指定的绝对值count。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> SRandMemberAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 移除成员信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="members">需要删除的成员</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> SRemAsync(string key, object[] members,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///返回多个set的并集
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> SUnionAsync(string[] keys,
+        CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 将多个key的并集 存储到一个新的目标set中
+    ///  </summary>
+    ///  <param name="destination"></param>
+    ///  <param name="keys"></param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<int> SUnionStoreAsync(string destination, string[] keys,
+        CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 扫描set的数据
+    /// https://redis.io/commands/scan/
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">条数</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="matchPattern">匹配条件</param>
+    /// <returns></returns>
+    IAsyncEnumerable<List<object>> SScanAsync(string key,
+        string matchPattern = "*", int count = 10,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default);
 }

@@ -7,6 +7,7 @@ c#版本的redis客户端
 
 - String
 - Hash
+- Set
 - PubSub
 - Lua
 - tran

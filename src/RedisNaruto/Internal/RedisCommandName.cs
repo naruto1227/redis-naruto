@@ -333,5 +333,58 @@ internal static class RedisCommandName
     /// </summary>
     public const string SInterStore = "SINTERSTORE";
 
+
+    /// <summary>
+    /// 判断set值是否存在
+    /// </summary>
+    public const string SisMember = "SISMEMBER";
+
+    /// <summary>
+    /// 获取set中所有的数据
+    /// </summary>
+    public const string SMembers = "SMEMBERS";
+
+    /// <summary>
+    /// 6.2.0
+    /// 判断set中的值是否存在，存在就为1 不存在为0
+    /// </summary>
+    public const string SmisMember = "SMISMEMBER";
+
+    /// <summary>
+    /// 将一个集合的值 移动到指定的集合中
+    /// </summary>
+    public const string SMove = "SMOVE";
+
+    /// <summary>
+    /// 随机移除set中指定的值并返回 原子性
+    /// </summary>
+    public const string SPop = "SPOP";
+
+
+    /// <summary>
+    ///返回随机数据
+    /// </summary>
+    public const string SRandMember = "SRANDMEMBER";
+
+    /// <summary>
+    /// 移除成员信息
+    /// </summary>
+    public const string SRem = "SREM";
+
+    /// <summary>
+    /// set 扫描
+    /// </summary>
+    public const string SScan = "SSCAN";
+    
+    /// <summary>
+    /// 返回由所有给定集合的并集生成的集合的成员。
+    /// </summary>
+    public const string SUnion = "SUNION";
+
+    /// <summary>
+    /// 将多个set的并集存储到一个新的set中
+    /// </summary>
+    public const string SUnionStore = "SUNIONSTORE";
+
     #endregion
 }

@@ -324,7 +324,7 @@ public partial class RedisCommand : IRedisCommand
     }
 
     /// <summary>
-    /// 扫码hash的数据
+    /// 扫描hash的数据
     /// https://redis.io/commands/scan/
     /// </summary>
     /// <param name="key"></param>
