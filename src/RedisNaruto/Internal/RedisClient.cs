@@ -246,7 +246,7 @@ internal class RedisClient : IRedisClient
             yield break;
         }
 
-        var isStr = typeof(TResult) == typeof(string);
+        var isStr = typeof(TResult) == typeof(string) || typeof(TResult) == typeof(object);
         foreach (var item in resultList)
         {
             if (isStr)
