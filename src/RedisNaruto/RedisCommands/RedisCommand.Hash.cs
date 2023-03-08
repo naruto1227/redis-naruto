@@ -23,7 +23,7 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         return
             await client.ExecuteAsync<long>(new Command(RedisCommandName.HDel,
-                new object[] {key}.Union(fields).ToArray()));
+                new object[] {key}.Concat(fields).ToArray()));
     }
 
     /// <summary>
@@ -189,7 +189,7 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
 
         return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HMGet,
-            new object[] {key}.Union(fields).ToArray())).ToListAsync();
+            new object[] {key}.Concat(fields).ToArray())).ToListAsync();
     }
 
     /// <summary>

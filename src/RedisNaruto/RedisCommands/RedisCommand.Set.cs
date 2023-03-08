@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
@@ -27,7 +26,7 @@ public partial class RedisCommand : IRedisCommand
             await client.ExecuteAsync<int>(new Command(RedisCommandName.SAdd, new object[]
             {
                 key
-            }.Union(value).ToArray()));
+            }.Concat(value).ToArray()));
         return result == 1;
     }
 
@@ -124,8 +123,8 @@ public partial class RedisCommand : IRedisCommand
                 new object[]
                 {
                     key.Length
-                }.Union(
-                    key).Union(new[] {"LIMIT", limit.ToString()}).ToArray()));
+                }.Concat(
+                    key).Concat(new[] {"LIMIT", limit.ToString()}).ToArray()));
         return result;
     }
 
@@ -202,7 +201,7 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
             client.ExecuteMoreResultAsync<int>(new Command(RedisCommandName.SmisMember,
-                new object[] {key}.Union(members).ToArray())).ToListAsync();
+                new object[] {key}.Concat(members).ToArray())).ToListAsync();
         return result;
     }
 
@@ -291,7 +290,7 @@ public partial class RedisCommand : IRedisCommand
             client.ExecuteAsync<int>(new Command(RedisCommandName.SRem, new object[]
             {
                 key,
-            }.Union(members).ToArray()));
+            }.Concat(members).ToArray()));
         return result;
     }
 
@@ -328,7 +327,7 @@ public partial class RedisCommand : IRedisCommand
                 new object[]
                 {
                     destination
-                }.Union(keys).ToArray()));
+                }.Concat(keys).ToArray()));
         return result;
     }
 

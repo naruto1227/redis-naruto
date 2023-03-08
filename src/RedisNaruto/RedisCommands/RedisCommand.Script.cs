@@ -24,7 +24,7 @@ public partial class RedisCommand : IRedisCommand
         {
             script,
             keys.Length
-        }.Union(keys).Union(argvs).ToArray();
+        }.Concat(keys).Concat(argvs).ToArray();
         await using var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync<object>(new Command(RedisCommandName.Eval, param));
     }
@@ -47,7 +47,7 @@ public partial class RedisCommand : IRedisCommand
         {
             sha,
             keys.Length
-        }.Union(keys).Union(argvs).ToArray();
+        }.Concat(keys).Concat(argvs).ToArray();
         await using var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync<object>(new Command(RedisCommandName.EvalSha, param));
     }
@@ -86,7 +86,7 @@ public partial class RedisCommand : IRedisCommand
             new object[1]
             {
                 "EXISTS"
-            }.Union(sha).ToArray())).WithCancellation(cancellationToken));
+            }.Concat(sha).ToArray())).WithCancellation(cancellationToken));
         var resList = new List<bool>();
         await foreach (var itemResult in result)
         {
