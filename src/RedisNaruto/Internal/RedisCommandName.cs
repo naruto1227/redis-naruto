@@ -375,7 +375,7 @@ internal static class RedisCommandName
     /// set 扫描
     /// </summary>
     public const string SScan = "SSCAN";
-    
+
     /// <summary>
     /// 返回由所有给定集合的并集生成的集合的成员。
     /// </summary>
@@ -385,6 +385,119 @@ internal static class RedisCommandName
     /// 将多个set的并集存储到一个新的set中
     /// </summary>
     public const string SUnionStore = "SUNIONSTORE";
+
+    #endregion
+
+    #region list
+
+    /// <summary>
+    /// 6.2.0
+    /// 
+    /// </summary>
+    public const string BLMove = "BLMOVE";
+
+    /// <summary>
+    /// 往指定的元素 前或者后 插入元素
+    /// </summary>
+    public const string LInsert = "LINSERT";
+
+    /// <summary>
+    /// 往指定的下标处插入元素
+    /// </summary>
+    public const string LSet = "LSET";
+
+    /// <summary>
+    /// 将所有指定值插入存储在 的列表的尾部key。如果key不存在，则在执行推送操作之前将其创建为空列表。当key持有一个不是列表的值时，返回一个错误。
+    /// </summary>
+    public const string RPush = "RPUSH";
+
+    /// <summary>
+    ///将元素插入到列表的尾部，当key存在的时候才插入
+    /// </summary>
+    public const string RPushx = "RPUSHX";
+
+    /// <summary>
+    /// 将所有指定值插入存储在 的列表的头部key。如果key不存在，则在执行推送操作之前将其创建为空列表。当key持有一个不是列表的值时，返回一个错误。
+    /// </summary>
+    public const string LPush = "LPUSH";
+
+    /// <summary>
+    /// 将元素插入到列表的头部，当key存在的时候才插入
+    /// </summary>
+    public const string LPushx = "LPUSHX";
+
+    /// <summary>
+    /// 修剪现有列表，使其仅包含指定范围的指定元素。和start都是stop从零开始的索引，其中0是列表的第一个元素（头），1下一个元素等等。
+    /// </summary>
+    public const string LTrim = "LTRIM";
+
+    /// <summary>
+    /// 移除并返回存储在 的列表的最后一个元素key。
+    /// 默认情况下，该命令从列表末尾弹出一个元素。当提供可选count参数时，回复将由最多count元素组成，具体取决于列表的长度。
+    /// </summary>
+    public const string RPop = "RPOP";
+    /// <summary>
+    /// 阻塞
+    /// 移除并返回存储在 的列表的最后一个元素key。
+    /// 默认情况下，该命令从列表末尾弹出一个元素
+    /// </summary>
+    public const string BRPop = "BRPOP";
+    /// <summary>
+    /// 移除并返回存储在 的列表的头部一个元素key。
+    /// 默认情况下，该命令从列表头部弹出一个元素。当提供可选count参数时，回复将由最多count元素组成，具体取决于列表的长度。
+    /// </summary>
+    public const string LPop = "LPOP";
+    /// <summary>
+    /// 阻塞
+    /// 移除并返回存储在 的列表的头部一个元素key。
+    /// 默认情况下，该命令从列表头部弹出一个元素。
+    /// </summary>
+    public const string BLPop = "BLPOP";
+
+    /// <summary>
+    /// 从列表删除元素
+    /// </summary>
+    public const string LRem = "LREM";
+
+    /// <summary>
+    /// 查询列表元素
+    /// </summary>
+    public const string LRange = "LRANGE";
+
+    /// <summary>
+    /// 队列的长度
+    /// </summary>
+    public const string LLen = "LLEN";
+
+
+    /// <summary>
+    /// 返回指定下标的元素
+    /// </summary>
+    public const string LIndex = "LINDEX";
+
+    /// <summary>
+    /// 6.0.6
+    /// 返回元素的下标位置
+    /// </summary>
+    public const string LPos = "LPOS";
+
+    /// <summary>
+    /// 7.0.0
+    /// 从指定的多个元素中出列 指定数量的消息信息
+    /// </summary>
+    public const string LmPop = "LMPOP";
+
+    /// <summary>
+    /// 6.2.0
+    ///将 source 消息从左或者右 移除，并存储到 destination 元素中的 left 或者right
+    /// </summary>
+    public const string LMove = "LMOVE";
+
+    /// <summary>
+    /// 7.0.0
+    /// 
+    /// </summary>
+    public const string BlMPop = "BLMPOP";
 
     #endregion
 }
