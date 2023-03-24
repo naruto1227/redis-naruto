@@ -1040,4 +1040,19 @@ public interface IRedisCommand : IAsyncDisposable
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
         CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 从提供的键名列表中的第一个非空排序集中弹出一个或多个元素，即成员分数对。
+    /// 阻塞
+    ///  </summary>
+    ///  <param name="keys"></param>
+    ///  <param name="timeout">超时时间</param>
+    ///  <param name="minMax">标记从最小的分数 还是最大的分数弹出元素的数量</param>
+    ///  <param name="count">弹出的数量</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<(string key, Dictionary<object, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
+        SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
+        long count = 1,
+        CancellationToken cancellationToken = default);
 }

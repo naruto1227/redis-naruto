@@ -594,5 +594,12 @@ internal static class RedisCommandName
     /// </summary>
     public const string ZMpop = "ZMPOP";
 
+
+    /// <summary>
+    /// BZMPOP是 的阻塞变体ZMPOP
+    /// 7.0.0
+    /// </summary>
+    public const string BZMpop = "BZMPOP";
+
     #endregion
 }
