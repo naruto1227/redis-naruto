@@ -1,6 +1,6 @@
 namespace RedisNaruto.Utils;
 
-internal static class AsyncEnumerableUtil
+internal static class EnumerableUtil
 {
     /// <summary>
     /// 
@@ -111,6 +111,93 @@ internal static class AsyncEnumerableUtil
 
                 i++;
             }
+
+            return res;
+        }
+    }
+
+    /// <summary>
+    /// 转换
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static Task<Dictionary<object, long>> ToZSetDicAsync(this IAsyncEnumerable<object> source)
+    {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return ExecuteAsync();
+
+        async Task<Dictionary<object, long>> ExecuteAsync()
+        {
+            //下标
+            var i = 1;
+            //上一个值
+            object preName = null;
+            var res = new Dictionary<object, long>();
+            await foreach (var item in source)
+            {
+                //双数为值
+                if (i % 2 == 0)
+                {
+                    res[preName] = item.ToString().ToLong();
+                }
+                //单数为key
+                else
+                {
+                    preName = item;
+                    res[item] = 0;
+                }
+
+                i++;
+            }
+
+            return res;
+        }
+    }
+
+    /// <summary>
+    /// 转换
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static Dictionary<object, long> ToZSetDic(this IEnumerable<object> source)
+    {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return Execute();
+
+        Dictionary<object, long> Execute()
+        {
+            //下标
+            var i = 1;
+            //上一个值
+            object preName = null;
+            var res = new Dictionary<object, long>();
+            foreach (var item in source)
+            {
+                //双数为值
+                if (i % 2 == 0)
+                {
+                    res[preName] = item.ToString().ToLong();
+                }
+                //单数为key
+                else
+                {
+                    preName = item;
+                    res[item] = 0;
+                }
+
+                i++;
+            }
+
             return res;
         }
     }

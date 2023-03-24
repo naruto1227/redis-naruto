@@ -39,4 +39,19 @@ public static class ListUtil
             return res;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="condition"></param>
+    /// <param name="concat"></param>
+    /// <returns></returns>
+    public static IEnumerable<object> ConcatIf(this IEnumerable<object> source, bool condition,
+        IEnumerable<object> concat)
+    {
+        return condition
+            ? source.Concat(concat)
+            : source;
+    }
 }

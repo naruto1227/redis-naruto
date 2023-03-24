@@ -1,4 +1,6 @@
 using System.Runtime.CompilerServices;
+using RedisNaruto.Enums;
+using RedisNaruto.Models;
 using RedisNaruto.RedisCommands;
 using RedisNaruto.RedisCommands.Pipe;
 using RedisNaruto.RedisCommands.Transaction;
@@ -824,5 +826,218 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<(string key, object value)> BLPopAsync(string[] key, TimeSpan timeout,
+        CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 添加zset 集合
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="values">存储的数据</param>
+    /// <param name="type">操作类型</param>
+    /// <param name="isIncr">指定此选项时的ZADD行为类似于ZINCRBY。在此模式下只能指定一个分数元素对。当指定了此元素 返回的值为更新完成的新的score</param>
+    /// <param name="isCh">修改返回值，默认返回新添加的元素个数，修改为返回 总的变化的元素个数</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZAddAsync(string key, SortedSetAddModel[] values,
+        SortedSetAddEnum type = SortedSetAddEnum.No, bool isIncr = false, bool isCh = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 扫描zset的数据
+    /// https://redis.io/commands/scan/
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count">条数</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="matchPattern">匹配条件</param>
+    /// <returns></returns>
+    IAsyncEnumerable<Dictionary<string, string>> ZScanAsync(string key,
+        string matchPattern = "*", int count = 10,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回zset中集合的长度
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> ZCardAsync(string key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回区间范围中的元素数量
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="min"></param>
+    /// <returns></returns>
+    Task<long> ZCountAsync(string key, string min = "-inf", string max = "+inf",
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
+    /// 类似 except
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> ZDiffAsync(string[] key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
+    /// 类似 except
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Dictionary<object, long>> ZDiffWithScoreAsync(string[] key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令等于ZDIFF，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标destination
+    /// </summary>
+    /// <param name="destination"></param>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZDiffStoreAsync(string destination, string[] keys,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 递增zset元素中的score值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="increment"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="member"></param>
+    /// <returns></returns>
+    Task<int> ZIncrByAsync(string key, object member, int increment = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 计算并集 将结果存储到 dest
+    /// </summary>
+    /// <code>
+    /// ZUNIONSTORE result 2 zset1 zset2 WEIGHTS 2 3
+    /// 这将对 zset1 的成员的分数乘以 2，对 zset2 的成员的分数乘以 3，然后计算它们的并集并将结果存储到 dest 中。
+    /// </code>
+    /// <param name="dest">目标元素</param>
+    /// <param name="keys">参与操作的key集合</param>
+    /// <param name="weights">用于指定每个输入有序集合的权重。默认情况下，每个输入有序集合的权重为 1。</param>
+    /// <param name="aggregate">用于指定对于具有相同成员的元素，如何计算它们的分数。默认情况下使用 SUM 计算。其他可选项为 MIN 和 MAX。</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZUnionStoreAsync(string dest, string[] keys, long[] weights = null,
+        SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由所有给定集的交集产生的集的成员。
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="aggregate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="weights"></param>
+    /// <returns></returns>
+    Task<List<object>> ZInterAsync(string[] keys, long[] weights = null,
+        SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由所有给定集的交集产生的集的成员。
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="aggregate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="weights"></param>
+    /// <returns></returns>
+    Task<Dictionary<object, long>> ZInterWithScoreAsync(string[] keys, long[] weights = null,
+        SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回交集的值数量 此命令类似于ZINTER，但它不返回结果集，而是仅返回结果的基数。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="limit">默认情况下，该命令计算所有给定集的交集的基数。当提供可选LIMIT参数（默认为 0，表示无限制）时，如果交集基数在计算中途达到 limit，则算法将退出并产生 limit 作为基数。这样的实现确保了限制低于实际交集基数的查询的显着加速。</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> ZInterCardAsync(string[] key, int limit = 0,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令等于ZInter，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标destination
+    /// </summary>
+    /// <param name="destination"></param>
+    /// <param name="keys"></param>
+    /// <param name="aggregate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="weights"></param>
+    /// <returns></returns>
+    Task<int> ZInterStoreAsync(string destination, string[] keys, long[] weights = null,
+        SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由所有给定集的并集产生的集的成员。
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="aggregate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="weights"></param>
+    /// <returns></returns>
+    Task<List<object>> ZUnionAsync(string[] keys, long[] weights = null,
+        SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回由所有给定集的并集产生的集的成员。
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="aggregate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="weights"></param>
+    /// <returns></returns>
+    Task<Dictionary<object, long>> ZUnionWithScoreAsync(string[] keys, long[] weights = null,
+        SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
+        CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 获取元素的分数信息
+    ///  </summary>
+    ///  <param name="key"></param>
+    ///  <param name="member">元素</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<long> ZScoreAsync(string key, object member,
+        CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 当排序集中的所有元素都以相同的分数插入时，为了强制按字典顺序排序，此命令返回排序集中的元素数，其值介于key和min之间max。
+    ///  </summary>
+    ///  <param name="key"></param>
+    ///  <param name="min"></param>
+    ///  <param name="max"></param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<long> ZLexCountAsync(string key, string min = "-", string max = "+",
+        CancellationToken cancellationToken = default);
+
+    ///  <summary>
+    /// 从提供的键名列表中的第一个非空排序集中弹出一个或多个元素，即成员分数对。
+    ///  </summary>
+    ///  <param name="keys"></param>
+    ///  <param name="minMax">标记从最小的分数 还是最大的分数弹出元素的数量</param>
+    ///  <param name="count">弹出的数量</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<(string key,Dictionary<object, long> data)> ZMpopAsync(string[] keys,
+        SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
+        long count = 1,
         CancellationToken cancellationToken = default);
 }

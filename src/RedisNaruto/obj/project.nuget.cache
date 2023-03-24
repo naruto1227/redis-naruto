@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "3VQuyQhZuoN7GER5BiQFwhKhPW5rwdVI9wSInjnXAEhWIOZ9GvoelzGyVa/abo9bjfDbe9DLv3HLIs+PJMniFw==",
+  "success": true,
+  "projectFilePath": "/Users/zhanghaibo/Projects/我的/redis-naruto/src/RedisNaruto/RedisNaruto.csproj",
+  "expectedPackageFiles": [
+    "/Users/zhanghaibo/.nuget/packages/microsoft.extensions.objectpool/7.0.0/microsoft.extensions.objectpool.7.0.0.nupkg.sha512",
+    "/Users/zhanghaibo/.nuget/packages/microsoft.io.recyclablememorystream/2.2.1/microsoft.io.recyclablememorystream.2.2.1.nupkg.sha512"
+  ],
+  "logs": []
+}

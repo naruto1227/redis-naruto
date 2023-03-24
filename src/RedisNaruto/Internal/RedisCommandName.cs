@@ -436,17 +436,20 @@ internal static class RedisCommandName
     /// 默认情况下，该命令从列表末尾弹出一个元素。当提供可选count参数时，回复将由最多count元素组成，具体取决于列表的长度。
     /// </summary>
     public const string RPop = "RPOP";
+
     /// <summary>
     /// 阻塞
     /// 移除并返回存储在 的列表的最后一个元素key。
     /// 默认情况下，该命令从列表末尾弹出一个元素
     /// </summary>
     public const string BRPop = "BRPOP";
+
     /// <summary>
     /// 移除并返回存储在 的列表的头部一个元素key。
     /// 默认情况下，该命令从列表头部弹出一个元素。当提供可选count参数时，回复将由最多count元素组成，具体取决于列表的长度。
     /// </summary>
     public const string LPop = "LPOP";
+
     /// <summary>
     /// 阻塞
     /// 移除并返回存储在 的列表的头部一个元素key。
@@ -498,6 +501,98 @@ internal static class RedisCommandName
     /// 
     /// </summary>
     public const string BlMPop = "BLMPOP";
+
+    #endregion
+
+
+    #region zset
+
+    /// <summary>
+    /// 插入数据
+    /// </summary>
+    public const string ZAdd = "ZADD";
+
+
+    /// <summary>
+    /// 扫描
+    /// </summary>
+    public const string ZScan = "ZSCAN";
+
+
+    /// <summary>
+    /// 返回元素中的个数
+    /// </summary>
+    public const string ZCard = "ZCARD";
+
+    /// <summary>
+    /// 返回区间范围中的元素数量
+    /// </summary>
+    public const string ZCount = "ZCOUNT";
+
+    /// <summary>
+    /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
+    /// 类似 except
+    /// 6.2.0
+    /// </summary>
+    public const string ZDiff = "ZDIFF";
+
+    /// <summary>
+    /// 此命令等于ZDIFF，但不是返回结果集，而是存储在destination.
+    /// 将except的差异值存到目标key
+    /// 6.2.0
+    /// </summary>
+    public const string ZDiffStore = "ZDIFFSTORE";
+
+    /// <summary>
+    /// 递增zset元素中的score值
+    /// </summary>
+    public const string ZIncrBy = "ZINCRBY";
+
+    /// <summary>
+    /// 返回由所有给定集的交集产生的集的成员。
+    /// 6.2.0
+    /// </summary>
+    public const string ZInter = "ZINTER";
+
+
+    /// <summary>
+    /// 此命令类似于ZINTER，但它不返回结果集，而是仅返回结果的基数。
+    /// 7.0.0
+    /// </summary>
+    public const string ZInterCard = "ZINTERCARD";
+
+    /// <summary>
+    /// 此命令等于ZINTER，但不是返回结果集，而是存储在destination.
+    /// 如果destination已经存在，则将其覆盖
+    /// </summary>
+    public const string ZInterStore = "ZINTERSTORE";
+
+    /// <summary>
+    /// 合并取并集
+    /// </summary>
+    public const string ZUnionStore = "ZUNIONSTORE";
+
+    /// <summary>
+    /// 合并取并集
+    /// 6.2.0
+    /// </summary>
+    public const string ZUnion = "ZUNION";
+
+    /// <summary>
+    /// 取分数
+    /// </summary>
+    public const string ZScore = "ZSCORE";
+
+    /// <summary>
+    /// 当排序集中的所有元素都以相同的分数插入时，为了强制按字典顺序排序，此命令返回排序集中的元素数，其值介于key和min之间max。
+    /// </summary>
+    public const string ZLexCount = "ZLEXCOUNT";
+
+    /// <summary>
+    /// 从提供的键名列表中的第一个非空排序集中弹出一个或多个元素，即成员分数对。
+    /// 7.0.0
+    /// </summary>
+    public const string ZMpop = "ZMPOP";
 
     #endregion
 }

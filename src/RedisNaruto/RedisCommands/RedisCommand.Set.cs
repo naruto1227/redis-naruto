@@ -81,7 +81,7 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         var result =
             await client.ExecuteAsync<int>(new Command(RedisCommandName.SDiffStore,
-                new object[] {destination}.Union(keys).ToArray()));
+                new object[] {destination}.Concat(keys).ToArray()));
         return result;
     }
 
