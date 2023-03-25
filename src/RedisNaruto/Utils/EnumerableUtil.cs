@@ -1,3 +1,5 @@
+using RedisNaruto.Models;
+
 namespace RedisNaruto.Utils;
 
 internal static class EnumerableUtil
@@ -152,6 +154,45 @@ internal static class EnumerableUtil
                     res[item] = 0;
                 }
 
+                i++;
+            }
+
+            return res;
+        }
+    }
+
+    /// <summary>
+    /// 转换
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static Task<List<SortedSetModel>> ToZSetAsync(this IAsyncEnumerable<object> source)
+    {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return ExecuteAsync();
+
+        async Task<List<SortedSetModel>> ExecuteAsync()
+        {
+            //下标
+            var i = 1;
+            var res = new List<SortedSetModel>();
+            await foreach (var item in source)
+            {
+                //双数为值
+                if (i % 2 == 0)
+                {
+                    res[i - 1-1].Score = item.ToString().ToLong();
+                }
+                //单数为key
+                else
+                {
+                    res.Add(new SortedSetModel(item));
+                }
                 i++;
             }
 

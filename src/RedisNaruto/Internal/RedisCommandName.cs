@@ -392,7 +392,8 @@ internal static class RedisCommandName
 
     /// <summary>
     /// 6.2.0
-    /// 
+    /// BLMOVE是 的阻塞变体LMOVE 当source为空时，Redis 将阻塞连接，直到另一个客户端推送到它或直到达到timeout
+    /// 将 source 消息从左或者右 移除，并存储到 destination 元素中的 left 或者right
     /// </summary>
     public const string BLMove = "BLMOVE";
 
@@ -600,6 +601,41 @@ internal static class RedisCommandName
     /// 7.0.0
     /// </summary>
     public const string BZMpop = "BZMPOP";
+
+    /// <summary>
+    /// 返回元素的分数
+    /// 6.2.0
+    /// </summary>
+    public const string ZMScore = "ZMSCORE";
+
+    /// <summary>
+    /// 删除并返回count存储在 的排序集中得分最高的成员key。
+    /// 当返回多个元素时，得分最高的将是第一个，其次是得分较小的元素。
+    /// 5.0.0
+    /// </summary>
+    public const string ZPopMax = "ZPOPMAX";
+
+    /// <summary>
+    /// 删除并返回count存储在 的排序集中得分最低的成员key。
+    /// 当返回多个元素时，得分最低的将是第一个，其次是得分较大的元素。
+    /// 5.0.0
+    /// </summary>
+    public const string ZPopMin = "ZPOPMIN";
+
+    /// <summary>
+    /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
+    /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
+    ///如果用否定调用count，行为会改变，命令可以多次返回相同的元素。在这种情况下，返回的元素数是指定的绝对值count。
+    ///可选WITHSCORES修饰符更改回复，因此它包括从排序集中随机选择的元素的相应分数。
+    /// 6.2.0
+    /// </summary>
+    public const string ZRandMember = "ZRANDMEMBER";
+
+    /// <summary>
+    /// 然后zset的数据
+    /// 查询方法
+    /// </summary>
+    public const string ZRange = "ZRANGE";
 
     #endregion
 }

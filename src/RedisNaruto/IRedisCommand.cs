@@ -1036,7 +1036,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    Task<(string key,Dictionary<object, long> data)> ZMpopAsync(string[] keys,
+    Task<(string key, Dictionary<object, long> data)> ZMpopAsync(string[] keys,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
         CancellationToken cancellationToken = default);
@@ -1054,5 +1054,117 @@ public interface IRedisCommand : IAsyncDisposable
     Task<(string key, Dictionary<object, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
+        CancellationToken cancellationToken = default);
+
+
+    ///  <summary>
+    /// 获取元素的分数信息
+    ///  </summary>
+    ///  <param name="key"></param>
+    ///  <param name="members">元素</param>
+    ///  <param name="cancellationToken"></param>
+    ///  <returns></returns>
+    Task<List<long>> ZMScoreAsync(string key, object[] members,
+        CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 删除并返回count存储在 的排序集中得分最高的成员key。
+    /// 当返回多个元素时，得分最高的将是第一个，其次是得分较小的元素。。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    Task<Dictionary<object, long>> ZPopMaxAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 删除并返回count存储在 的排序集中得分最低的成员key。
+    /// 当返回多个元素时，得分最低的将是第一个，其次是得分较大的元素。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    Task<Dictionary<object, long>> ZPopMinAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
+    /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
+    ///如果用否定调用count，行为会改变，命令可以多次返回相同的元素。在这种情况下，返回的元素数是指定的绝对值count
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> ZRandMemberAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
+    /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
+    ///如果用否定调用count，行为会改变，命令可以多次返回相同的元素。在这种情况下，返回的元素数是指定的绝对值count
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<SortedSetModel>> ZRandMemberWithScoreAsync(string key, int count = 1,
+        CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 查询zset中数据的信息 默认是从低到高
+    /// </summary>
+    /// <code>
+    /// ZRANGE zset (1 5 BYSCORE
+    /// while将返回所有元素1 < score <= 5：
+    /// 
+    /// ZRANGE zset (5 (10 BYSCORE
+    /// 将返回所有元素5 < score < 10（排除 5 和 10）
+    /// </code>
+    /// <param name="key"></param>
+    /// <param name="start">开始位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="stop">结束位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="isLimit">6.2.0 开启limit</param>
+    /// <param name="count">需要开启isLimit </param>
+    /// <param name="offset">需要开启isLimit</param>
+    /// <param name="scoreLex">6.2.0 </param>
+    /// <param name="rev">6.2.0
+    /// 默认的返回值顺序的从低到高，true 代表反转数据，从高到低
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<object>> ZRangeAsync(string key, string start = "0", string stop = "1",
+        bool isLimit = false, int offset = 0, int count = 0,
+        SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
+        CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 查询zset中数据的信息 默认是从低到高
+    /// </summary>
+    /// <code>
+    /// ZRANGE zset (1 5 BYSCORE
+    /// while将返回所有元素1 < score <= 5：
+    /// 
+    /// ZRANGE zset (5 (10 BYSCORE
+    /// 将返回所有元素5 < score < 10（排除 5 和 10）
+    /// </code>
+    /// <param name="key"></param>
+    /// <param name="start">开始位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="stop">结束位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="isLimit">6.2.0 开启limit</param>
+    /// <param name="count">需要开启isLimit </param>
+    /// <param name="offset">需要开启isLimit</param>
+    /// <param name="scoreLex">6.2.0 </param>
+    /// <param name="rev">6.2.0
+    /// 默认的返回值顺序的从低到高，true 代表反转数据，从高到低
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<SortedSetModel>> ZRangeWithScoreAsync(string key, string start = "0", string stop = "1",
+        bool isLimit = false, int offset = 0, int count = 0,
+        SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default);
 }
