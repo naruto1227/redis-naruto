@@ -25,4 +25,13 @@
       <ProjectReference Include="..\..\src\RedisNaruto\RedisNaruto.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="test.html">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="未命名.docx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
