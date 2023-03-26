@@ -697,6 +697,69 @@ public partial class RedisCommand : IRedisCommand
     }
 
     /// <summary>
+    /// 移除最大的元素
+    /// 阻塞版本
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    public async Task<(string key, SortedSetModel data)> BzPopMaxAsync(string[] key, TimeSpan timeout,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.BZPopMax, key.Concat(new string[]
+                {
+                    timeout.TotalSeconds.ToString()
+                }).ToArray()));
+        if (result is not {Count: > 2})
+        {
+            return default;
+        }
+
+
+        return (result[0].ToString(), new SortedSetModel(result[1])
+        {
+            Score = result[2].ToString().ToLong()
+        });
+    }
+
+    /// <summary>
+    /// 移除最小的元素
+    /// 阻塞版本
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    public async Task<(string key, SortedSetModel data)> BzPopMinAsync(string[] key, TimeSpan timeout,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.BZPopMin, key.Concat(new string[]
+            {
+                timeout.TotalSeconds.ToString()
+            }).ToArray()));
+
+        if (result is not {Count: > 2})
+        {
+            return default;
+        }
+
+
+        return (result[0].ToString(), new SortedSetModel(result[1])
+        {
+            Score = result[2].ToString().ToLong()
+        });
+    }
+
+    /// <summary>
     /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
     /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
     ///如果用否定调用count，行为会改变，命令可以多次返回相同的元素。在这种情况下，返回的元素数是指定的绝对值count
@@ -765,7 +828,7 @@ public partial class RedisCommand : IRedisCommand
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<object>> ZRangeAsync(string key, string start="0", string stop="1",
+    public async Task<List<object>> ZRangeAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default)
@@ -799,8 +862,8 @@ public partial class RedisCommand : IRedisCommand
                 argv.ToArray())).ToListAsync();
         return result;
     }
-    
-    
+
+
     /// <summary>
     /// 查询zset中数据的信息 默认是从低到高
     /// </summary>
@@ -823,7 +886,7 @@ public partial class RedisCommand : IRedisCommand
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<SortedSetModel>> ZRangeWithScoreAsync(string key, string start="0", string stop="1",
+    public async Task<List<SortedSetModel>> ZRangeWithScoreAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default)
@@ -849,12 +912,207 @@ public partial class RedisCommand : IRedisCommand
             argv.Add(offset);
             argv.Add(count);
         }
+
         argv.Add("WITHSCORES");
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
             await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZRange,
                 argv.ToArray())).ToZSetAsync();
+        return result;
+    }
+
+    /// <summary>
+    /// 此命令类似于ZRANGE，但将结果存储在<dest>目标键中
+    /// </summary>
+    /// <code>
+    /// </code>
+    /// <param name="dest">目标元素</param>
+    /// <param name="key"></param>
+    /// <param name="start">开始位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="stop">结束位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="isLimit">6.2.0 开启limit</param>
+    /// <param name="count">需要开启isLimit </param>
+    /// <param name="offset">需要开启isLimit</param>
+    /// <param name="scoreLex">6.2.0 </param>
+    /// <param name="rev">6.2.0
+    /// 默认的返回值顺序的从低到高，true 代表反转数据，从高到低
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRangeStoreAsync(string dest, string key, string start = "0", string stop = "1",
+        bool isLimit = false, int offset = 0, int count = 0,
+        SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(dest);
+        ArgumentNullException.ThrowIfNull(key);
+        var argv = new List<object>()
+        {
+            dest,
+            key,
+            start, stop,
+        };
+        if (rev)
+        {
+            argv.Add("REV");
+        }
+
+        if (scoreLex != SortedSetScoreLexEnum.Defaut)
+        {
+            argv.Add(scoreLex.ToString());
+        }
+
+        if (isLimit)
+        {
+            argv.Add(offset);
+            argv.Add(count);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRangeStore,
+                argv.ToArray()));
+        return result;
+    }
+
+    /// <summary>
+    /// 从低到高返回member对应的名次信息 默认从0 开始
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRankAsync(string key, object member,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(member);
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRank, new object[]
+            {
+                key, member
+            }));
+        return result;
+    }
+
+    /// <summary>
+    /// member返回存储在 的已排序集合中的排名key，分数从高到低排序。排名（或索引）从 0 开始，这意味着得分最高的成员具有排名0。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRevRankAsync(string key, object member,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(member);
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRevRank, new object[]
+            {
+                key, member
+            }));
+        return result;
+    }
+
+    /// <summary>
+    /// 从存储在 的排序集中删除指定成员key。不存在的成员将被忽略。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRemAsync(string key, object[] member,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(member);
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRem, new object[]
+            {
+                key
+            }.Concat(member).ToArray()));
+        return result;
+    }
+
+    /// <summary>
+    /// 此命令删除存储在 和 指定的字典序范围之间的有序集合中的所有key元素。
+    /// 按照member删除
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRemRangeByLexAsync(string key, string min, string max,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRemRangeByLex, new object[]
+            {
+                key,
+                min,
+                max
+            }));
+        return result;
+    }
+
+    /// <summary>
+    /// 按照排行从低到高删除
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="start">排行开始</param>
+    /// <param name="stop">排行结束</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRemRangeByRankAsync(string key, int start, int stop,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRemRangeByRank, new object[]
+            {
+                key,
+                start,
+                stop
+            }));
+        return result;
+    }
+
+    /// <summary>
+    /// 删除score 分数之间的所有元素
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ZRemRangeByScoreAsync(string key, string min, string max,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var result =
+            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRemRangeByScore, new object[]
+            {
+                key,
+                min,
+                max
+            }));
         return result;
     }
 }

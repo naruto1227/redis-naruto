@@ -1141,6 +1141,7 @@ public interface IRedisCommand : IAsyncDisposable
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default);
+
     /// <summary>
     /// 查询zset中数据的信息 默认是从低到高
     /// </summary>
@@ -1166,5 +1167,113 @@ public interface IRedisCommand : IAsyncDisposable
     Task<List<SortedSetModel>> ZRangeWithScoreAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令类似于ZRANGE，但将结果存储在<dest>目标键中
+    /// </summary>
+    /// <code>
+    /// </code>
+    /// <param name="dest">目标元素</param>
+    /// <param name="key"></param>
+    /// <param name="start">开始位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="stop">结束位置 (-inf正无穷负无穷 需要搭配ByScore使用）, 在分数前加上 ( 符号 代表排除当前值</param>
+    /// <param name="isLimit">6.2.0 开启limit</param>
+    /// <param name="count">需要开启isLimit </param>
+    /// <param name="offset">需要开启isLimit</param>
+    /// <param name="scoreLex">6.2.0 </param>
+    /// <param name="rev">6.2.0
+    /// 默认的返回值顺序的从低到高，true 代表反转数据，从高到低
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRangeStoreAsync(string dest, string key, string start = "0", string stop = "1",
+        bool isLimit = false, int offset = 0, int count = 0,
+        SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 从低到高返回member对应的名次信息 默认从0 开始
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRankAsync(string key, object member,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// member返回存储在 的已排序集合中的排名key，分数从高到低排序。排名（或索引）从 0 开始，这意味着得分最高的成员具有排名0。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRevRankAsync(string key, object member,
+        CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 从存储在 的排序集中删除指定成员key。不存在的成员将被忽略。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="member"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRemAsync(string key, object[] member,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令删除存储在 和 指定的字典序范围之间的有序集合中的所有key元素。minmax
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRemRangeByLexAsync(string key, string min, string max,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 按照排行从低到高删除
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRemRangeByRankAsync(string key, int start, int stop,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 删除score 分数之间的所有元素
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> ZRemRangeByScoreAsync(string key, string min, string max,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 移除最小的元素
+    /// 阻塞版本
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    Task<(string key, SortedSetModel data)> BzPopMinAsync(string[] key, TimeSpan timeout,
+        CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 移除最大的元素
+    /// 阻塞版本
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    Task<(string key, SortedSetModel data)> BzPopMaxAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
 }

@@ -621,7 +621,21 @@ internal static class RedisCommandName
     /// 5.0.0
     /// </summary>
     public const string ZPopMin = "ZPOPMIN";
+    /// <summary>
+    /// 删除并返回count存储在 的排序集中得分最高的成员key。
+    /// 当返回多个元素时，得分最高的将是第一个，其次是得分较小的元素。
+    /// 阻塞
+    /// 5.0.0
+    /// </summary>
+    public const string BZPopMax = "BZPOPMAX";
 
+    /// <summary>
+    /// 删除并返回count存储在 的排序集中得分最低的成员key。
+    /// 当返回多个元素时，得分最低的将是第一个，其次是得分较大的元素。
+    /// 阻塞
+    /// 5.0.0
+    /// </summary>
+    public const string BZPopMin = "BZPOPMIN";
     /// <summary>
     /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
     /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
@@ -636,6 +650,44 @@ internal static class RedisCommandName
     /// 查询方法
     /// </summary>
     public const string ZRange = "ZRANGE";
+
+    /// <summary>
+    /// 此命令类似于ZRANGE，但将结果存储在<dst>目标键中。
+    /// 6.2.0
+    /// </summary>
+    public const string ZRangeStore = "ZRANGESTORE";
+
+    /// <summary>
+    /// 从低到高返回member对应的名次信息 默认从0 开始
+    /// </summary>
+    public const string ZRank = "ZRANK";
+
+    /// <summary>
+    /// member返回存储在 的已排序集合中的排名key，分数从高到低排序。排名（或索引）从 0 开始，这意味着得分最高的成员具有排名0。
+    /// </summary>
+    public const string ZRevRank = "ZREVRANK";
+
+    /// <summary>
+    /// 从存储在 的排序集中删除指定成员key。不存在的成员将被忽略。
+    /// </summary>
+    public const string ZRem = "ZREM";
+
+    /// <summary>
+    /// 此命令删除存储在 和 指定的字典序范围之间的有序集合中的所有key元素。minmax
+    /// </summary>
+    public const string ZRemRangeByLex = "ZREMRANGEBYLEX";
+
+    /// <summary>
+    /// 删除存储在和key之间排名的有序集合中的所有元素。和都是基于得分最低的元素的索引。这些索引可以是负数，表示从得分最高的元素开始的偏移量。
+    /// 例如：是得分最高的元素，得分第二高的元素等等
+    /// </summary>
+
+    public const string ZRemRangeByRank = "ZREMRANGEBYRANK";
+
+    /// <summary>
+    /// 删除score 分数之间的所有元素
+    /// </summary>
+    public const string ZRemRangeByScore = "ZREMRANGEBYSCORE";
 
     #endregion
 }
