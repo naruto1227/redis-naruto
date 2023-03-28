@@ -175,7 +175,8 @@ internal sealed class MessageTransport : IMessageTransport
                     //如果为null
                     if (strlen == "-1")
                     {
-                        return default;
+                        resultList.Add(null);
+                        break;
                     }
 
                     //读取结果
