@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace RedisNaruto.Models;
 
-public struct XGroupInfoModel
+public readonly struct XGroupInfoModel
 {
     public XGroupInfoModel(string name,int consumerCount, int pendingCount, string lastDeliveredId, string entriesRead, int? lag)
     {

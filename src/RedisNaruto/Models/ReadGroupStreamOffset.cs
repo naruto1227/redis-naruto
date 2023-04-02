@@ -1,6 +1,6 @@
 namespace RedisNaruto.Models;
 
-public struct ReadGroupStreamOffset
+public readonly struct ReadGroupStreamOffset
 {
     /// <summary>
     /// 从消费者的pending队列开头读取

@@ -5,7 +5,7 @@ namespace RedisNaruto.Models;
 /// <summary>
 /// 消费者信息
 /// </summary>
-public struct XConsumerInfoModel
+public readonly struct XConsumerInfoModel
 {
     /// <summary>
     /// 

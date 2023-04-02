@@ -1,6 +1,6 @@
 namespace RedisNaruto.Models;
 
-public struct XPendingInfoModel
+public readonly struct XPendingInfoModel
 {
     internal XPendingInfoModel(string messageId, string consumerName, long idleTimeInMs, int deliveryCount)
     {

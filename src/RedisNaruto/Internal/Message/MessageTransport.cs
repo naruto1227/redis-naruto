@@ -1,7 +1,9 @@
+using System.Buffers;
 using System.Text;
 using Microsoft.IO;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Serialization;
+using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.Internal.Message;
@@ -67,7 +69,7 @@ internal sealed class MessageTransport : IMessageTransport
             {
                 //错误
                 var result = ReadLine(stream);
-                throw new RedisExecException(result);
+                throw new RedisExecException(result.ToString());
             }
         }
     }
@@ -114,9 +116,9 @@ internal sealed class MessageTransport : IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private string ReadLine(Stream stream)
+    private RedisValue ReadLine(Stream stream)
     {
-        var stringBuilder = new StringBuilder();
+        var bytes = new List<byte>();
         while (true)
         {
             var msg = stream.ReadByte();
@@ -127,14 +129,17 @@ internal sealed class MessageTransport : IMessageTransport
                 var msg2 = stream.ReadByte();
                 if (msg2 < 0) break;
                 if (msg2 == '\n') break;
-                stringBuilder.Append((char) msg);
-                stringBuilder.Append((char) msg2);
+                // stringBuilder.Append((char) msg);
+                bytes.Add((byte) msg);
+                // stringBuilder.Append((char) msg2);
+                bytes.Add((byte) msg2);
             }
             else
-                stringBuilder.Append((char) msg);
+                // stringBuilder.Append((char) msg);
+                bytes.Add((byte) msg);
         }
 
-        return stringBuilder.ToString();
+        return new RedisValue(bytes.ToArray());
     }
 
     /// <summary>

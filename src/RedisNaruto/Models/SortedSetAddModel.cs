@@ -3,7 +3,7 @@ namespace RedisNaruto.Models;
 /// <summary>
 /// 
 /// </summary>
-public struct SortedSetAddModel
+public readonly struct SortedSetAddModel
 {
     public SortedSetAddModel(long score, object member)
     {

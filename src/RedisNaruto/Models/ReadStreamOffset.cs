@@ -1,6 +1,6 @@
 namespace RedisNaruto.Models;
 
-public struct ReadStreamOffset
+public readonly struct ReadStreamOffset
 {
     /// <summary>
     /// 从头读取

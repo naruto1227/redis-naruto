@@ -1,6 +1,6 @@
 namespace RedisNaruto.Models;
 
-public struct XAutoClaimWithIdModel
+public readonly struct XAutoClaimWithIdModel
 {
     public XAutoClaimWithIdModel(string nextStartId, List<string> entityModels, List<string> deletedIds)
     {

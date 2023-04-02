@@ -1,6 +1,6 @@
 namespace RedisNaruto.Models;
 
-public struct StreamEntityModel
+public readonly struct StreamEntityModel
 {
     /// <summary>
     /// 
