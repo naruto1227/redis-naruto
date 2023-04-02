@@ -8,6 +8,7 @@ c#版本的redis客户端
 - String
 - Hash
 - Set
+- ZSet
 - List
 - Stream
 - PubSub
