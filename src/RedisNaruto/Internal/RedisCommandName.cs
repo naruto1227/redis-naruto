@@ -768,4 +768,34 @@ internal static class RedisCommandName
     public const string XAutoClaim = "XAUTOCLAIM";
 
     #endregion
+
+    #region Generic
+
+    /// <summary>
+    /// 将key拷贝到新的key中
+    /// 6.2.0
+    /// </summary>
+    public const string Copy = "COPY";
+
+    /// <summary>
+    /// 删除key
+    /// </summary>
+    public const string Del = "DEL";
+
+    /// <summary>
+    /// 以 Redis 特定格式序列化存储在 key 中的值，并将其返回给用户。可以使用命令将返回值合成回 Redis 键RESTORE 。
+    /// </summary>
+    public const string Dump = "DUMP";
+
+    /// <summary>
+    /// 将dump序列化的值，反序列化到指定的key中
+    /// </summary>
+    public const string ReStore = "RESTORE";
+
+    /// <summary>
+    /// 校验是否存在
+    /// </summary>
+    public const string Exists = "EXISTS";
+
+    #endregion
 }

@@ -61,17 +61,19 @@ public static class StreamConst
     internal static readonly string Stream = "STREAM";
 
     internal static readonly string Streams = "STREAMS";
+
     /// <summary>
     /// 空闲时间
     /// </summary>
     internal static readonly string Idle = "IDLE";
+
     internal static readonly string Time = "TIME";
 
     /// <summary>
     /// 重置 消息的传递次数
     /// </summary>
     internal static readonly string RetryCount = "RETRYCOUNT";
-    
+
     internal static readonly string Block = "BLOCK";
 
     internal static readonly string Force = "FORCE";
@@ -86,6 +88,16 @@ public static class StreamConst
     /// 设置消费组中流的id
     /// </summary>
     internal static readonly string SetId = "SETID";
+
+    /// <summary>
+    /// 目标db
+    /// </summary>
+    internal static readonly string Db = "DB";
+
+    /// <summary>
+    ///  是否替换
+    /// </summary>
+    internal static readonly string Replace = "REPLACE";
 
     #endregion
 }
