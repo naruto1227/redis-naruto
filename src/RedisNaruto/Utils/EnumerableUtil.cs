@@ -186,13 +186,14 @@ internal static class EnumerableUtil
                 //双数为值
                 if (i % 2 == 0)
                 {
-                    res[i - 1-1].Score = item.ToString().ToLong();
+                    res[i - 1 - 1].Score = item.ToString().ToLong();
                 }
                 //单数为key
                 else
                 {
                     res.Add(new SortedSetModel(item));
                 }
+
                 i++;
             }
 
@@ -241,5 +242,84 @@ internal static class EnumerableUtil
 
             return res;
         }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="condition"></param>
+    /// <param name="data">数据</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static void IfAdd<T>(this List<T> source, bool condition, T data)
+    {
+        if (condition)
+        {
+            source.Add(data);
+        }
+    }
+
+    /// <summary>
+    /// 构建流消息内容
+    /// </summary>
+    /// <returns></returns>
+    public static List<StreamModel> BuildStreamList(this List<object> list)
+    {
+        if (list is not {Count: > 0})
+        {
+            return default;
+        }
+
+        var resultList = new List<StreamModel>();
+
+        foreach (var item in list)
+        {
+            if (item is not List<object> {Count: > 1} itemStreamList)
+            {
+                continue;
+            }
+
+            if (itemStreamList[1] is not List<object> {Count: > 0} itemStreamEntityList)
+            {
+                continue;
+            }
+
+            var info = new StreamModel(itemStreamList[0].ToString());
+            info.StreamEntitys.AddRange(itemStreamEntityList.BuildStreamEntityModel());
+            resultList.Add(info);
+        }
+
+        return resultList;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="itemStreamEntityList"></param>
+    /// <returns></returns>
+    public static List<StreamEntityModel> BuildStreamEntityModel(this List<object> itemStreamEntityList)
+    {
+        List<StreamEntityModel> streamEntityModels = new();
+        foreach (var streamEntityList in itemStreamEntityList)
+        {
+            if (streamEntityList is not List<object> {Count: > 1} currentStreamEntityList)
+            {
+                continue;
+            }
+
+            // StreamEntityModel
+            if (currentStreamEntityList[1] is not List<object> {Count: > 0} messageList)
+            {
+                continue;
+            }
+
+            var streamEntityModel =
+                new StreamEntityModel(currentStreamEntityList[0].ToString(), messageList.ToDicObj());
+            streamEntityModels.Add(streamEntityModel);
+        }
+
+        return streamEntityModels;
     }
 }

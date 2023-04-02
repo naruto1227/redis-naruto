@@ -42,22 +42,16 @@ public partial class RedisCommand : IRedisCommand
         {
             key
         };
-        if (type != SortedSetAddEnum.No)
+        datas.IfAdd(type != SortedSetAddEnum.No, type switch
         {
-            datas.Add(type switch
-            {
-                SortedSetAddEnum.Exists => "XX",
-                SortedSetAddEnum.GreaterThan => "GT",
-                SortedSetAddEnum.LessThan => "LT",
-                _ => "NX"
-            });
-        }
+            SortedSetAddEnum.Exists => "XX",
+            SortedSetAddEnum.GreaterThan => "GT",
+            SortedSetAddEnum.LessThan => "LT",
+            _ => "NX"
+        });
 
-        if (isCh)
-            datas.Add("CH");
-
-        if (isIncr)
-            datas.Add("INCR");
+        datas.IfAdd(isCh, "CH");
+        datas.IfAdd(isIncr, "INCR");
         foreach (var item in values)
         {
             datas.Add(item.Score);
@@ -712,9 +706,9 @@ public partial class RedisCommand : IRedisCommand
         await using var client = await GetRedisClient(cancellationToken);
         var result =
             await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.BZPopMax, key.Concat(new string[]
-                {
-                    timeout.TotalSeconds.ToString()
-                }).ToArray()));
+            {
+                timeout.TotalSeconds.ToString()
+            }).ToArray()));
         if (result is not {Count: > 2})
         {
             return default;

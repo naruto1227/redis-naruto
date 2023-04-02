@@ -621,6 +621,7 @@ internal static class RedisCommandName
     /// 5.0.0
     /// </summary>
     public const string ZPopMin = "ZPOPMIN";
+
     /// <summary>
     /// 删除并返回count存储在 的排序集中得分最高的成员key。
     /// 当返回多个元素时，得分最高的将是第一个，其次是得分较小的元素。
@@ -636,6 +637,7 @@ internal static class RedisCommandName
     /// 5.0.0
     /// </summary>
     public const string BZPopMin = "BZPOPMIN";
+
     /// <summary>
     /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
     /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
@@ -681,13 +683,89 @@ internal static class RedisCommandName
     /// 删除存储在和key之间排名的有序集合中的所有元素。和都是基于得分最低的元素的索引。这些索引可以是负数，表示从得分最高的元素开始的偏移量。
     /// 例如：是得分最高的元素，得分第二高的元素等等
     /// </summary>
-
     public const string ZRemRangeByRank = "ZREMRANGEBYRANK";
 
     /// <summary>
     /// 删除score 分数之间的所有元素
     /// </summary>
     public const string ZRemRangeByScore = "ZREMRANGEBYSCORE";
+
+    #endregion
+
+    #region stream
+
+    /// <summary>
+    /// 添加流记录
+    /// </summary>
+    public const string XAdd = "XADD";
+
+
+    /// <summary>
+    /// 流消息确定
+    /// </summary>
+    public const string XAck = "XACK";
+
+    /// <summary>
+    ///删除流消息
+    /// </summary>
+    public const string XDel = "XDEL";
+
+    /// <summary>
+    /// 获取流的长度
+    /// </summary>
+    public const string XLen = "XLEN";
+
+    /// <summary>
+    /// 裁剪流的消息
+    /// </summary>
+    public const string XTrim = "XTRIM";
+
+    /// <summary>
+    /// 消费者组
+    /// </summary>
+    public const string XGroup = "XGROUP";
+
+    /// <summary>
+    /// 流信息
+    /// </summary>
+    public const string XInfo = "XINFO";
+
+    /// <summary>
+    /// 读取流消息
+    /// </summary>
+    public const string XRead = "XREAD";
+
+    /// <summary>
+    /// 查询流 根据范围
+    /// </summary>
+    public const string XRange = "XRANGE";
+
+    /// <summary>
+    /// 查询流 根据范围
+    /// 按照相反的顺序
+    /// </summary>
+    public const string XRevRange = "XREVRANGE";
+
+    /// <summary>
+    /// 从消费组中读取
+    /// </summary>
+    public const string XReadGroup = "XREADGROUP";
+
+    /// <summary>
+    /// 获取消费者组中的未ack的消息对应的消费者信息
+    /// </summary>
+    public const string XPending = "XPENDING";
+
+    /// <summary>
+    /// 转移消息所有权
+    /// </summary>
+    public const string XClaim = "XCLAIM";
+
+    /// <summary>
+    /// 此命令转移符合指定条件的未决流条目的所有权
+    /// 6.2.0
+    /// </summary>
+    public const string XAutoClaim = "XAUTOCLAIM";
 
     #endregion
 }
