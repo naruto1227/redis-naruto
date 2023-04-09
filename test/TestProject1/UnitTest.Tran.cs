@@ -22,7 +22,7 @@ public class UnitTest_Tran : BaseUnit
         var res1 = await tran.SetAsync("transtr11", "1");
         var res2 = await tran.SetAsync("transtr21", 2);
         var res3 = await tran.GetAsync("transtr");
-        var res4 = await tran.MGetAsync<string>(new[]
+        var res4 = await tran.MGetAsync(new[]
         {
             "transtr", "transtr2"
         });
@@ -44,7 +44,7 @@ public class UnitTest_Tran : BaseUnit
         await tran.SetAsync("TranDiscard11", "1");
         await tran.SetAsync("TranDiscard21", 2);
         await tran.GetAsync("transtr");
-        await tran.MGetAsync<string>(new[]
+        await tran.MGetAsync(new[]
         {
             "transtr", "transtr2"
         });
@@ -67,7 +67,7 @@ public class UnitTest_Tran : BaseUnit
         var res1 = await tran.SetAsync("TranDiscard11", "2");
         var res2 = await tran.SetAsync("TranDiscard21", 2);
         var res3 = await tran.GetAsync("transtr");
-        var res4 = await tran.MGetAsync<string>(new[]
+        var res4 = await tran.MGetAsync(new[]
         {
             "transtr", "transtr2"
         });

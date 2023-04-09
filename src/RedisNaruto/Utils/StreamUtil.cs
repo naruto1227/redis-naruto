@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.Utils;
 
@@ -17,14 +18,14 @@ internal static class StreamUtil<T>
     /// <param name="source"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    public static object FindStreamValue(List<object> source, string name)
+    public static object FindStreamValue(List<RedisValue> source, string name)
     {
         if (_index.TryGetValue(name, out var i))
         {
             return source[i];
         }
 
-        i = source.IndexOf(name);
+        i = source.Select(a => a.ToString()).ToList().IndexOf(name);
 
         if (i != -1)
         {

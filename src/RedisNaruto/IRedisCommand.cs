@@ -68,8 +68,8 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<string> GetAsync(string key, CancellationToken cancellationToken = default);
-
+    Task<RedisValue> GetAsync(string key, CancellationToken cancellationToken = default);
+    
     /// <summary>
     /// 查询字符串
     /// </summary>
@@ -84,7 +84,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<TResult>> MGetAsync<TResult>(string[] key, CancellationToken cancellationToken = default);
+    Task<List<RedisValue>> MGetAsync(string[] key, CancellationToken cancellationToken = default);
 
     ///  <summary>
     /// 如果key已经存在并且是一个字符串，此命令将value在字符串末尾附加。如果key不存在，则创建它并将其设置为空字符串，因此与这种特殊情况APPEND 类似SET。
@@ -119,7 +119,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<string> GetDelAsync(string key, CancellationToken cancellationToken = default);
+    Task<RedisValue> GetDelAsync(string key, CancellationToken cancellationToken = default);
 
     ///  <summary>
     /// 查询key的值 并设置过期时间
@@ -128,7 +128,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="expireTime">过期时间</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    Task<string> GetExAsync(string key, TimeSpan expireTime,
+    Task<RedisValue> GetExAsync(string key, TimeSpan expireTime,
         CancellationToken cancellationToken = default);
 
     ///  <summary>
@@ -169,7 +169,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns>收到消息的客户端数量</returns>
     Task<int> PublishAsync(string topic, string message, CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 订阅消息
     /// </summary>
@@ -178,7 +178,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     Task SubscribeAsync(string[] topics, Func<string, string, Task> reciveMessage,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 取消订阅消息
     /// </summary>
@@ -186,7 +186,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     Task UnSubscribeAsync(string[] topics,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回客户端id
     /// 1.它从不重复，所以如果CLIENT ID返回相同的数字，调用者可以确定底层客户端没有断开并重新连接连接，但它仍然是同一个连接。
@@ -195,19 +195,19 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<long> ClientIdAsync(CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
     Task<bool> PingAsync(CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回选中数据库的key数量
     /// </summary>
     /// <returns></returns>
     Task<long> DbSizeAsync(CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 执行script脚本
     /// </summary>
@@ -218,7 +218,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<object> EvalAsync(string script, object[] keys, object[] argvs,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 执行指定的 sha值的 lua缓存脚本 调用 SCRIPT LOAD 脚本返回的 sha值
     /// </summary>
@@ -229,7 +229,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<object> EvalShaAsync(string sha, object[] keys, object[] argvs,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将script 存储到redis lua缓存中
     /// </summary>
@@ -238,7 +238,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<string> ScriptLoadAsync(string script,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 验证lua脚本 是否已经缓存
     /// </summary>
@@ -247,21 +247,21 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<bool>> ScriptExistsAsync(string[] sha,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 开启事务
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<ITransactionRedisCommand> MultiAsync(CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 取消key的监视
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task UnWatchAsync(CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 监视指定的 key,如果 之后key的值被修改了， 则影响事务的exec 命令执行失败 返回null
     /// https://redis.io/docs/manual/transactions/
@@ -270,14 +270,14 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task WatchAsync(string[] keys, CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 开启流水线
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IPipeRedisCommand> BeginPipeAsync(CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash删除
     /// </summary>
@@ -286,7 +286,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<long> HDelAsync(string key, string[] fields, CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash存储
     /// </summary>
@@ -296,7 +296,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> HSetAsync(string key, Dictionary<string, object> fields,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash存在
     /// </summary>
@@ -305,7 +305,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<bool> HExistsAsync(string key, string field, CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash获取
     /// </summary>
@@ -314,16 +314,16 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<string> HGetAsync(string key, string field, CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取所有的hash数据
     /// </summary>
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Dictionary<string, string>> HGetAllAsync(string key,
+    Task<Dictionary<string, RedisValue>> HGetAllAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash 递增
     /// </summary>
@@ -334,16 +334,16 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<double> HIncrByAsync(string key, string field, double increment = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash 的field 信息
     /// </summary>
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<string>> HKeysAsync(string key,
+    Task<List<RedisValue>> HKeysAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// hash 长度
     /// </summary>
@@ -352,7 +352,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> HLenAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 批量获取
     /// </summary>
@@ -360,9 +360,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="fields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<string>> HMGetAsync(string key, string[] fields,
+    Task<List<RedisValue>> HMGetAsync(string key, string[] fields,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 随机获取hash数据
     /// </summary>
@@ -370,9 +370,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Dictionary<string, string>> HRandFieldWithValueAsync(string key, int count = 1,
+    Task<Dictionary<string, RedisValue>> HRandFieldWithValueAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 随机获取hash数据
     /// </summary>
@@ -380,18 +380,18 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<string>> HRandFieldAsync(string key, int count = 1,
+    Task<List<RedisValue>> HRandFieldAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取hash的值信息
     /// </summary>
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<string>> HValsAsync(string key,
+    Task<List<RedisValue>> HValsAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取hash字段对应值的长度
     /// </summary>
@@ -401,7 +401,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> HStrLenAsync(string key, string field,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 设置hast的值 如果不存在的话 就添加
     /// </summary>
@@ -412,7 +412,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> HSetNxAsync(string key, string field, object value,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 扫码hash的数据
     /// https://redis.io/commands/scan/
@@ -422,10 +422,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
-    IAsyncEnumerable<Dictionary<string, string>> HScanAsync(string key,
+    IAsyncEnumerable<Dictionary<string, RedisValue>> HScanAsync(string key,
         string matchPattern = "*", int count = 10,
         [EnumeratorCancellation] CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -435,7 +435,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> SAddAsync(string key, object[] value,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回set中集合的长度
     /// </summary>
@@ -444,7 +444,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> SCardAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
     /// 类似 except
@@ -452,9 +452,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> SDiffAsync(string[] key,
+    Task<List<RedisValue>> SDiffAsync(string[] key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 此命令等于SDIFF，但不是返回结果集，而是存储在destination.
     /// 将except的差异值存到目标destination
@@ -465,16 +465,16 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> SDiffStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由所有给定集的交集产生的集的成员。
     /// </summary>
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> SInterAsync(string[] key,
+    Task<List<RedisValue>> SInterAsync(string[] key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回交集的值数量 类似与 SInter，SInter返回具体的交集数据，SInterCard返回数
     /// </summary>
@@ -484,7 +484,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> SInterCardAsync(string[] key, int limit = 0,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 此命令等于SInter，但不是返回结果集，而是存储在destination.
     /// 将except的差异值存到目标destination
@@ -495,7 +495,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> SInterStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 判断值是否存在
     /// </summary>
@@ -505,16 +505,16 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> SisMemberAsync(string key, object member,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取set的数据
     /// </summary>
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> SMembersAsync(string key,
+    Task<List<RedisValue>> SMembersAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 判断值是否存在set中
     /// </summary>
@@ -522,9 +522,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="members"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<int>> SmisMemberAsync(string key, object[] members,
+    Task<List<RedisValue>> SmisMemberAsync(string key, object[] members,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将值从 source 移动到 destination
     /// </summary>
@@ -535,7 +535,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> SMoveAsync(string source, string destination, object member,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 随机移除 指定数量的值 原子性操作
     /// </summary>
@@ -543,10 +543,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> SPopAsync(string key, int count = 1,
+    Task<List<RedisValue>> SPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     /// <summary>
     /// 返回随机对象
     /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是集合的基数 ( ) 之一，以较小者为准。
@@ -556,9 +556,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> SRandMemberAsync(string key, int count = 1,
+    Task<List<RedisValue>> SRandMemberAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 移除成员信息
     /// </summary>
@@ -568,16 +568,16 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> SRemAsync(string key, object[] members,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     ///返回多个set的并集
     /// </summary>
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> SUnionAsync(string[] keys,
+    Task<List<RedisValue>> SUnionAsync(string[] keys,
         CancellationToken cancellationToken = default);
-
+    
     ///  <summary>
     /// 将多个key的并集 存储到一个新的目标set中
     ///  </summary>
@@ -587,8 +587,8 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <returns></returns>
     Task<int> SUnionStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     /// <summary>
     /// 扫描set的数据
     /// https://redis.io/commands/scan/
@@ -598,10 +598,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
-    IAsyncEnumerable<List<object>> SScanAsync(string key,
+    IAsyncEnumerable<List<RedisValue>> SScanAsync(string key,
         string matchPattern = "*", int count = 10,
         [EnumeratorCancellation] CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 往list的指定元素 前或者后插入新的元素
     /// </summary>
@@ -613,7 +613,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> LInsertAsync(string key, object pivot, object element, bool isBefore,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 往指定的下标处插入元素
     /// </summary>
@@ -624,7 +624,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> LSetAsync(string key, int index, object element,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将所有指定值插入存储在 的列表的尾部key。如果key不存在，则在执行推送操作之前将其创建为空列表。当key持有一个不是列表的值时，返回一个错误。
     /// </summary>
@@ -634,7 +634,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> RPushAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将元素插入到列表的尾部，当key存在的时候才插入
     /// </summary>
@@ -644,7 +644,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> RPushxAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将所有指定值插入存储在 的列表的头部key。如果key不存在，则在执行推送操作之前将其创建为空列表。当key持有一个不是列表的值时，返回一个错误。
     /// </summary>
@@ -654,7 +654,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> LPushAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将元素插入到列表的头部，当key存在的时候才插入
     /// </summary>
@@ -664,7 +664,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> LPushxAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 修剪现有列表，使其仅包含指定范围的指定元素。和start都是stop从零开始的索引，其中0是列表的第一个元素（头），1下一个元素等等。
     /// </summary>
@@ -675,7 +675,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> LTrimAsync(string key, int start, int end,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 移除并返回存储在 的列表的最后一个元素key。
     /// 默认情况下，该命令从列表末尾弹出一个元素。当提供可选count参数时，回复将由最多count元素组成，具体取决于列表的长度。
@@ -684,9 +684,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">返回的消息条数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    IAsyncEnumerable<object> RPopAsync(string key, int count = 1,
+    IAsyncEnumerable<RedisValue> RPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 移除并返回存储在 的列表的头部一个元素key。
     /// 默认情况下，该命令从列表头部弹出一个元素。当提供可选count参数时，回复将由最多count元素组成，具体取决于列表的长度。
@@ -695,9 +695,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">返回的消息条数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    IAsyncEnumerable<object> LPopAsync(string key, int count = 1,
+    IAsyncEnumerable<RedisValue> LPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 删除列表元素
     /// </summary>
@@ -708,7 +708,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> LRemAsync(string key, int count, object element,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 查询集合信息
     /// </summary>
@@ -717,9 +717,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="end"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    IAsyncEnumerable<object> LRangeAsync(string key, int start, int end,
+    IAsyncEnumerable<RedisValue> LRangeAsync(string key, int start, int end,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 队列长度
     /// </summary>
@@ -728,7 +728,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> LLenAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回指定下标的元素
     /// </summary>
@@ -736,9 +736,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="index">下标</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<object> LIndexAsync(string key, int index,
+    Task<RedisValue> LIndexAsync(string key, int index,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回元素的下标位置
     /// </summary>
@@ -749,9 +749,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="rank">RANK选项指定要返回的第一个元素的“排名”，以防有多个匹配项。等级 1 表示返回第一个匹配项，等级 2 表示返回第二个匹配项，依此类推</param>
     /// <param name="count">返回count 个 匹配成功的元素</param>
     /// <returns></returns>
-    Task<List<int>> LPosAsync(string key, object element, int rank = 1, int count = 1, int maxLen = 0,
+    Task<List<RedisValue>> LPosAsync(string key, object element, int rank = 1, int count = 1, int maxLen = 0,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 从提供的键名列表中的第一个非空列表键中弹出一个或多个元素。
     /// </summary>
@@ -760,9 +760,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="isLeft">是从左还是右 弹出</param>
     /// <returns></returns>
-    Task<Dictionary<string, List<object>>> LmPopAsync(string[] key, bool isLeft = true, int count = 1,
+    Task<Dictionary<string, List<RedisValue>>> LmPopAsync(string[] key, bool isLeft = true, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// lMPop的阻塞版本
     /// 从提供的键名列表中的第一个非空列表键中弹出一个或多个元素。
@@ -773,10 +773,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="isLeft">是从左还是右 弹出</param>
     /// <returns></returns>
-    Task<Dictionary<string, List<object>>> BlMPopAsync(string[] key, TimeSpan timeout, bool isLeft = true,
+    Task<Dictionary<string, List<RedisValue>>> BlMPopAsync(string[] key, TimeSpan timeout, bool isLeft = true,
         int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 将 source 消息从左或者右 移除，并存储到 destination 元素中的 left 或者right
     /// </summary>
@@ -786,10 +786,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="destinationKey">目标的key</param>
     /// <param name="isSourceLeft">指定sourceKey 是从左还是从右读取</param>
     /// <returns></returns>
-    Task<object> LMoveAsync(string sourceKey, string destinationKey,
+    Task<RedisValue> LMoveAsync(string sourceKey, string destinationKey,
         bool isSourceLeft = true, bool isDestinationLeft = true,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// BLMOVE是 的阻塞变体LMOVE 当source为空时，Redis 将阻塞连接，直到另一个客户端推送到它或直到达到timeout
     /// 将 source 消息从左或者右 移除，并存储到 destination 元素中的 left 或者right
@@ -801,10 +801,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="isSourceLeft">指定sourceKey 是从左还是从右读取</param>
     /// <returns></returns>
-    Task<object> BLMoveAsync(string sourceKey, string destinationKey, TimeSpan timeout,
+    Task<RedisValue> BLMoveAsync(string sourceKey, string destinationKey, TimeSpan timeout,
         bool isSourceLeft = true, bool isDestinationLeft = true,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 阻塞
     /// 移除并返回存储在 的列表的最后一个元素key。
@@ -813,9 +813,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(string key, object value)> BRPopAsync(string[] key, TimeSpan timeout,
+    Task<(string key, RedisValue value)> BRPopAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 阻塞
     /// 移除并返回存储在 的列表的头部一个元素key。
@@ -825,10 +825,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(string key, object value)> BLPopAsync(string[] key, TimeSpan timeout,
+    Task<(string key, RedisValue value)> BLPopAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     /// <summary>
     /// 添加zset 集合
     /// </summary>
@@ -842,7 +842,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<int> ZAddAsync(string key, SortedSetAddModel[] values,
         SortedSetAddEnum type = SortedSetAddEnum.No, bool isIncr = false, bool isCh = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 扫描zset的数据
     /// https://redis.io/commands/scan/
@@ -852,10 +852,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
-    IAsyncEnumerable<Dictionary<string, string>> ZScanAsync(string key,
+    IAsyncEnumerable<Dictionary<string, RedisValue>> ZScanAsync(string key,
         string matchPattern = "*", int count = 10,
         [EnumeratorCancellation] CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回zset中集合的长度
     /// </summary>
@@ -864,7 +864,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> ZCardAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回区间范围中的元素数量
     /// </summary>
@@ -875,7 +875,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> ZCountAsync(string key, string min = "-inf", string max = "+inf",
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
     /// 类似 except
@@ -883,9 +883,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> ZDiffAsync(string[] key,
+    Task<List<RedisValue>> ZDiffAsync(string[] key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由第一个集合和所有后续集合之间的差异产生的集合成员。
     /// 类似 except
@@ -893,9 +893,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Dictionary<object, long>> ZDiffWithScoreAsync(string[] key,
+    Task<Dictionary<RedisValue, long>> ZDiffWithScoreAsync(string[] key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 此命令等于ZDIFF，但不是返回结果集，而是存储在destination.
     /// 将except的差异值存到目标destination
@@ -906,7 +906,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZDiffStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 递增zset元素中的score值
     /// </summary>
@@ -917,7 +917,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZIncrByAsync(string key, object member, int increment = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 计算并集 将结果存储到 dest
     /// </summary>
@@ -934,7 +934,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<int> ZUnionStoreAsync(string dest, string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由所有给定集的交集产生的集的成员。
     /// </summary>
@@ -943,10 +943,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    Task<List<object>> ZInterAsync(string[] keys, long[] weights = null,
+    Task<List<RedisValue>> ZInterAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由所有给定集的交集产生的集的成员。
     /// </summary>
@@ -955,10 +955,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    Task<Dictionary<object, long>> ZInterWithScoreAsync(string[] keys, long[] weights = null,
+    Task<Dictionary<RedisValue, long>> ZInterWithScoreAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回交集的值数量 此命令类似于ZINTER，但它不返回结果集，而是仅返回结果的基数。
     /// </summary>
@@ -968,7 +968,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<long> ZInterCardAsync(string[] key, int limit = 0,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 此命令等于ZInter，但不是返回结果集，而是存储在destination.
     /// 将except的差异值存到目标destination
@@ -982,7 +982,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<int> ZInterStoreAsync(string destination, string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由所有给定集的并集产生的集的成员。
     /// </summary>
@@ -991,10 +991,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    Task<List<object>> ZUnionAsync(string[] keys, long[] weights = null,
+    Task<List<RedisValue>> ZUnionAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 返回由所有给定集的并集产生的集的成员。
     /// </summary>
@@ -1003,10 +1003,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    Task<Dictionary<object, long>> ZUnionWithScoreAsync(string[] keys, long[] weights = null,
+    Task<Dictionary<RedisValue, long>> ZUnionWithScoreAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
-
+    
     ///  <summary>
     /// 获取元素的分数信息
     ///  </summary>
@@ -1016,7 +1016,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <returns></returns>
     Task<long> ZScoreAsync(string key, object member,
         CancellationToken cancellationToken = default);
-
+    
     ///  <summary>
     /// 当排序集中的所有元素都以相同的分数插入时，为了强制按字典顺序排序，此命令返回排序集中的元素数，其值介于key和min之间max。
     ///  </summary>
@@ -1027,7 +1027,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <returns></returns>
     Task<long> ZLexCountAsync(string key, string min = "-", string max = "+",
         CancellationToken cancellationToken = default);
-
+    
     ///  <summary>
     /// 从提供的键名列表中的第一个非空排序集中弹出一个或多个元素，即成员分数对。
     ///  </summary>
@@ -1036,11 +1036,11 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    Task<(string key, Dictionary<object, long> data)> ZMpopAsync(string[] keys,
+    Task<(string key, Dictionary<RedisValue, long> data)> ZMpopAsync(string[] keys,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
         CancellationToken cancellationToken = default);
-
+    
     ///  <summary>
     /// 从提供的键名列表中的第一个非空排序集中弹出一个或多个元素，即成员分数对。
     /// 阻塞
@@ -1051,12 +1051,12 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    Task<(string key, Dictionary<object, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
+    Task<(string key, Dictionary<RedisValue, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     ///  <summary>
     /// 获取元素的分数信息
     ///  </summary>
@@ -1064,10 +1064,10 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="members">元素</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    Task<List<long>> ZMScoreAsync(string key, object[] members,
+    Task<List<RedisValue>> ZMScoreAsync(string key, object[] members,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     /// <summary>
     /// 删除并返回count存储在 的排序集中得分最高的成员key。
     /// 当返回多个元素时，得分最高的将是第一个，其次是得分较小的元素。。
@@ -1076,9 +1076,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    Task<Dictionary<object, long>> ZPopMaxAsync(string key, int count = 1,
+    Task<Dictionary<RedisValue, long>> ZPopMaxAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 删除并返回count存储在 的排序集中得分最低的成员key。
     /// 当返回多个元素时，得分最低的将是第一个，其次是得分较大的元素。
@@ -1087,9 +1087,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    Task<Dictionary<object, long>> ZPopMinAsync(string key, int count = 1,
+    Task<Dictionary<RedisValue, long>> ZPopMinAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
     /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
@@ -1099,9 +1099,9 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> ZRandMemberAsync(string key, int count = 1,
+    Task<List<RedisValue>> ZRandMemberAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 当仅使用key参数调用时，从存储在 的已排序集合值中返回一个随机元素key。
     /// 如果提供的参数为正，则返回不同元素count的数组。数组的长度是排序集的基数 ( ) 之一，以较小者为准。
@@ -1113,8 +1113,8 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<SortedSetModel>> ZRandMemberWithScoreAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     /// <summary>
     /// 查询zset中数据的信息 默认是从低到高
     /// </summary>
@@ -1137,11 +1137,11 @@ public interface IRedisCommand : IAsyncDisposable
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<object>> ZRangeAsync(string key, string start = "0", string stop = "1",
+    Task<List<RedisValue>> ZRangeAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 查询zset中数据的信息 默认是从低到高
     /// </summary>
@@ -1168,7 +1168,7 @@ public interface IRedisCommand : IAsyncDisposable
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 此命令类似于ZRANGE，但将结果存储在<dest>目标键中
     /// </summary>
@@ -1191,7 +1191,7 @@ public interface IRedisCommand : IAsyncDisposable
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 从低到高返回member对应的名次信息 默认从0 开始
     /// </summary>
@@ -1201,7 +1201,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZRankAsync(string key, object member,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// member返回存储在 的已排序集合中的排名key，分数从高到低排序。排名（或索引）从 0 开始，这意味着得分最高的成员具有排名0。
     /// </summary>
@@ -1211,8 +1211,8 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZRevRankAsync(string key, object member,
         CancellationToken cancellationToken = default);
-
-
+    
+    
     /// <summary>
     /// 从存储在 的排序集中删除指定成员key。不存在的成员将被忽略。
     /// </summary>
@@ -1222,7 +1222,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZRemAsync(string key, object[] member,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 此命令删除存储在 和 指定的字典序范围之间的有序集合中的所有key元素。minmax
     /// </summary>
@@ -1233,7 +1233,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZRemRangeByLexAsync(string key, string min, string max,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 按照排行从低到高删除
     /// </summary>
@@ -1244,7 +1244,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZRemRangeByRankAsync(string key, int start, int stop,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 删除score 分数之间的所有元素
     /// </summary>
@@ -1255,7 +1255,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> ZRemRangeByScoreAsync(string key, string min, string max,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 移除最小的元素
     /// 阻塞版本
@@ -1266,7 +1266,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<(string key, SortedSetModel data)> BzPopMinAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 移除最大的元素
     /// 阻塞版本
@@ -1277,7 +1277,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<(string key, SortedSetModel data)> BzPopMaxAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 消息确认 针对消息组
     /// </summary>
@@ -1288,7 +1288,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> XAckAsync(string key, string group, string[] messageId,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 添加流消息 
     /// </summary>
@@ -1305,7 +1305,7 @@ public interface IRedisCommand : IAsyncDisposable
         StreamMaxMinEnum maxMin = StreamMaxMinEnum.Default,
         string threshold = default, long? limitCount = null, bool isCreateStream = true,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 删除流消息
     /// </summary>
@@ -1315,7 +1315,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> XDelAsync(string key, string[] messageId,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取流长度
     /// </summary>
@@ -1324,7 +1324,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> XLenAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 裁剪流消息 
     /// </summary>
@@ -1338,7 +1338,7 @@ public interface IRedisCommand : IAsyncDisposable
         StreamMaxMinEnum maxMin = StreamMaxMinEnum.Default,
         string threshold = default, long? limitCount = null,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 创建消费者组 
     /// </summary>
@@ -1352,7 +1352,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<bool> XGroupCreateAsync(string key, string groupName, string id = "$",
         bool createStream = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 创建组内的消费者
     /// </summary>
@@ -1363,7 +1363,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> XGroupCreateConsumerAsync(string key, string groupName, string consumer,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 删除组内的消费者
     /// 消费者拥有的任何待处理消息在被删除后将变得不可领取。因此，强烈建议在从组中删除消费者之前声明或确认任何未决消息
@@ -1375,7 +1375,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> XGroupDeleteConsumerAsync(string key, string groupName, string consumer,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 销毁流对应的消费者组的所有数据 包含所有与消费者组的消息
     /// </summary>
@@ -1385,7 +1385,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns>消费者在删除之前拥有的待处理消息数</returns>
     Task<int> XGroupDestroyAsync(string key, string groupName,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 设置消费者组的最新交付的id
     /// </summary>
@@ -1396,7 +1396,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> XGroupSetIdAsync(string key, string groupName, string id,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取流内的消费者组的信息
     /// </summary>
@@ -1405,7 +1405,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<XGroupInfoModel>> XGroupInfoAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取流的消费者组中的消费者的信息
     /// </summary>
@@ -1414,7 +1414,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<XConsumerInfoModel>> XConsumerInfoAsync(string key, string group,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取流信息
     /// </summary>
@@ -1423,7 +1423,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<XStreamInfoModel> XStreamInfoAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 读取流消息
     /// </summary>
@@ -1435,7 +1435,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<List<StreamModel>> XReadAsync(ReadStreamOffset[] streamOffset, int count,
         TimeSpan? blockTime = null,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 读取流消息
     /// </summary>
@@ -1447,7 +1447,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<StreamEntityModel>> XRangeAsync(string key, string start, string end, int count,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 读取流消息
     /// 反向
@@ -1460,7 +1460,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<List<StreamEntityModel>> XRevRangeAsync(string key, string start, string end, int count,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 从消费组读取消息
     /// </summary>
@@ -1475,7 +1475,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<List<StreamModel>> XReadGroupAsync(ReadGroupStreamOffset[] streamOffset, string groupName, string consumerName,
         int count, TimeSpan? blockTime = null, bool noAck = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 获取消费者组中的未ack的消息对应的消费者信息
     /// </summary>
@@ -1491,7 +1491,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<List<XPendingInfoModel>> XPendingAsync(string key, string groupName,
         int count, string consumerName = null, string start = null, string end = null, TimeSpan? idle = null,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 转移消息的所有权
     /// </summary>
@@ -1512,7 +1512,7 @@ public interface IRedisCommand : IAsyncDisposable
         TimeSpan? idle = default, TimeSpan? time = default,
         int? retryCount = default, bool isForce = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 转移消息的所有权
     /// 返回消息的id
@@ -1528,13 +1528,13 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="time">这与 IDLE 相同，但不是相对的毫秒数，而是将空闲时间设置为特定的 Unix 时间（以毫秒为单位）。这对于重写 AOF 文件生成XCLAIM命令很有用。</param>
     /// <param name="retryCount">将重试计数器设置为指定值。每次再次传递消息时，此计数器都会递增。通常XCLAIM不会更改此计数器，它仅在调用 XPENDING 命令时提供给客户端：这样客户端可以检测异常情况，例如在大量传递尝试后由于某种原因从未处理过的消息</param>
     /// <returns></returns>
-    Task<List<string>> XClaimWithIdAsync(string key, string groupName, string consumerName,
+    Task<List<RedisValue>> XClaimWithIdAsync(string key, string groupName, string consumerName,
         string[] messageIds,
         TimeSpan minIdleTime,
         TimeSpan? idle = default, TimeSpan? time = default,
         int? retryCount = default, bool isForce = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 自动转移消息的所有权
     /// 返回消息的id
@@ -1550,7 +1550,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<XAutoClaimWithIdModel> XAutoClaimWithIdAsync(string key, string groupName, string consumerName,
         TimeSpan minIdleTime, string start, int count = 100,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 自动转移消息的所有权
     /// </summary>
@@ -1565,7 +1565,7 @@ public interface IRedisCommand : IAsyncDisposable
     Task<XAutoClaimModel> XAutoClaimAsync(string key, string groupName, string consumerName,
         TimeSpan minIdleTime, string start, int count = 100,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 拷贝key
     /// </summary>
@@ -1577,7 +1577,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<bool> CopyAsync(string source, string dest, int? db = null, bool isReplace = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 删除
     /// </summary>
@@ -1586,16 +1586,16 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     Task<int> DelAsync(string[] keys,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     ///  以 Redis 特定格式序列化存储在 key 中的值，并将其返回给用户。可以使用命令将返回值合成回 Redis 键RESTORE 。
     /// </summary>
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<string> DumpAsync(string key,
+    Task<RedisValue> DumpAsync(string key,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     ///  将dump序列化的值，反序列化到指定的key中
     /// </summary>
@@ -1605,10 +1605,10 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="serializedValue">序列化值</param>
     /// <returns></returns>
-    Task<bool> ReStoreAsync(string key, string serializedValue, TimeSpan? expire = null,
+    Task<bool> ReStoreAsync(string key, object serializedValue, TimeSpan? expire = null,
         bool isReplace = false,
         CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// 校验是否存在
     /// </summary>

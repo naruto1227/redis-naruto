@@ -19,7 +19,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.Client, new[] {"ID"}));
+        return await client.ExecuteAsync(new Command(RedisCommandName.Client, new[] {"ID"}));
     }
 
     /// <summary>

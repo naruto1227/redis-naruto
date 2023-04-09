@@ -4,8 +4,6 @@ using Xunit.Abstractions;
 
 namespace TestProject1;
 
-
-
 public partial class UnitTest1 : BaseUnit
 {
     private ITestOutputHelper _testOutputHelper;
@@ -32,31 +30,51 @@ public partial class UnitTest1 : BaseUnit
             Time = DateTime.Now
         });
     }
-    
+
     [Fact]
     public async Task Test_StringSetBytes()
     {
         var redisCommand = await GetRedisAsync();
-        await redisCommand.SetAsync("testbytes", Encoding.Default.GetBytes("hello word"));
+        using FileStream fileStream = new FileStream(Path.Combine(AppContext.BaseDirectory, "未命名.docx"),
+            FileMode.Open,
+            FileAccess.Read);
+        using MemoryStream memoryStream = new MemoryStream();
+
+        await fileStream.CopyToAsync(memoryStream);
+
+
+        var res = await redisCommand.SetAsync("file", memoryStream.ToArray());
+
+        //读取
+        var newPath = Path.Combine(AppContext.BaseDirectory, "未命名2.docx");
+        if (File.Exists(newPath))
+        {
+            File.Delete(newPath);
+        }
+
+        var fileBytes = await redisCommand.GetAsync("file");
+        using FileStream file = new FileStream(newPath,
+            FileMode.CreateNew,
+            FileAccess.Write);
+        await file.WriteAsync(fileBytes.ToBytes);
     }
-    
+    //
     [Fact]
     public async Task Test_StringMGet()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.MGetAsync<string>(new[]
+        var res = await redisCommand.MGetAsync(new[]
         {
             "testobj",
             "testobj2"
         });
-        if (res!=null)
+        if (res != null)
         {
             foreach (var VARIABLE in res)
             {
                 _testOutputHelper.WriteLine(VARIABLE.ToString());
             }
         }
-
     }
 
     [Fact]
@@ -76,7 +94,7 @@ public partial class UnitTest1 : BaseUnit
     public async Task Test_StringSetNx()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.SetNxAsync("testnx", "testnx"
+        var res = await redisCommand.SetNxAsync("testnx2", "testnx"
         );
         _testOutputHelper.WriteLine(res.ToString());
         res = await redisCommand.SetNxAsync("testnx", "testnx"
@@ -146,8 +164,8 @@ public partial class UnitTest1 : BaseUnit
     public async Task Test_StringGetDel()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.GetDelAsync("key");
-        _testOutputHelper.WriteLine(res ?? "null");
+        var res = await redisCommand.GetDelAsync("GetDelAsync");
+        _testOutputHelper.WriteLine(res.IsEmpty() ? "null" : res);
     }
 
     [Fact]
@@ -155,7 +173,7 @@ public partial class UnitTest1 : BaseUnit
     {
         var redisCommand = await GetRedisAsync();
         var res = await redisCommand.GetExAsync("testobjstr", TimeSpan.FromMinutes(280));
-        _testOutputHelper.WriteLine(res ??"null");
+        _testOutputHelper.WriteLine(res.IsEmpty() ? "null" : res);
     }
 
     [Fact]

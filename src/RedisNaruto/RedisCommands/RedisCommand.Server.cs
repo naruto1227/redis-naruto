@@ -16,6 +16,6 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.DbSize, default));
+        return await client.ExecuteAsync(new Command(RedisCommandName.DbSize, default));
     }
 }

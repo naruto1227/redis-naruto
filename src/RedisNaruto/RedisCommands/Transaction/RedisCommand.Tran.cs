@@ -15,21 +15,23 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         var client = await GetRedisClient(cancellationToken);
-        await client.ExecuteAsync<string>(new Command(RedisCommandName.Multi, default));
+        _ = await client.ExecuteAsync(new Command(RedisCommandName.Multi, default));
         var transactionRedisCommand = new TransactionRedisCommand(RedisClientPool);
         transactionRedisCommand.ChangeRedisClient(client);
         return transactionRedisCommand;
     }
+
     public async Task UnWatchAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync<string>(new Command(RedisCommandName.UnWatch, default));
+        _ = await client.ExecuteAsync(new Command(RedisCommandName.UnWatch, default));
     }
+
     public async Task WatchAsync(string[] keys, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync<string>(new Command(RedisCommandName.Watch, keys));
+        _ = await client.ExecuteAsync(new Command(RedisCommandName.Watch, keys));
     }
 }

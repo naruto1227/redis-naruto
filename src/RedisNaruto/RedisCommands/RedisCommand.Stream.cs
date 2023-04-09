@@ -29,7 +29,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<int>(new Command(RedisCommandName.XAck, new object[]
+            client.ExecuteAsync(new Command(RedisCommandName.XAck, new object[]
             {
                 key, group
             }.Concat(messageId).ToArray()));
@@ -91,7 +91,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<string>(new Command(RedisCommandName.XAdd, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XAdd, argv.ToArray()));
         return result;
     }
 
@@ -111,7 +111,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<int>(new Command(RedisCommandName.XDel, new object[]
+            client.ExecuteAsync(new Command(RedisCommandName.XDel, new object[]
             {
                 key
             }.Concat(messageId).ToArray()));
@@ -131,7 +131,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<int>(new Command(RedisCommandName.XLen, new object[]
+            client.ExecuteAsync(new Command(RedisCommandName.XLen, new object[]
             {
                 key
             }));
@@ -178,7 +178,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<string>(new Command(RedisCommandName.XTrim, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XTrim, argv.ToArray()));
         return result;
     }
 
@@ -210,7 +210,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<string>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result == "OK";
     }
 
@@ -238,7 +238,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<int>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result == 1;
     }
 
@@ -266,7 +266,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<int>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result;
     }
 
@@ -291,7 +291,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<int>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result;
     }
 
@@ -319,7 +319,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<string>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            client.ExecuteAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result == "OK";
     }
 
@@ -341,7 +341,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.XInfo, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XInfo, argv.ToArray()));
         var resList = new List<XGroupInfoModel>();
         await foreach (var item in result.WithCancellation(cancellationToken))
         {
@@ -350,12 +350,15 @@ public partial class RedisCommand : IRedisCommand
                 continue;
             }
 
-            resList.Add(new XGroupInfoModel((StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "name")?.ToString()),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "consumers")?.ToString()).ToInt(),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "pending")?.ToString()).ToInt(),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "last-delivered-id")?.ToString()),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "entries-read")?.ToString()),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "lag")?.ToString()).ToInt()
+            var redisValues = list.ToRedisValueList();
+
+            resList.Add(new XGroupInfoModel(
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "name")?.ToString()),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "consumers")?.ToString()).ToInt(),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "pending")?.ToString()).ToInt(),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "last-delivered-id")?.ToString()),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "entries-read")?.ToString()),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "lag")?.ToString()).ToInt()
             ));
         }
 
@@ -382,7 +385,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.XInfo, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XInfo, argv.ToArray()));
         var resList = new List<XConsumerInfoModel>();
         await foreach (var item in result.WithCancellation(cancellationToken))
         {
@@ -391,9 +394,12 @@ public partial class RedisCommand : IRedisCommand
                 continue;
             }
 
-            resList.Add(new XConsumerInfoModel(StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "name")?.ToString(),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "pending")?.ToString()).ToInt(),
-                (StreamUtil<XConsumerInfoModel>.FindStreamValue(list, "idle")?.ToString()).ToLong()
+            var redisValues = list.ToRedisValueList();
+
+            resList.Add(new XConsumerInfoModel(
+                StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "name")?.ToString(),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "pending")?.ToString()).ToInt(),
+                (StreamUtil<XConsumerInfoModel>.FindStreamValue(redisValues, "idle")?.ToString()).ToLong()
             ));
         }
 
@@ -418,7 +424,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XInfo, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XInfo, argv.ToArray())).ToRedisValueListAsync();
         return new XStreamInfoModel(
             (StreamUtil<XStreamInfoModel>.FindStreamValue(list, "length")?.ToString()).ToLong(),
             (StreamUtil<XStreamInfoModel>.FindStreamValue(list, "radix-tree-keys")?.ToString()).ToLong(),
@@ -464,7 +470,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XRead, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XRead, argv.ToArray())).ToListAsync();
 
         return list.BuildStreamList();
     }
@@ -493,7 +499,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XRange, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XRange, argv.ToArray())).ToListAsync();
         return list.BuildStreamEntityModel();
     }
 
@@ -522,7 +528,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XRevRange, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XRevRange, argv.ToArray())).ToListAsync();
         return list.BuildStreamEntityModel();
     }
 
@@ -577,7 +583,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XReadGroup, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XReadGroup, argv.ToArray())).ToListAsync();
 
         return list.BuildStreamList();
     }
@@ -620,7 +626,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XPending, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XPending, argv.ToArray())).ToListAsync();
         var resultList = new List<XPendingInfoModel>();
         foreach (var itemList in list)
         {
@@ -693,7 +699,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XClaim, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XClaim, argv.ToArray())).ToListAsync();
         return list.BuildStreamEntityModel();
     }
 
@@ -712,7 +718,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="time">这与 IDLE 相同，但不是相对的毫秒数，而是将空闲时间设置为特定的 Unix 时间（以毫秒为单位）。这对于重写 AOF 文件生成XCLAIM命令很有用。</param>
     /// <param name="retryCount">将重试计数器设置为指定值。每次再次传递消息时，此计数器都会递增。通常XCLAIM不会更改此计数器，它仅在调用 XPENDING 命令时提供给客户端：这样客户端可以检测异常情况，例如在大量传递尝试后由于某种原因从未处理过的消息</param>
     /// <returns></returns>
-    public async Task<List<string>> XClaimWithIdAsync(string key, string groupName, string consumerName,
+    public async Task<List<RedisValue>> XClaimWithIdAsync(string key, string groupName, string consumerName,
         string[] messageIds,
         TimeSpan minIdleTime,
         TimeSpan? idle = default, TimeSpan? time = default,
@@ -755,8 +761,8 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list =
-            client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.XClaim, argv.ToArray()));
-        return await list.ToListAsync();
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XClaim, argv.ToArray()));
+        return await list.ToRedisValueListAsync();
     }
 
     /// <summary>
@@ -793,7 +799,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XAutoClaim, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XAutoClaim, argv.ToArray())).ToListAsync();
         if (list is not {Count: > 1})
         {
             return default;
@@ -849,7 +855,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var list = await
-            client.ExecuteAsync<List<object>>(new Command(RedisCommandName.XAutoClaim, argv.ToArray()));
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.XAutoClaim, argv.ToArray())).ToListAsync();
         if (list is not {Count: > 1})
         {
             return default;

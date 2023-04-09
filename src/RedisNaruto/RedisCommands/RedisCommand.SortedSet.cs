@@ -60,7 +60,7 @@ public partial class RedisCommand : IRedisCommand
 
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZAdd, datas.ToArray()));
+            await client.ExecuteAsync(new Command(RedisCommandName.ZAdd, datas.ToArray()));
         return result;
     }
 
@@ -73,7 +73,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<Dictionary<string, string>> ZScanAsync(string key,
+    public async IAsyncEnumerable<Dictionary<string, RedisValue>> ZScanAsync(string key,
         string matchPattern = "*", int count = 10,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -88,7 +88,7 @@ public partial class RedisCommand : IRedisCommand
         var cursor = 0;
         while (!cancellationToken.IsCancellationRequested)
         {
-            var resultList = await client.ExecuteAsync<object>(new Command(RedisCommandName.ZScan,
+            var resultList = await client.ExecuteWithObjectAsync(new Command(RedisCommandName.ZScan,
                 new object[]
                 {
                     key,
@@ -133,7 +133,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<long>(new Command(RedisCommandName.ZCard, new[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZCard, new[]
             {
                 key,
             }));
@@ -154,7 +154,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<long>(new Command(RedisCommandName.ZCount, new[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZCount, new[]
             {
                 key,
                 min,
@@ -170,16 +170,16 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<object>> ZDiffAsync(string[] key,
+    public async Task<List<RedisValue>> ZDiffAsync(string[] key,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.ZDiff, new object[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZDiff, new object[]
             {
                 key.Length
-            }.Concat(key).ToArray()));
+            }.Concat(key).ToArray())).ToRedisValueListAsync();
         return result;
     }
 
@@ -190,12 +190,12 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<Dictionary<object, long>> ZDiffWithScoreAsync(string[] key,
+    public async Task<Dictionary<RedisValue, long>> ZDiffWithScoreAsync(string[] key,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        var result = client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZDiff, new object[]
+        var result = client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZDiff, new object[]
         {
             key.Length
         }.Concat(key).Concat(new[] {"WITHSCORES"}).ToArray()));
@@ -221,7 +221,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZDiffStore,
+            await client.ExecuteAsync(new Command(RedisCommandName.ZDiffStore,
                 new object[] {destination, keys.Length}
                     .Concat(keys).ToArray()));
         return result;
@@ -244,7 +244,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZIncrBy, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZIncrBy, new object[]
             {
                 key,
                 increment,
@@ -262,7 +262,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    public async Task<List<object>> ZInterAsync(string[] keys, long[] weights = null,
+    public async Task<List<RedisValue>> ZInterAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default)
     {
@@ -283,7 +283,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add(aggregate.ToString());
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.ZInter, args.ToArray()));
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZInter, args.ToArray())).ToRedisValueListAsync();
         return result;
     }
 
@@ -295,7 +295,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    public async Task<Dictionary<object, long>> ZInterWithScoreAsync(string[] keys, long[] weights = null,
+    public async Task<Dictionary<RedisValue, long>> ZInterWithScoreAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default)
     {
@@ -317,7 +317,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add("WITHSCORES");
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZInter, args.ToArray()))
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZInter, args.ToArray()))
                 .ToZSetDicAsync();
         return result;
     }
@@ -363,7 +363,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add(aggregate.ToString());
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZUnionStore, args.ToArray()));
+            await client.ExecuteAsync(new Command(RedisCommandName.ZUnionStore, args.ToArray()));
         return result;
     }
 
@@ -375,7 +375,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    public async Task<List<object>> ZUnionAsync(string[] keys, long[] weights = null,
+    public async Task<List<RedisValue>> ZUnionAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default)
     {
@@ -396,7 +396,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add(aggregate.ToString());
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.ZUnion, args.ToArray()));
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZUnion, args.ToArray())).ToRedisValueListAsync();
         return result;
     }
 
@@ -408,7 +408,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
-    public async Task<Dictionary<object, long>> ZUnionWithScoreAsync(string[] keys, long[] weights = null,
+    public async Task<Dictionary<RedisValue, long>> ZUnionWithScoreAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default)
     {
@@ -430,7 +430,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add("WITHSCORES");
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZUnion, args.ToArray()))
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZUnion, args.ToArray()))
                 .ToZSetDicAsync();
         return result;
     }
@@ -447,7 +447,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.ZScore, new object[]
+        return await client.ExecuteAsync(new Command(RedisCommandName.ZScore, new object[]
         {
             key,
             member
@@ -472,7 +472,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<long>(new Command(RedisCommandName.ZInterCard,
+            await client.ExecuteAsync(new Command(RedisCommandName.ZInterCard,
                 new object[]
                 {
                     key.Length
@@ -514,7 +514,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add(aggregate.ToString());
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZInterStore,
+            await client.ExecuteAsync(new Command(RedisCommandName.ZInterStore,
                 args.ToArray()));
         return result;
     }
@@ -532,7 +532,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.ZLexCount, new object[]
+        return await client.ExecuteAsync(new Command(RedisCommandName.ZLexCount, new object[]
         {
             key,
             min,
@@ -548,7 +548,7 @@ public partial class RedisCommand : IRedisCommand
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    public async Task<(string key, Dictionary<object, long> data)> ZMpopAsync(string[] keys,
+    public async Task<(string key, Dictionary<RedisValue, long> data)> ZMpopAsync(string[] keys,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
         CancellationToken cancellationToken = default)
@@ -564,17 +564,17 @@ public partial class RedisCommand : IRedisCommand
         args.Add(count);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        var result = await client.ExecuteAsync<object>(new Command(RedisCommandName.ZMpop, args.ToArray()));
+        var result = await client.ExecuteWithObjectAsync(new Command(RedisCommandName.ZMpop, args.ToArray()));
         //判断是否有数据
         if (result is not List<object> {Count: >= 2} resultList || resultList[1] is not List<object> valueList)
             return default;
 
-        var dic = new Dictionary<object, long>();
+        var dic = new Dictionary<RedisValue, long>();
         foreach (var item in valueList)
         {
             if (item is List<object> {Count: >= 2} datas)
             {
-                dic.Add(datas[0], datas[1].ToString().ToLong());
+                dic.Add((RedisValue)datas[0], datas[1].ToString().ToLong());
             }
         }
 
@@ -591,7 +591,7 @@ public partial class RedisCommand : IRedisCommand
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    public async Task<(string key, Dictionary<object, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
+    public async Task<(string key, Dictionary<RedisValue, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
         CancellationToken cancellationToken = default)
@@ -608,17 +608,17 @@ public partial class RedisCommand : IRedisCommand
         args.Add(count);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        var result = await client.ExecuteAsync<object>(new Command(RedisCommandName.BZMpop, args.ToArray()));
+        var result = await client.ExecuteWithObjectAsync(new Command(RedisCommandName.BZMpop, args.ToArray()));
         //判断是否有数据
         if (result is not List<object> {Count: >= 2} resultList || resultList[1] is not List<object> valueList)
             return default;
 
-        var dic = new Dictionary<object, long>();
+        var dic = new Dictionary<RedisValue, long>();
         foreach (var item in valueList)
         {
             if (item is List<object> {Count: >= 2} datas)
             {
-                dic.Add(datas[0], datas[1].ToString().ToLong());
+                dic.Add((RedisValue)datas[0], datas[1].ToString().ToLong());
             }
         }
 
@@ -632,15 +632,15 @@ public partial class RedisCommand : IRedisCommand
     ///  <param name="members">元素</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
-    public async Task<List<long>> ZMScoreAsync(string key, object[] members,
+    public async Task<List<RedisValue>> ZMScoreAsync(string key, object[] members,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteMoreResultAsync<long>(new Command(RedisCommandName.ZMScore, new object[]
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZMScore, new object[]
         {
             key
-        }.Concat(members).ToArray())).ToListAsync();
+        }.Concat(members).ToArray())).ToRedisValueListAsync();
     }
 
     /// <summary>
@@ -650,14 +650,14 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    public async Task<Dictionary<object, long>> ZPopMaxAsync(string key, int count = 1,
+    public async Task<Dictionary<RedisValue, long>> ZPopMaxAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZPopMax, new object[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZPopMax, new object[]
                 {
                     key,
                     count
@@ -674,14 +674,14 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    public async Task<Dictionary<object, long>> ZPopMinAsync(string key, int count = 1,
+    public async Task<Dictionary<RedisValue, long>> ZPopMinAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZPopMin, new object[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZPopMin, new object[]
                 {
                     key,
                     count
@@ -705,17 +705,17 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.BZPopMax, key.Concat(new string[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.BZPopMax, key.Concat(new string[]
             {
                 timeout.TotalSeconds.ToString()
-            }).ToArray()));
+            }).ToArray())).ToListAsync();
         if (result is not {Count: > 2})
         {
             return default;
         }
 
 
-        return (result[0].ToString(), new SortedSetModel(result[1])
+        return (result[0].ToString(), new SortedSetModel((RedisValue) result[1])
         {
             Score = result[2].ToString().ToLong()
         });
@@ -736,10 +736,10 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.BZPopMin, key.Concat(new string[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.BZPopMin, key.Concat(new string[]
             {
                 timeout.TotalSeconds.ToString()
-            }).ToArray()));
+            }).ToArray())).ToListAsync();
 
         if (result is not {Count: > 2})
         {
@@ -747,7 +747,7 @@ public partial class RedisCommand : IRedisCommand
         }
 
 
-        return (result[0].ToString(), new SortedSetModel(result[1])
+        return (result[0].ToString(), new SortedSetModel((RedisValue) result[1])
         {
             Score = result[2].ToString().ToLong()
         });
@@ -762,17 +762,17 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<object>> ZRandMemberAsync(string key, int count = 1,
+    public async Task<List<RedisValue>> ZRandMemberAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.ZRandMember, new object[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZRandMember, new object[]
             {
                 key, count
-            }));
+            })).ToRedisValueListAsync();
         return result;
     }
 
@@ -792,7 +792,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZRandMember, new object[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZRandMember, new object[]
             {
                 key, count,
                 "WITHSCORES"
@@ -822,7 +822,7 @@ public partial class RedisCommand : IRedisCommand
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<object>> ZRangeAsync(string key, string start = "0", string stop = "1",
+    public async Task<List<RedisValue>> ZRangeAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
         CancellationToken cancellationToken = default)
@@ -852,8 +852,8 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZRange,
-                argv.ToArray())).ToListAsync();
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZRange,
+                argv.ToArray())).ToRedisValueListAsync();
         return result;
     }
 
@@ -911,7 +911,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.ZRange,
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.ZRange,
                 argv.ToArray())).ToZSetAsync();
         return result;
     }
@@ -966,7 +966,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRangeStore,
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRangeStore,
                 argv.ToArray()));
         return result;
     }
@@ -986,7 +986,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRank, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRank, new object[]
             {
                 key, member
             }));
@@ -1008,7 +1008,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRevRank, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRevRank, new object[]
             {
                 key, member
             }));
@@ -1030,7 +1030,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRem, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRem, new object[]
             {
                 key
             }.Concat(member).ToArray()));
@@ -1053,7 +1053,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRemRangeByLex, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRemRangeByLex, new object[]
             {
                 key,
                 min,
@@ -1077,7 +1077,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRemRangeByRank, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRemRangeByRank, new object[]
             {
                 key,
                 start,
@@ -1101,7 +1101,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.ZRemRangeByScore, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.ZRemRangeByScore, new object[]
             {
                 key,
                 min,

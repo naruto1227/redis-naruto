@@ -26,7 +26,7 @@ public partial class RedisCommand : IRedisCommand
             keys.Length
         }.Concat(keys).Concat(argvs).ToArray();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<object>(new Command(RedisCommandName.Eval, param));
+        return await client.ExecuteWithObjectAsync(new Command(RedisCommandName.Eval, param));
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public partial class RedisCommand : IRedisCommand
             keys.Length
         }.Concat(keys).Concat(argvs).ToArray();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<object>(new Command(RedisCommandName.EvalSha, param));
+        return await client.ExecuteWithObjectAsync(new Command(RedisCommandName.EvalSha, param));
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<string>(new Command(RedisCommandName.Script, new object[]
+        return await client.ExecuteAsync(new Command(RedisCommandName.Script, new object[]
         {
             "LOAD",
             script
@@ -82,16 +82,12 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        var result = (client.ExecuteMoreResultAsync<int>(new Command(RedisCommandName.Script,
+        var result = await client.ExecuteMoreResultAsync(new Command(RedisCommandName.Script,
             new object[1]
             {
                 "EXISTS"
-            }.Concat(sha).ToArray())).WithCancellation(cancellationToken));
-        var resList = new List<bool>();
-        await foreach (var itemResult in result)
-        {
-            resList.Add(itemResult==1);
-        }
-        return resList;
+            }.Concat(sha).ToArray())).ToRedisValueListAsync();
+
+        return result.Select(itemResult => itemResult == 1).ToList();
     }
 }

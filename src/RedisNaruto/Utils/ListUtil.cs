@@ -1,8 +1,10 @@
+using RedisNaruto.Models;
+
 namespace RedisNaruto.Utils;
 
 public static class ListUtil
 {
-    public static Dictionary<string, string> ToDic(this List<object> source)
+    public static Dictionary<string, RedisValue> ToDic(this List<object> source)
     {
         if (source is null)
         {
@@ -11,16 +13,20 @@ public static class ListUtil
 
         return Execute();
 
-        Dictionary<string, string> Execute()
+        Dictionary<string, RedisValue> Execute()
         {
             //下标
             var i = 1;
             //上一个值
             var preName = "";
-            var res = new Dictionary<string, string>();
+            var res = new Dictionary<string, RedisValue>();
             foreach (var item in source)
             {
-                var itemStr = item.ToString();
+                if (item is not RedisValue itemStr)
+                {
+                    continue;
+                }
+
                 //双数为值
                 if (i % 2 == 0)
                 {
@@ -30,7 +36,7 @@ public static class ListUtil
                 else
                 {
                     preName = itemStr;
-                    res[itemStr] = "";
+                    res[itemStr] = default;
                 }
 
                 i++;
@@ -40,7 +46,7 @@ public static class ListUtil
         }
     }
 
-    public static Dictionary<string, object> ToDicObj(this List<object> source)
+    public static List<RedisValue> ToRedisValueList(this List<object> source)
     {
         if (source is null)
         {
@@ -49,28 +55,57 @@ public static class ListUtil
 
         return Execute();
 
-        Dictionary<string, object> Execute()
+        List<RedisValue> Execute()
+        {
+            var res = new List<RedisValue>();
+            foreach (var item in source)
+            {
+                if (item is not RedisValue itemStr)
+                {
+                    res.Add(RedisValue.Null());
+                    continue;
+                }
+
+                res.Add(itemStr);
+            }
+
+            return res;
+        }
+    }
+
+    public static Dictionary<string, RedisValue> ToDicObj(this List<object> source)
+    {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return Execute();
+
+        Dictionary<string, RedisValue> Execute()
         {
             //下标
             var i = 1;
             //上一个值
             var preName = "";
-            var res = new Dictionary<string, object>();
+            var res = new Dictionary<string, RedisValue>();
             foreach (var item in source)
             {
-                //双数为值
-                if (i % 2 == 0)
+                if (item is RedisValue redisValue)
                 {
-                    res[preName] = item;
+                    //双数为值
+                    if (i % 2 == 0)
+                    {
+                        res[preName] = redisValue;
+                    }
+                    //单数为key
+                    else
+                    {
+                        preName = redisValue;
+                        res[preName] = default;
+                    }
+                    i++;
                 }
-                //单数为key
-                else
-                {
-                    preName = item.ToString();
-                    res[preName] = null;
-                }
-
-                i++;
             }
 
             return res;

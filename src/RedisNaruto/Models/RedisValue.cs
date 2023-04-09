@@ -12,17 +12,20 @@ public readonly struct RedisValue
     /// 回复的值
     /// </summary>
     private readonly ReadOnlyMemory<byte> _memory;
-
+    
     public RedisValue(ReadOnlyMemory<byte> memory)
     {
         _memory = memory;
     }
+
+    internal static RedisValue Null() => new RedisValue(default);
 
     /// <summary>
     /// 判断返回值是否为空
     /// </summary>
     /// <returns></returns>
     public bool IsEmpty() => _memory.IsEmpty;
+
 
     /// <summary>
     /// 
@@ -64,4 +67,33 @@ public readonly struct RedisValue
 
         return x.ToString() != y;
     }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator long(RedisValue value) => value.ToLong();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator int(RedisValue value) => value.ToInt();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator byte[](RedisValue value) => value.ToBytes;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator string(RedisValue value) => value.ToString();
 }

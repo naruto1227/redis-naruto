@@ -22,6 +22,7 @@ internal static class StringUtil
         int.TryParse(source, out var res);
         return res;
     }
+
     /// <summary>
     /// 
     /// </summary>

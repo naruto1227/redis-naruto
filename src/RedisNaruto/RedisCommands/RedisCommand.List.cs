@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
@@ -26,7 +27,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.LInsert, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LInsert, new object[]
             {
                 key,
                 isBefore ? "BEFORE" : "AFTER",
@@ -51,7 +52,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<string>(new Command(RedisCommandName.LSet, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LSet, new object[]
             {
                 key,
                 index,
@@ -78,7 +79,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.RPush, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.RPush, new object[]
             {
                 key
             }.Concat(element).ToArray()));
@@ -103,7 +104,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.RPushx, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.RPushx, new object[]
             {
                 key
             }.Concat(element).ToArray()));
@@ -128,7 +129,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.LPush, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LPush, new object[]
             {
                 key
             }.Concat(element).ToArray()));
@@ -153,7 +154,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.LPushx, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LPushx, new object[]
             {
                 key
             }.Union(element).ToArray()));
@@ -174,7 +175,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<string>(new Command(RedisCommandName.LTrim, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LTrim, new object[]
             {
                 key,
                 start,
@@ -191,20 +192,20 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="count">返回的消息条数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async IAsyncEnumerable<object> RPopAsync(string key, int count = 1,
+    public async IAsyncEnumerable<RedisValue> RPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var resultList =
-            client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.RPop, new object[]
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.RPop, new object[]
             {
                 key,
                 count
             }));
         await foreach (var item in resultList.WithCancellation(cancellationToken))
         {
-            yield return item;
+            yield return (RedisValue) item;
         }
     }
 
@@ -217,20 +218,20 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<(string key, object value)> BRPopAsync(string[] key, TimeSpan timeout,
+    public async Task<(string key, RedisValue value)> BRPopAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<object>(new Command(RedisCommandName.BRPop, key.Concat(new object[]
+            client.ExecuteWithObjectAsync(new Command(RedisCommandName.BRPop, key.Concat(new object[]
             {
                 timeout.TotalSeconds
             }).ToArray()));
         //判断是否有数据
         if (result is not List<object> {Count: >= 2} resultList)
             return default;
-        return (resultList[0].ToString(), resultList[1]);
+        return (resultList[0].ToString(), (RedisValue) resultList[1]);
     }
 
     /// <summary>
@@ -241,20 +242,20 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="count">返回的消息条数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async IAsyncEnumerable<object> LPopAsync(string key, int count = 1,
+    public async IAsyncEnumerable<RedisValue> LPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var resultList =
-            client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.LPop, new object[]
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.LPop, new object[]
             {
                 key,
                 count
             }));
         await foreach (var item in resultList.WithCancellation(cancellationToken))
         {
-            yield return item;
+            yield return (RedisValue) item;
         }
     }
 
@@ -267,20 +268,20 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<(string key, object value)> BLPopAsync(string[] key, TimeSpan timeout,
+    public async Task<(string key, RedisValue value)> BLPopAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result = await
-            client.ExecuteAsync<object>(new Command(RedisCommandName.BLPop, key.Concat(new object[]
+            client.ExecuteWithObjectAsync(new Command(RedisCommandName.BLPop, key.Concat(new object[]
             {
                 timeout.TotalSeconds
             }).ToArray()));
         //判断是否有数据
         return result is not List<object> {Count: >= 2} resultList
             ? default
-            : (resultList[0].ToString(), resultList[1]);
+            : (resultList[0].ToString(), (RedisValue) resultList[1]);
     }
 
     /// <summary>
@@ -297,7 +298,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.LRem, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LRem, new object[]
             {
                 key,
                 count,
@@ -314,13 +315,13 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="end"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async IAsyncEnumerable<object> LRangeAsync(string key, int start, int end,
+    public async IAsyncEnumerable<RedisValue> LRangeAsync(string key, int start, int end,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var resultList =
-            client.ExecuteMoreResultAsync<object>(new Command(RedisCommandName.LRange, new object[]
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.LRange, new object[]
             {
                 key,
                 start,
@@ -328,7 +329,7 @@ public partial class RedisCommand : IRedisCommand
             }));
         await foreach (var item in resultList.WithCancellation(cancellationToken))
         {
-            yield return item;
+            yield return (RedisValue) item;
         }
     }
 
@@ -344,7 +345,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.LLen, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LLen, new object[]
             {
                 key
             }));
@@ -358,13 +359,13 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="index">下标</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<object> LIndexAsync(string key, int index,
+    public async Task<RedisValue> LIndexAsync(string key, int index,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<object>(new Command(RedisCommandName.LIndex, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LIndex, new object[]
             {
                 key,
                 index
@@ -382,13 +383,14 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="rank">RANK选项指定要返回的第一个元素的“排名”，以防有多个匹配项。等级 1 表示返回第一个匹配项，等级 2 表示返回第二个匹配项，依此类推</param>
     /// <param name="count">返回count 个 匹配成功的元素</param>
     /// <returns></returns>
-    public async Task<List<int>> LPosAsync(string key, object element, int rank = 1, int count = 1, int maxLen = 0,
+    public async Task<List<RedisValue>> LPosAsync(string key, object element, int rank = 1, int count = 1,
+        int maxLen = 0,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteMoreResultAsync<int>(new Command(RedisCommandName.LPos, new object[]
+            await client.ExecuteMoreResultAsync(new Command(RedisCommandName.LPos, new object[]
             {
                 key,
                 element,
@@ -398,7 +400,7 @@ public partial class RedisCommand : IRedisCommand
                 count,
                 "MAXLEN",
                 maxLen
-            })).ToListAsync();
+            })).ToRedisValueListAsync();
         return result;
     }
 
@@ -410,7 +412,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="isLeft">是从左还是右 弹出</param>
     /// <returns></returns>
-    public async Task<Dictionary<string, List<object>>> LmPopAsync(string[] key, bool isLeft = true, int count = 1,
+    public async Task<Dictionary<string, List<RedisValue>>> LmPopAsync(string[] key, bool isLeft = true, int count = 1,
         CancellationToken cancellationToken = default)
     {
         if (key is not {Length: > 0})
@@ -421,7 +423,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<object>(new Command(RedisCommandName.LmPop, new object[]
+            await client.ExecuteWithObjectAsync(new Command(RedisCommandName.LmPop, new object[]
                 {
                     key.Length
                 }.Concat(key)
@@ -434,10 +436,10 @@ public partial class RedisCommand : IRedisCommand
         //判断是否有数据
         if (result is not List<object> {Count: >= 2} resultList || resultList[1] is not List<object> valueList)
             return default;
-        var res = new Dictionary<string, List<object>>(1)
+        var res = new Dictionary<string, List<RedisValue>>(1)
         {
             {
-                resultList[0]!.ToString(), valueList
+                resultList[0]!.ToString(), valueList.ToRedisValueList()
             }
         };
         return res;
@@ -453,7 +455,8 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="timeout">超时时间</param>
     /// <param name="isLeft">是从左还是右 弹出</param>
     /// <returns></returns>
-    public async Task<Dictionary<string, List<object>>> BlMPopAsync(string[] key, TimeSpan timeout, bool isLeft = true,
+    public async Task<Dictionary<string, List<RedisValue>>> BlMPopAsync(string[] key, TimeSpan timeout,
+        bool isLeft = true,
         int count = 1,
         CancellationToken cancellationToken = default)
     {
@@ -465,7 +468,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<object>(new Command(RedisCommandName.BlMPop, new object[]
+            await client.ExecuteWithObjectAsync(new Command(RedisCommandName.BlMPop, new object[]
                 {
                     timeout.TotalSeconds,
                     key.Length
@@ -479,10 +482,10 @@ public partial class RedisCommand : IRedisCommand
         //判断是否有数据
         if (result is not List<object> {Count: >= 2} resultList || resultList[1] is not List<object> valueList)
             return default;
-        var res = new Dictionary<string, List<object>>(1)
+        var res = new Dictionary<string, List<RedisValue>>(1)
         {
             {
-                resultList[0]!.ToString(), valueList
+                resultList[0]!.ToString(), valueList.ToRedisValueList()
             }
         };
         return res;
@@ -497,14 +500,14 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="destinationKey">目标的key</param>
     /// <param name="isSourceLeft">指定sourceKey 是从左还是从右读取</param>
     /// <returns></returns>
-    public async Task<object> LMoveAsync(string sourceKey, string destinationKey,
+    public async Task<RedisValue> LMoveAsync(string sourceKey, string destinationKey,
         bool isSourceLeft = true, bool isDestinationLeft = true,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<object>(new Command(RedisCommandName.LMove, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.LMove, new object[]
             {
                 sourceKey,
                 destinationKey,
@@ -525,14 +528,14 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="timeout">超时时间</param>
     /// <param name="isSourceLeft">指定sourceKey 是从左还是从右读取</param>
     /// <returns></returns>
-    public async Task<object> BLMoveAsync(string sourceKey, string destinationKey, TimeSpan timeout,
+    public async Task<RedisValue> BLMoveAsync(string sourceKey, string destinationKey, TimeSpan timeout,
         bool isSourceLeft = true, bool isDestinationLeft = true,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<object>(new Command(RedisCommandName.BLMove, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.BLMove, new object[]
             {
                 sourceKey,
                 destinationKey,

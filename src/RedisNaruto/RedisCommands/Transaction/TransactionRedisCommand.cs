@@ -1,6 +1,7 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands.Transaction;
 
@@ -23,7 +24,7 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<List<object>>(new Command(RedisCommandName.Exec, default));
+        return (await client.ExecuteMoreResultAsync(new Command(RedisCommandName.Exec, default)).ToListAsync());
     }
 
     /// <summary>
@@ -34,6 +35,6 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync<object>(new Command(RedisCommandName.DisCard, default));
+        _ = await client.ExecuteAsync(new Command(RedisCommandName.DisCard, default));
     }
 }

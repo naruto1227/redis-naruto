@@ -69,7 +69,7 @@ internal static class SentinelConnection
                 // "master",
                 masterName
             });
-            var result = await MessageTransport.ReciveAsync(sentinelTcpClient.GetStream());
+            var result = await MessageTransport.ReceiveAsync(sentinelTcpClient.GetStream());
             if (result is List<object> list)
             {
                 return new HostPort(list[0].ToString(), list[1].ToString().ToInt());
@@ -100,7 +100,7 @@ internal static class SentinelConnection
         {
             "ping"
         });
-        var result = await MessageTransport.ReciveAsync(tcpClient.GetStream());
+        var result = await MessageTransport.ReceiveAsync(tcpClient.GetStream());
         if (result != null && !string.Equals(result.ToString(), "PONG", StringComparison.OrdinalIgnoreCase))
         {
             return false;

@@ -1,6 +1,7 @@
 using RedisNaruto.Consts;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
@@ -39,7 +40,7 @@ public partial class RedisCommand : IRedisCommand
 
         argv.IfAdd(isReplace, StreamConst.Replace);
 
-        return await client.ExecuteAsync<int>(new Command(RedisCommandName.Copy, argv.ToArray())) == 1;
+        return await client.ExecuteAsync(new Command(RedisCommandName.Copy, argv.ToArray())) == 1;
     }
 
     /// <summary>
@@ -54,7 +55,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<int>(new Command(RedisCommandName.Del, keys));
+        return await client.ExecuteAsync(new Command(RedisCommandName.Del, keys));
     }
 
     /// <summary>
@@ -63,13 +64,13 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<string> DumpAsync(string key,
+    public async Task<RedisValue> DumpAsync(string key,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<string>(new Command(RedisCommandName.Dump, new[] {key}));
+        return await client.ExecuteAsync(new Command(RedisCommandName.Dump, new[] {key}));
     }
 
     /// <summary>
@@ -81,7 +82,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="serializedValue">序列化值</param>
     /// <returns></returns>
-    public async Task<bool> ReStoreAsync(string key, string serializedValue, TimeSpan? expire = null,
+    public async Task<bool> ReStoreAsync(string key, object serializedValue, TimeSpan? expire = null,
         bool isReplace = false,
         CancellationToken cancellationToken = default)
     {
@@ -97,7 +98,7 @@ public partial class RedisCommand : IRedisCommand
         argv.IfAdd(isReplace, StreamConst.Replace);
         
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<string>(new Command(RedisCommandName.ReStore, argv.ToArray()))=="OK";
+        return await client.ExecuteAsync(new Command(RedisCommandName.ReStore, argv.ToArray()))=="OK";
     }
     
     /// <summary>
@@ -112,6 +113,6 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync<int>(new Command(RedisCommandName.Exists, keys));
+        return await client.ExecuteAsync(new Command(RedisCommandName.Exists, keys));
     }
 }

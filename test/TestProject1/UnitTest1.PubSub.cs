@@ -35,7 +35,7 @@ public class UnitTest1_PubSub : BaseUnit
         await redisCommand.SubscribeAsync(new[] {"testredisnarutopub", "te", "23"}, async (topic, message) =>
         {
             _testOutputHelper.WriteLine($"topic={topic},message={message}");
-            await redisCommand.UnSubscribeAsync(new[] {"23"});
+            await redisCommand.UnSubscribeAsync(new[] {"testredisnarutopub"});
         });
     }
 }

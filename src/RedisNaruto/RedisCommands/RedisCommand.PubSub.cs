@@ -1,6 +1,8 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
 
@@ -18,7 +20,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.Pub, new object[]
+            await client.ExecuteAsync(new Command(RedisCommandName.Pub, new object[]
             {
                 topic,
                 message
@@ -44,22 +46,23 @@ public partial class RedisCommand : IRedisCommand
         // await using var client = await _redisClientPool.RentAsync();
         _subscribeClient = await GetRedisClient(cancellationToken);
         //订阅消息
-        _ = await _subscribeClient.ExecuteAsync<object>(new Command(RedisCommandName.Sub, topics));
+        _ = await _subscribeClient.ExecuteMoreResultAsync(new Command(RedisCommandName.Sub, topics))
+            .ToRedisValueListAsync();
         while (!cancellationToken.IsCancellationRequested)
         {
             //读取消息
-            var message = await _subscribeClient.ReadMessageAsync<object>();
-            if (message is List<object> {Count: 3} result && result[0].Equals("message"))
+            var message = await _subscribeClient.ReadMessageAsync<List<object>>();
+            if (message is {Count: 3} && message[0] is RedisValue rv && rv == "message")
             {
-                var topic = result[1];
-                var body = result[2];
+                var topic = message[1];
+                var body = message[2];
                 await reciveMessage(topic.ToString(), body.ToString());
             }
             //第一次开始订阅 消息会按照普通字符串的形式回复
-            else if (message.Equals("message"))
+            else if (message[0] is RedisValue redisValue && redisValue == "message")
             {
-                var topic = await _subscribeClient.ReadMessageAsync<string>();
-                var body = await _subscribeClient.ReadMessageAsync<string>();
+                var topic = await _subscribeClient.ReadMessageAsync<RedisValue>();
+                var body = await _subscribeClient.ReadMessageAsync<RedisValue>();
                 await reciveMessage(topic, body);
             }
         }
@@ -79,6 +82,7 @@ public partial class RedisCommand : IRedisCommand
             throw new InvalidOperationException("需要先订阅才能取消订阅");
         }
 
-        _ = await _subscribeClient.ExecuteAsync<object>(new Command(RedisCommandName.UnSub, topics));
+        _ = await _subscribeClient.ExecuteMoreResultAsync(new Command(RedisCommandName.UnSub, topics))
+            .ToRedisValueListAsync();
     }
 }

@@ -1,4 +1,5 @@
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.Internal.Interfaces;
 
@@ -31,22 +32,26 @@ internal interface IRedisClient : IAsyncDisposable
     /// 执行命令接口
     /// </summary>
     /// <param name="command">命令参数</param>
-    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<TResult> ExecuteAsync<TResult>(Command command);
+    Task<RedisValue> ExecuteAsync(Command command);
+
+    /// <summary>
+    /// 执行命令接口 返回结果为对象
+    /// </summary>
+    /// <param name="command">命令参数</param>
+    /// <returns></returns>
+    Task<object> ExecuteWithObjectAsync(Command command);
 
     /// <summary>
     /// 返回多结果集
     /// </summary>
     /// <param name="command"></param>
-    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    IAsyncEnumerable<TResult> ExecuteMoreResultAsync<TResult>(Command command);
+    IAsyncEnumerable<object> ExecuteMoreResultAsync(Command command);
 
     /// <summary>
-    /// 读取
+    /// 读取消息
     /// </summary>
-    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     Task<TResult> ReadMessageAsync<TResult>();
 

@@ -29,52 +29,6 @@ internal sealed class MessageTransport : IMessageTransport
     private readonly ISerializer _serializer = new Serializer();
 
     /// <summary>
-    /// 接收消息
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    public async Task<object> ReciveAsync(Stream stream)
-    {
-        //获取首位的 符号 判断消息回复类型
-        var bytes = new byte[1];
-        _ = await stream.ReadAsync(bytes);
-        var head = (char) bytes[0];
-        switch (head)
-        {
-            case RespMessage.SimpleString:
-            case RespMessage.Number:
-            {
-                var result = ReadLine(stream);
-                return result;
-            }
-            //数组
-            case RespMessage.ArrayString:
-            {
-                var result = await ReadMLineAsync(stream);
-                return result;
-            }
-            case RespMessage.BulkStrings:
-            {
-                var strlen = ReadLine(stream);
-                //如果为null
-                if (strlen == "-1")
-                {
-                    return default;
-                }
-
-                var result = ReadLine(stream);
-                return result;
-            }
-            default:
-            {
-                //错误
-                var result = ReadLine(stream);
-                throw new RedisExecException(result.ToString());
-            }
-        }
-    }
-
-    /// <summary>
     /// 发送消息
     /// </summary>
     /// <param name="stream"></param>
@@ -112,11 +66,57 @@ internal sealed class MessageTransport : IMessageTransport
     }
 
     /// <summary>
+    /// 接收消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    public async Task<object> ReceiveAsync(Stream stream)
+    {
+        //获取首位的 符号 判断消息回复类型
+        var bytes = new byte[1];
+        _ = await stream.ReadAsync(bytes);
+        var head = (char) bytes[0];
+        switch (head)
+        {
+            case RespMessage.SimpleString:
+            case RespMessage.Number:
+            {
+                var result = ReadLine(stream);
+                return result;
+            }
+            //数组
+            case RespMessage.ArrayString:
+            {
+                var result = await ReadMLineAsync(stream);
+                return result;
+            }
+            case RespMessage.BulkStrings:
+            {
+                var strlen = ReadLine(stream);
+                //如果为null
+                if (strlen == "-1")
+                {
+                    return RedisValue.Null();
+                }
+
+                var result = ReadLine(stream);
+                return result;
+            }
+            default:
+            {
+                //错误
+                var result = ReadLine(stream);
+                throw new RedisExecException(result.ToString());
+            }
+        }
+    }
+
+    /// <summary>
     /// 读取行数据
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private RedisValue ReadLine(Stream stream)
+    private static RedisValue ReadLine(Stream stream)
     {
         var bytes = new List<byte>();
         while (true)
@@ -129,13 +129,10 @@ internal sealed class MessageTransport : IMessageTransport
                 var msg2 = stream.ReadByte();
                 if (msg2 < 0) break;
                 if (msg2 == '\n') break;
-                // stringBuilder.Append((char) msg);
                 bytes.Add((byte) msg);
-                // stringBuilder.Append((char) msg2);
                 bytes.Add((byte) msg2);
             }
             else
-                // stringBuilder.Append((char) msg);
                 bytes.Add((byte) msg);
         }
 
@@ -147,12 +144,16 @@ internal sealed class MessageTransport : IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private async Task<List<Object>> ReadMLineAsync(Stream stream)
+    private async Task<List<object>> ReadMLineAsync(Stream stream)
     {
-        List<Object> resultList = new();
-
         //读取数组的长度
         var length = ReadLine(stream).ToInt();
+        if (length == -1)
+        {
+            return default;
+        }
+
+        List<object> resultList = new();
         for (var i = 0; i < length; i++)
         {
             //获取 符号 判断消息类型 是字符串还是 数字 
@@ -162,14 +163,9 @@ internal sealed class MessageTransport : IMessageTransport
             switch (head)
             {
                 case RespMessage.SimpleString:
-                {
-                    var result = ReadLine(stream);
-                    resultList.Add(result);
-                    break;
-                }
                 case RespMessage.Number:
                 {
-                    var result = ReadLine(stream).ToLong();
+                    var result = ReadLine(stream);
                     resultList.Add(result);
                     break;
                 }
@@ -180,7 +176,7 @@ internal sealed class MessageTransport : IMessageTransport
                     //如果为null
                     if (strlen == "-1")
                     {
-                        resultList.Add(null);
+                        resultList.Add(RedisValue.Null());
                         break;
                     }
 

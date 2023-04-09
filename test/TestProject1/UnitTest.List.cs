@@ -108,9 +108,9 @@ public class UnitTest_List : BaseUnit
             _testOutputHelper.WriteLine(res.key);
         }
 
-        if (res.value != null)
+        if (!res.value.IsEmpty())
         {
-            _testOutputHelper.WriteLine(res.value?.ToString());
+            _testOutputHelper.WriteLine(res.value.ToString());
         }
     }
 
@@ -128,9 +128,9 @@ public class UnitTest_List : BaseUnit
             _testOutputHelper.WriteLine(res.key);
         }
 
-        if (res.value != null)
+        if (!res.value.IsEmpty())
         {
-            _testOutputHelper.WriteLine(res.value?.ToString());
+            _testOutputHelper.WriteLine(res.value.ToString());
         }
     }
 
@@ -209,7 +209,7 @@ public class UnitTest_List : BaseUnit
     public async Task Test_BLmPopAsync()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.BlMPopAsync(new[] {"listtest", "listtest2", "listtest3"},TimeSpan.FromSeconds(5));
+        var res = await redisCommand.BlMPopAsync(new[] {"listtest", "listtest2", "listtest3"},TimeSpan.FromSeconds(1));
         if (res != default)
         {
             foreach (var item in res)
@@ -230,7 +230,7 @@ public class UnitTest_List : BaseUnit
     public async Task Test_BLMoveAsync()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.BLMoveAsync("listtest", "listtest3", TimeSpan.FromSeconds(10));
+        var res = await redisCommand.BLMoveAsync("listtest", "listtest3", TimeSpan.FromSeconds(1));
         _testOutputHelper.WriteLine(res.ToString());
     }
 }

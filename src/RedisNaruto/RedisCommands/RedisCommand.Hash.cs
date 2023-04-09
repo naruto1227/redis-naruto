@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
@@ -22,7 +23,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return
-            await client.ExecuteAsync<long>(new Command(RedisCommandName.HDel,
+            await client.ExecuteAsync(new Command(RedisCommandName.HDel,
                 new object[] {key}.Concat(fields).ToArray()));
     }
 
@@ -50,7 +51,7 @@ public partial class RedisCommand : IRedisCommand
         }
 
         return
-            await client.ExecuteAsync<long>(new Command(RedisCommandName.HSet,
+            await client.ExecuteAsync(new Command(RedisCommandName.HSet,
                 argv));
     }
 
@@ -66,7 +67,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return
-            await client.ExecuteAsync<int>(new Command(RedisCommandName.HExists,
+            await client.ExecuteAsync(new Command(RedisCommandName.HExists,
                 new object[]
                 {
                     key, field
@@ -85,7 +86,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return
-            await client.ExecuteAsync<string>(new Command(RedisCommandName.HGet,
+            await client.ExecuteAsync(new Command(RedisCommandName.HGet,
                 new object[]
                 {
                     key, field
@@ -98,13 +99,13 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<Dictionary<string, string>> HGetAllAsync(string key,
+    public async Task<Dictionary<string, RedisValue>> HGetAllAsync(string key,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return await
-            client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HGetAll,
+            client.ExecuteMoreResultAsync(new Command(RedisCommandName.HGetAll,
                 new object[]
                 {
                     key
@@ -125,7 +126,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return
-            await client.ExecuteAsync<double>(new Command(RedisCommandName.HIncrBy,
+            await client.ExecuteAsync(new Command(RedisCommandName.HIncrBy,
                 new object[]
                 {
                     key, field, increment
@@ -138,17 +139,17 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<string>> HKeysAsync(string key,
+    public async Task<List<RedisValue>> HKeysAsync(string key,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HKeys,
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.HKeys,
             new object[]
             {
                 key
-            })).ToListAsync();
+            })).ToRedisValueListAsync();
     }
 
     /// <summary>
@@ -163,7 +164,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.HLen,
+        return await client.ExecuteAsync(new Command(RedisCommandName.HLen,
             new object[]
             {
                 key
@@ -177,7 +178,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="fields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<string>> HMGetAsync(string key, string[] fields,
+    public async Task<List<RedisValue>> HMGetAsync(string key, string[] fields,
         CancellationToken cancellationToken = default)
     {
         if (key.IsNullOrWhiteSpace() || fields is not {Length: > 0})
@@ -188,8 +189,8 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HMGet,
-            new object[] {key}.Concat(fields).ToArray())).ToListAsync();
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.HMGet,
+            new object[] {key}.Concat(fields).ToArray())).ToRedisValueListAsync();
     }
 
     /// <summary>
@@ -199,7 +200,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="count">数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<Dictionary<string, string>> HRandFieldWithValueAsync(string key, int count = 1,
+    public async Task<Dictionary<string, RedisValue>> HRandFieldWithValueAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         if (key.IsNullOrWhiteSpace())
@@ -210,7 +211,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HRandField,
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.HRandField,
             new object[]
             {
                 key,
@@ -226,7 +227,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="count">数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<string>> HRandFieldAsync(string key, int count = 1,
+    public async Task<List<RedisValue>> HRandFieldAsync(string key, int count = 1,
         CancellationToken cancellationToken = default)
     {
         if (key.IsNullOrWhiteSpace())
@@ -237,12 +238,12 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HRandField,
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.HRandField,
             new object[]
             {
                 key,
                 count
-            })).ToListAsync();
+            })).ToRedisValueListAsync();
     }
 
     /// <summary>
@@ -251,7 +252,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<string>> HValsAsync(string key,
+    public async Task<List<RedisValue>> HValsAsync(string key,
         CancellationToken cancellationToken = default)
     {
         if (key.IsNullOrWhiteSpace())
@@ -262,11 +263,11 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteMoreResultAsync<string>(new Command(RedisCommandName.HVals,
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.HVals,
             new object[]
             {
                 key,
-            })).ToListAsync();
+            })).ToRedisValueListAsync();
     }
 
     /// <summary>
@@ -287,7 +288,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.HStrLen,
+        return await client.ExecuteAsync(new Command(RedisCommandName.HStrLen,
             new object[]
             {
                 key,
@@ -314,7 +315,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
 
-        return await client.ExecuteAsync<long>(new Command(RedisCommandName.HSetNx,
+        return await client.ExecuteAsync(new Command(RedisCommandName.HSetNx,
             new[]
             {
                 key,
@@ -332,7 +333,7 @@ public partial class RedisCommand : IRedisCommand
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<Dictionary<string, string>> HScanAsync(string key,
+    public async IAsyncEnumerable<Dictionary<string, RedisValue>> HScanAsync(string key,
         string matchPattern = "*", int count = 10,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -347,7 +348,7 @@ public partial class RedisCommand : IRedisCommand
         var cursor = 0;
         while (!cancellationToken.IsCancellationRequested)
         {
-            var resultList = await client.ExecuteAsync<object>(new Command(RedisCommandName.HScan,
+            var resultList = await client.ExecuteWithObjectAsync(new Command(RedisCommandName.HScan,
                 new object[]
                 {
                     key,

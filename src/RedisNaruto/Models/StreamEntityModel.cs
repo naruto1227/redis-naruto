@@ -6,7 +6,7 @@ public readonly struct StreamEntityModel
     /// 
     /// </summary>
     /// <param name="messageId"></param>
-    internal StreamEntityModel(string messageId, Dictionary<string, object> entitys)
+    internal StreamEntityModel(string messageId, Dictionary<string, RedisValue> entitys)
     {
         MessageId = messageId;
         Entitys = entitys;
@@ -20,5 +20,5 @@ public readonly struct StreamEntityModel
     /// <summary>
     /// 实体信息
     /// </summary>
-    public Dictionary<string, object> Entitys { get; init; }
+    public Dictionary<string, RedisValue> Entitys { get; init; }
 }

@@ -33,12 +33,11 @@ internal static class EnumerableUtil
     }
 
     /// <summary>
-    /// 转换
+    /// 
     /// </summary>
     /// <param name="source"></param>
-    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Task<Dictionary<string, string>> ToDicAsync(this IAsyncEnumerable<string> source)
+    public static Task<List<RedisValue>> ToRedisValueListAsync(this IAsyncEnumerable<object> source)
     {
         if (source is null)
         {
@@ -47,25 +46,64 @@ internal static class EnumerableUtil
 
         return ExecuteAsync();
 
-        async Task<Dictionary<string, string>> ExecuteAsync()
+        async Task<List<RedisValue>> ExecuteAsync()
+        {
+            var list = new List<RedisValue>();
+
+            await foreach (var element in source)
+            {
+                if (element is not RedisValue redisValue)
+                {
+                    list.Add(RedisValue.Null());
+                    continue;
+                }
+
+                list.Add(redisValue);
+            }
+
+            return list;
+        }
+    }
+
+    /// <summary>
+    /// 转换
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static Task<Dictionary<string, RedisValue>> ToDicAsync(this IAsyncEnumerable<object> source)
+    {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return ExecuteAsync();
+
+        async Task<Dictionary<string, RedisValue>> ExecuteAsync()
         {
             //下标
             var i = 1;
             //上一个值
             var preName = "";
-            var res = new Dictionary<string, string>();
+            var res = new Dictionary<string, RedisValue>();
             await foreach (var item in source)
             {
+                if (item is not RedisValue redisValue)
+                {
+                    continue;
+                }
+
                 //双数为值
                 if (i % 2 == 0)
                 {
-                    res[preName] = item;
+                    res[preName] = redisValue;
                 }
                 //单数为key
                 else
                 {
-                    preName = item;
-                    res[item] = "";
+                    preName = redisValue;
+                    res[redisValue] = default;
                 }
 
                 i++;
@@ -124,7 +162,7 @@ internal static class EnumerableUtil
     /// <param name="source"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Task<Dictionary<object, long>> ToZSetDicAsync(this IAsyncEnumerable<object> source)
+    public static Task<Dictionary<RedisValue, long>> ToZSetDicAsync(this IAsyncEnumerable<object> source)
     {
         if (source is null)
         {
@@ -133,28 +171,31 @@ internal static class EnumerableUtil
 
         return ExecuteAsync();
 
-        async Task<Dictionary<object, long>> ExecuteAsync()
+        async Task<Dictionary<RedisValue, long>> ExecuteAsync()
         {
             //下标
             var i = 1;
             //上一个值
-            object preName = null;
-            var res = new Dictionary<object, long>();
+            RedisValue preName = RedisValue.Null();
+            var res = new Dictionary<RedisValue, long>();
             await foreach (var item in source)
             {
-                //双数为值
-                if (i % 2 == 0)
+                if (item is RedisValue redisValue)
                 {
-                    res[preName] = item.ToString().ToLong();
-                }
-                //单数为key
-                else
-                {
-                    preName = item;
-                    res[item] = 0;
-                }
+                    //双数为值
+                    if (i % 2 == 0)
+                    {
+                        res[preName] = redisValue;
+                    }
+                    //单数为key
+                    else
+                    {
+                        preName = redisValue;
+                        res[preName] = 0;
+                    }
 
-                i++;
+                    i++;
+                }
             }
 
             return res;
@@ -183,15 +224,20 @@ internal static class EnumerableUtil
             var res = new List<SortedSetModel>();
             await foreach (var item in source)
             {
+                if (item is not RedisValue redisValue)
+                {
+                    continue;
+                }
+
                 //双数为值
                 if (i % 2 == 0)
                 {
-                    res[i - 1 - 1].Score = item.ToString().ToLong();
+                    res[i - 1 - 1].Score = redisValue;
                 }
                 //单数为key
                 else
                 {
-                    res.Add(new SortedSetModel(item));
+                    res.Add(new SortedSetModel(redisValue));
                 }
 
                 i++;

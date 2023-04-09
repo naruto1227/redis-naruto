@@ -1,5 +1,7 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.Serialization;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.RedisCommands;
 
@@ -9,6 +11,11 @@ public partial class RedisCommand : IRedisCommand
 
     internal IRedisClient RedisClient;
 
+    /// <summary>
+    /// 序列化
+    /// </summary>
+    private static readonly ISerializer _serializer = new Serializer();
+
     protected RedisCommand()
     {
     }
@@ -17,6 +24,15 @@ public partial class RedisCommand : IRedisCommand
     {
         RedisClientPool = redisClientPool;
     }
+
+    /// <summary>
+    /// 反序列化
+    /// </summary>
+    /// <param name="redisValue"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    private static async Task<TResult> DeserializeAsync<TResult>(byte[] redisValue) => await
+        _serializer.DeserializeAsync<TResult>(redisValue);
 
     private void ChangeRedisClient(IRedisClient redisClient)
     {

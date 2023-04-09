@@ -17,5 +17,5 @@ internal interface IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    Task<object> ReciveAsync(Stream stream);
+    Task<object> ReceiveAsync(Stream stream);
 }

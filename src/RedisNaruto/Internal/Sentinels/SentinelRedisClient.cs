@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.Internal.Sentinels;
 
@@ -26,10 +27,11 @@ internal class SentinelRedisClient : RedisClient
     /// <returns></returns>
     public async Task<bool> IsMaterAsync()
     {
-        var resultList = ExecuteMoreResultAsync<string>(new Command(RedisCommandName.Role, default));
+        var resultList = ExecuteMoreResultAsync(new Command(RedisCommandName.Role, default));
         await foreach (var item in resultList)
         {
-            if (string.Compare(item, "master", StringComparison.OrdinalIgnoreCase) > 0)
+            if (item is RedisValue redisValue &&
+                string.Compare(redisValue, "master", StringComparison.OrdinalIgnoreCase) > 0)
             {
                 return true;
             }
