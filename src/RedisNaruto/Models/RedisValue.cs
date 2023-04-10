@@ -12,7 +12,7 @@ public readonly struct RedisValue
     /// 回复的值
     /// </summary>
     private readonly ReadOnlyMemory<byte> _memory;
-    
+
     public RedisValue(ReadOnlyMemory<byte> memory)
     {
         _memory = memory;
@@ -96,4 +96,15 @@ public readonly struct RedisValue
     /// <param name="value"></param>
     /// <returns></returns>
     public static implicit operator string(RedisValue value) => value.ToString();
+
+    // public static explicit operator RedisValue(string value) => new RedisValue(Encoding.Default.GetBytes(value));
+    public static implicit operator RedisValue(string value) => new RedisValue(Encoding.Default.GetBytes(value));
+
+    public static implicit operator RedisValue(byte[] value) => new RedisValue(value);
+
+    public static implicit operator RedisValue(int value) =>
+        new RedisValue(Encoding.Default.GetBytes(value.ToString()));
+
+    public static implicit operator RedisValue(long value) =>
+        new RedisValue(Encoding.Default.GetBytes(value.ToString()));
 }
