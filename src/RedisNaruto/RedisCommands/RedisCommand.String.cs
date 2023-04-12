@@ -175,7 +175,7 @@ public partial class RedisCommand : IRedisCommand
 
     ///  <summary>
     /// 如果key已经存在并且是一个字符串，此命令将value在字符串末尾附加。如果key不存在，则创建它并将其设置为空字符串，因此与这种特殊情况APPEND 类似SET。
-    ///  </summary>
+        ///  </summary>
     ///  <param name="key"></param>
     ///  <param name="val">值</param>
     ///  <param name="cancellationToken"></param>

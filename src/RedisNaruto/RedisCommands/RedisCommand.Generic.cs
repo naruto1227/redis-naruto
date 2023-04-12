@@ -1,4 +1,6 @@
+using System.Net;
 using RedisNaruto.Consts;
+using RedisNaruto.Enums;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -96,11 +98,11 @@ public partial class RedisCommand : IRedisCommand
             serializedValue
         };
         argv.IfAdd(isReplace, StreamConst.Replace);
-        
+
         await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.ReStore, argv.ToArray()))=="OK";
+        return await client.ExecuteAsync(new Command(RedisCommandName.ReStore, argv.ToArray())) == "OK";
     }
-    
+
     /// <summary>
     /// 校验是否存在
     /// </summary>
@@ -114,5 +116,414 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         await using var client = await GetRedisClient(cancellationToken);
         return await client.ExecuteAsync(new Command(RedisCommandName.Exists, keys));
+    }
+
+    /// <summary>
+    /// 设置密钥的过期时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="expire">过期时间</param>
+    /// <param name="expireEnum"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ExpireAsync(string key, TimeSpan expire, ExpireEnum expireEnum = ExpireEnum.No,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            expire.TotalSeconds
+        };
+        argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
+        return await client.ExecuteAsync(new Command(RedisCommandName.Expire, argv.ToArray()));
+    }
+
+    /// <summary>
+    /// 设置密钥的过期时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="unixTimeSeconds">过期时间戳</param>
+    /// <param name="expireEnum"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ExpireAtAsync(string key, long unixTimeSeconds, ExpireEnum expireEnum = ExpireEnum.No,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            unixTimeSeconds
+        };
+        argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
+        return await client.ExecuteAsync(new Command(RedisCommandName.ExpireAt, argv.ToArray()));
+    }
+
+    /// <summary>
+    ///  返回给定密钥将过期的绝对 Unix 时间戳（自 1970 年 1 月 1 日起），以秒为单位。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> ExpireTimeAsync(string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.ExpireTime, argv.ToArray()));
+    }
+
+    /// <summary>
+    ///  返回所有匹配的键pattern。
+    /// </summary>
+    /// <param name="pattern"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<List<RedisValue>> KeysAsync(string pattern, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(pattern);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            pattern
+        };
+        return await client.ExecuteMoreResultAsync(new Command(RedisCommandName.Keys, argv.ToArray()))
+            .ToRedisValueListAsync();
+    }
+
+    /// <summary>
+    ///  迁移 原子性操作
+    /// </summary>
+    /// <param name="keys">需要迁移的key</param>
+    /// <param name="remoteHost">目标主机</param>
+    /// <param name="todatabase">目标库database</param>
+    /// <param name="timeout">超时时间</param>
+    /// <param name="isCopy">迁移成功本地key不删除</param>
+    /// <param name="userName">auth2模式需要填写</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="isReplace">是否替换目标库 如果key存在的话</param>
+    /// <param name="authEnum">授权类型</param>
+    /// <param name="password">密码</param>
+    /// <returns></returns>
+    public async Task<bool> MiGrateAsync(string[] keys, IPEndPoint remoteHost, int todatabase, TimeSpan timeout,
+        bool isCopy = false, bool isReplace = false, AuthEnum? authEnum = null, string password = null,
+        string userName = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            remoteHost.Address.ToString(),
+            remoteHost.Port,
+            keys.Length == 1 ? keys[0] : "",
+            todatabase,
+            timeout.TotalMilliseconds
+        };
+        argv.IfAdd(isCopy, "COPY");
+        argv.IfAdd(isReplace, "REPLACE");
+        if (authEnum != null)
+        {
+            argv.Add(authEnum.ToString());
+            if (authEnum == AuthEnum.Auth2)
+            {
+                argv.Add(userName);
+            }
+
+            argv.Add(password);
+        }
+
+        if (keys.Length > 1)
+        {
+            argv.Add("KEYS");
+            argv.AddRange(keys);
+        }
+
+        return await client.ExecuteAsync(new Command(RedisCommandName.MiGrate, argv.ToArray())) == "OK";
+    }
+
+    /// <summary>
+    /// key从当前选择的数据库（参见 参考资料）移动SELECT到指定的目标数据库。当key它已经存在于目标数据库中，或者它不存在于源数据库中时，它什么也不做。MOVE因此可以用作锁定原语。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="db"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> MoveAsync(string key, int db,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            db
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Move, argv.ToArray())) == 1;
+    }
+
+    /// <summary>
+    /// 返回对象的编码信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<string> ObjectEncodingAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            "ENCODING",
+            key,
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Object, argv.ToArray()));
+    }
+
+    /// <summary>
+    /// 返回对象的访问频率
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ObjectFreqAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            "FREQ",
+            key,
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Object, argv.ToArray()));
+    }
+
+    /// <summary>
+    /// 返回对象的空闲时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ObjectIdleTimeAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            "IDLETIME",
+            key,
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Object, argv.ToArray()));
+    }
+
+    /// <summary>
+    /// 对象重新计数
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> ObjectRefCountAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            "REFCOUNT",
+            key,
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Object, argv.ToArray()));
+    }
+
+    /// <summary>
+    /// 设置key的过期时间为永久生效
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> PersistAsync(string key,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Persist, argv.ToArray())) == 1;
+    }
+
+
+    /// <summary>
+    /// 设置密钥的过期时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="expire">过期时间</param>
+    /// <param name="expireEnum"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> PExpireAsync(string key, TimeSpan expire, ExpireEnum expireEnum = ExpireEnum.No,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            expire.TotalMilliseconds
+        };
+        argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
+        return await client.ExecuteAsync(new Command(RedisCommandName.PExpire, argv.ToArray()));
+    }
+
+    /// <summary>
+    /// 设置密钥的过期时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="unixTimeMillSeconds">过期时间戳 毫秒</param>
+    /// <param name="expireEnum"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<int> PExpireAtAsync(string key, long unixTimeMillSeconds, ExpireEnum expireEnum = ExpireEnum.No,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            unixTimeMillSeconds
+        };
+        argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
+        return await client.ExecuteAsync(new Command(RedisCommandName.PExpireAt, argv.ToArray()));
+    }
+
+    /// <summary>
+    ///  返回给定密钥将过期的绝对 Unix 时间戳（自 1970 年 1 月 1 日起），以毫秒为单位。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> PExpireTimeAsync(string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.PExpireTime, argv.ToArray()));
+    }
+
+    /// <summary>
+    ///  返回毫秒 过期时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> PTtlAsync(string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.PTtl, argv.ToArray()));
+    }
+
+    /// <summary>
+    ///  返回秒 过期时间
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> TtlAsync(string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.Ttl, argv.ToArray()));
+    }
+
+    /// <summary>
+    ///从当前选定的数据库中返回一个随机密钥
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<string> RandomKeyAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        return await client.ExecuteAsync(new Command(RedisCommandName.RandomKey, default));
+    }
+
+    /// <summary>
+    /// 改名
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="newName">新名称</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> ReNameAsync(string key, string newName, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(newName);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            newName
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.ReName, argv.ToArray())) == 1;
+    }
+    /// <summary>
+    /// 改名
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="newName">新名称</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> ReNameNxAsync(string key, string newName, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(newName);
+        cancellationToken.ThrowIfCancellationRequested();
+        await using var client = await GetRedisClient(cancellationToken);
+        var argv = new List<object>()
+        {
+            key,
+            newName
+        };
+        return await client.ExecuteAsync(new Command(RedisCommandName.ReNameNx, argv.ToArray())) == 1;
     }
 }

@@ -797,5 +797,87 @@ internal static class RedisCommandName
     /// </summary>
     public const string Exists = "EXISTS";
 
+    /// <summary>
+    /// 设置过期时间
+    /// </summary>
+    public const string Expire = "EXPIRE";
+
+    /// <summary>
+    /// EXPIREAT具有与 相同的效果和语义EXPIRE，但不是指定表示 TTL（生存时间）的秒数，而是采用绝对Unix 时间戳（自 1970 年 1 月 1 日以来的秒数）。过去的时间戳将立即删除密钥
+    /// </summary>
+    public const string ExpireAt = "EXPIREAT";
+
+    /// <summary>
+    /// 返回给定密钥将过期的绝对 Unix 时间戳（自 1970 年 1 月 1 日起），以秒为单位。
+    /// </summary>
+    public const string ExpireTime = "EXPIRETIME";
+
+    /// <summary>
+    /// 返回所有匹配的键pattern。
+    /// </summary>
+    public const string Keys = "KEYS";
+
+    /// <summary>
+    /// 数据迁移
+    /// 该命令是原子性
+    /// </summary>
+    public const string MiGrate = "MIGRATE";
+
+    /// <summary>
+    /// key从当前选择的数据库（参见 参考资料）移动SELECT到指定的目标数据库。当key它已经存在于目标数据库中，或者它不存在于源数据库中时，它什么也不做。MOVE因此可以用作锁定原语。
+    /// </summary>
+    public const string Move = "MOVE";
+
+    /// <summary>
+    /// 对象信息
+    /// </summary>
+    public const string Object = "OBJECT";
+
+    /// <summary>
+    /// 设置key的过期时间为永久
+    /// </summary>
+    public const string Persist = "PERSIST";
+
+    /// <summary>
+    /// 设置过期时间 毫秒
+    /// </summary>
+    public const string PExpire = "PEXPIRE";
+
+    /// <summary>
+    /// PEXPIREAT具有与 相同的效果和语义PEXPIRE，但不是指定表示 TTL（生存时间）的毫秒数，而是采用绝对Unix 时间戳（自 1970 年 1 月 1 日以来的毫秒数）。过去的时间戳将立即删除密钥
+    /// </summary>
+    public const string PExpireAt = "PEXPIREAT";
+
+    /// <summary>
+    /// 返回给定密钥将过期的绝对 Unix 时间戳（自 1970 年 1 月 1 日起），以毫秒为单位。
+    /// </summary>
+    public const string PExpireTime = "PEXPIRETIME";
+
+    /// <summary>
+    /// 返回过期时间 毫秒
+    /// </summary>
+    public const string PTtl = "PTTL";
+
+    /// <summary>
+    /// 返回过期时间 秒
+    /// </summary>
+    public const string Ttl = "TTL";
+
+
+    /// <summary>
+    /// 从当前选定的数据库中返回一个随机密钥。
+    /// </summary>
+    public const string RandomKey = "RANDOMKEY";
+
+    /// <summary>
+    /// 改名
+    /// </summary>
+    public const string ReName = "RENAME";
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public const string ReNameNx = "RENAMENX";
+
     #endregion
 }
