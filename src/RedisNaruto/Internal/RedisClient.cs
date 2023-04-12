@@ -309,11 +309,12 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task<bool> AuthAsync(string userName, string password)
     {
-        if (userName.IsNullOrWhiteSpace())
-            return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Auth, new object[] {password}))) ==
-                   "OK";
         if (userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
             return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Auth, new object[] {password}))) ==
+                   "OK";
+        if (!userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
+            return (await ExecuteAsync<RedisValue>(
+                       new Command(RedisCommandName.Auth, new object[] {userName, password}))) ==
                    "OK";
         return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Auth, default))) == "OK";
     }
