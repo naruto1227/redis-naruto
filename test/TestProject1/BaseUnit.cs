@@ -10,7 +10,7 @@ public class BaseUnit
             {
                 "127.0.0.1:55000"
             },
-            UserName = null,
+            UserName = "default",
             Password = "redispw",
         });
         return redisCommand;

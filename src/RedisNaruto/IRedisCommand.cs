@@ -1803,4 +1803,51 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<bool> ReNameNxAsync(string key, string newName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 获取数据类型
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> TypeAsync(string key, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令与 非常相似DEL：它删除指定的键。就像DEL一个键如果不存在就会被忽略。但是，该命令在不同的线程中执行实际的内存回收，因此它不会阻塞，而DEL会。这就是命令名称的来源：该命令只是从键空间中取消链接键。实际删除将在稍后异步发生
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> UnLinkAsync(string[] keys, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 此命令会阻塞当前客户端，直到所有先前的写命令都成功传输并至少被指定数量的副本确认。如果达到以毫秒为单位指定的超时，即使尚未达到指定的副本数，命令也会返回。
+    /// <see cref="https://redis.io/commands/wait/"/>
+    /// </summary>
+    /// <param name="numreplicas">副本数量</param>
+    /// <param name="timeout">超时时间</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> WaitAsync(int numreplicas, TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///  此命令会阻塞当前客户端，直到所有先前的写入命令都被确认为已同步到本地 Redis 的 AOF 和/或至少指定数量的副本。如果达到以毫秒为单位指定的超时时间，即使未达到指定的确认次数，命令也会返回。
+    /// <see cref="https://redis.io/commands/waitaof/"/>
+    /// </summary>
+    /// <param name="numlocal"></param>
+    /// <param name="numreplicas">副本数量</param>
+    /// <param name="timeout">超时时间</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> WaitAofAsync(int numlocal, int numreplicas, TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///  更改密钥的最后访问时间。如果键不存在，则忽略该键。
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> TouchAsync(string[] keys, CancellationToken cancellationToken = default);
 }

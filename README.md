@@ -4,7 +4,7 @@
 c#版本的redis客户端
 
 ## 已完成
-
+- Generic
 - String
 - Hash
 - Set
