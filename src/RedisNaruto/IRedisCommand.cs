@@ -1850,4 +1850,31 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<int> TouchAsync(string[] keys, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// 添加
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="elements">元素</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> PfAddAsync(string key, object[] elements, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 返回元素的基数值
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<long> PfCountAsync(string[] keys, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 将多个 HyperLogLog 值合并为一个唯一值，该值将近似于观察到的源 HyperLogLog 结构集的并集的基数。
+    /// </summary>
+    /// <param name="keys">原始key</param>
+    /// <param name="destKey">存储的目标key</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<bool> PfMergeAsync(string[] keys, string destKey, CancellationToken cancellationToken = default);
 }

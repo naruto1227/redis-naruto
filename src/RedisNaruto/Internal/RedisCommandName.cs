@@ -143,6 +143,11 @@ internal static class RedisCommandName
     /// </summary>
     public const string DbSize = "DBSIZE";
 
+    /// <summary>
+    /// 慢日志 按时间顺序从慢速日志中返回条目。
+    /// </summary>
+    public const string SlowLog = "SLOWLOG";
+
     #endregion
 
     #region script
@@ -906,6 +911,26 @@ internal static class RedisCommandName
     /// 更改密钥的最后访问时间。如果键不存在，则忽略该键。
     /// </summary>
     public const string Touch = "TOUCH";
+
+    #endregion
+
+    #region HyperLogLog
+
+    /// <summary>
+    /// 添加
+    /// 
+    /// </summary>
+    public const string PfAdd = "PFADD";
+
+    /// <summary>
+    /// 返回元素的基数值
+    /// </summary>
+    public const string PfCount = "PFCOUNT";
+
+    /// <summary>
+    /// 将多个 HyperLogLog 值合并为一个唯一值，该值将近似于观察到的源 HyperLogLog 结构集的并集的基数。
+    /// </summary>
+    public const string PfMerge = "PFMERGE";
 
     #endregion
 }

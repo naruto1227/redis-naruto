@@ -11,6 +11,7 @@ c#版本的redis客户端
 - ZSet
 - List
 - Stream
+- HyperLogLog
 - PubSub
 - Lua
 - tran
