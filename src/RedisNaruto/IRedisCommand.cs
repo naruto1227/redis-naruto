@@ -210,6 +210,25 @@ public interface IRedisCommand : IAsyncDisposable
     Task<long> DbSizeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 慢日志查询
+    /// </summary>
+    /// <param name="count">返回的条数</param>
+    /// <returns></returns>
+    Task<SlowLogModel[]> SlowLogAsync(int count, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 慢日志的条数
+    /// </summary>
+    /// <returns></returns>
+    Task<int> SlowLogLenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 清除慢日志记录
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> SlowLogResetAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 执行script脚本
     /// </summary>
     /// <param name="script"></param>

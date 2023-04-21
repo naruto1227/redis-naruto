@@ -112,6 +112,24 @@ internal sealed class MessageTransport : IMessageTransport
     }
 
     /// <summary>
+    /// 接收消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="pipeCount"></param>
+    /// <returns></returns>
+    public async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
+    {
+        var result = new object[pipeCount];
+        for (var i = 0; i < pipeCount; i++)
+        {
+            result[i] = await ReceiveAsync(stream);
+        }
+
+        return result;
+    }
+
+
+    /// <summary>
     /// 读取行数据
     /// </summary>
     /// <param name="stream"></param>

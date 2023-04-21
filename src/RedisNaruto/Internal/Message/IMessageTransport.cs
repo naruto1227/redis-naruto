@@ -18,4 +18,12 @@ internal interface IMessageTransport
     /// <param name="stream"></param>
     /// <returns></returns>
     Task<object> ReceiveAsync(Stream stream);
+
+    /// <summary>
+    /// pipe 接收消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="pipeCount">管道的读取次数</param>
+    /// <returns></returns>
+    Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount);
 }
