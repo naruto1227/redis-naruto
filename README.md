@@ -23,3 +23,4 @@ c#版本的redis客户端
 - 为每个数据类型增加对应的模型返回 取消字典的返回（zset）
 - function
 - 使用System.IO.Pipelines替换底层消息处理
+- 客户端缓存
