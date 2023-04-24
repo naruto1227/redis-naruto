@@ -197,6 +197,11 @@ public sealed class PipeMessageTransport : IMessageTransport
                     resultList.Add(result);
                     break;
                 }
+                case RespMessage.Error:
+                {
+                    resultList.Add(remindMessage);
+                    break;
+                }
             }
         }
 
@@ -271,7 +276,6 @@ public sealed class PipeMessageTransport : IMessageTransport
 
         // Skip the line + the \n.
         line = buffer.Slice(0, position.Value);
-        var str = Encoding.Default.GetString(line.ToArray());
         if (line.PositionOf((byte) '\n') != null)
         {
             line = line.Slice(1, line.Length - 1);
