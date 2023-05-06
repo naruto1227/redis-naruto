@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 using RedisNaruto.Utils;
 
@@ -13,12 +14,34 @@ public readonly struct RedisValue
     /// </summary>
     private readonly ReadOnlyMemory<byte> _memory;
 
-    public RedisValue(ReadOnlyMemory<byte> memory)
+    public RedisValue(ReadOnlyMemory<byte> memory) : this(memory, false)
     {
-        _memory = memory;
     }
 
-    internal static RedisValue Null() => new RedisValue(default);
+    public RedisValue(byte[] bytes)
+    {
+        _memory = new ReadOnlyMemory<byte>(bytes);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="memory"></param>
+    /// <param name="isError"></param>
+    private RedisValue(ReadOnlyMemory<byte> memory, bool isError)
+    {
+        _memory = memory;
+        IsError = isError;
+    }
+
+    internal static RedisValue Null() => new();
+
+    /// <summary>
+    /// 错误消息
+    /// </summary>
+    /// <param name="memory"></param>
+    /// <returns></returns>
+    internal static RedisValue Error(ReadOnlyMemory<byte> memory) => new RedisValue(memory, true);
 
     /// <summary>
     /// 判断返回值是否为空
@@ -26,6 +49,26 @@ public readonly struct RedisValue
     /// <returns></returns>
     public bool IsEmpty() => _memory.IsEmpty;
 
+    /// <summary>
+    /// 是否错误
+    /// </summary>
+    public bool IsError { get; }
+
+    /// <summary>
+    /// 数据长度
+    /// </summary>
+    public long Length
+    {
+        get
+        {
+            if (_memory.IsEmpty)
+            {
+                return 0;
+            }
+
+            return _memory.Length;
+        }
+    }
 
     /// <summary>
     /// 

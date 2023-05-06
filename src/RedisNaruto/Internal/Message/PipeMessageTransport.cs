@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.IO;
@@ -12,65 +13,16 @@ namespace RedisNaruto.Internal.Message;
 /// <summary>
 /// 消息传输
 /// </summary>
-public sealed class PipeMessageTransport : IMessageTransport
+internal sealed class PipeMessageTransport : MessageTransport
 {
-    /// <summary>
-    /// 池
-    /// </summary>
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
-
-    /// <summary>
-    /// 换行
-    /// </summary>
-    private static readonly byte[] NewLine = "\r\n".ToEncode();
-
-    /// <summary>
-    /// 序列化
-    /// </summary>
-    private readonly ISerializer _serializer = new Serializer();
-
-    /// <summary>
-    /// 发送消息
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <param name="args"></param>
-    public async Task SendAsync(Stream stream, object[] args)
-    {
-        if (args is not {Length: > 0})
-        {
-            return;
-        }
-
-        await using var ms = MemoryStreamManager.GetStream();
-        ms.Position = 0;
-        await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.ArrayString}{args.Length}"));
-        await ms.WriteAsync(NewLine);
-        //判断参数长度
-        foreach (var item in args)
-        {
-            if (item is not byte[] argBytes)
-            {
-                argBytes = await _serializer.SerializeAsync(item);
-            }
-
-            await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
-            await ms.WriteAsync(NewLine);
-            await ms.WriteAsync(argBytes);
-            await ms.WriteAsync(NewLine);
-        }
-
-        ms.Position = 0;
-        await ms.CopyToAsync(stream);
-    }
-
     /// <summary>
     /// 接收消息
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    public async Task<object> ReceiveAsync(Stream stream)
+    public override async Task<object> ReceiveAsync(Stream stream)
     {
-        var pipe = new Pipe();
+        var pipe = new Pipe(new PipeOptions(null, null, null, -1L, -1L, 513));
         //读取消息 将消息写入到 pipe˙中
         await PipeWrite(pipe.Writer, stream);
 
@@ -85,14 +37,12 @@ public sealed class PipeMessageTransport : IMessageTransport
     /// <param name="stream"></param>
     /// <param name="pipeCount"></param>
     /// <returns></returns>
-    public async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
+    public override async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
     {
         var pipe = new Pipe();
         //读取消息 将消息写入到 pipe˙中
         await PipeWrite(pipe.Writer, stream);
-
         await using var dispose = new AsyncDisposeAction(() => pipe.Reader.CompleteAsync().AsTask());
-
         var result = new object[pipeCount];
         for (var i = 0; i < pipeCount; i++)
         {
@@ -113,7 +63,7 @@ public sealed class PipeMessageTransport : IMessageTransport
         var firstByteSequence = await ReadLineAsync(pipeReader);
         var head = (char) firstByteSequence.Slice(0, 1).ToArray().First();
         //读取剩下的消息
-        var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1).First);
+        var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1));
         switch (head)
         {
             case RespMessage.SimpleString:
@@ -129,14 +79,16 @@ public sealed class PipeMessageTransport : IMessageTransport
             }
             case RespMessage.BulkStrings:
             {
+                int offset = remindMessage;
                 //如果为null
-                if (remindMessage == "-1")
+                if (offset == -1)
                 {
                     return RedisValue.Null();
                 }
 
-                var result = await ReadLineAsync(pipeReader);
-                return new RedisValue(result.First);
+                var result = await ReadLineAsync(pipeReader, offset);
+
+                return new RedisValue(result);
             }
             default:
             {
@@ -152,7 +104,7 @@ public sealed class PipeMessageTransport : IMessageTransport
     /// <param name="pipeReader"></param>
     /// <param name="length"></param>
     /// <returns></returns>
-    private static async Task<List<object>> ReadMLineAsync(PipeReader pipeReader, RedisValue length)
+    private static async Task<List<object>> ReadMLineAsync(PipeReader pipeReader, int length)
     {
         //读取数组的长度
         if (length == -1)
@@ -166,40 +118,44 @@ public sealed class PipeMessageTransport : IMessageTransport
             //获取 符号 判断消息类型 是字符串还是 数字 
             var firstByteSequence = await ReadLineAsync(pipeReader);
             var head = (char) firstByteSequence.Slice(0, 1).ToArray().First();
-            //读取剩下的消息
-            var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1).First);
             switch (head)
             {
                 case RespMessage.SimpleString:
                 case RespMessage.Number:
                 {
+                    //读取剩下的消息
+                    var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1));
                     resultList.Add(remindMessage);
                     break;
                 }
                 case RespMessage.BulkStrings:
                 {
+                    //获取字符串的长度
+                    int offset = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1));
                     //如果为null
-                    if (remindMessage == "-1")
+                    if (offset == -1)
                     {
                         resultList.Add(RedisValue.Null());
                         break;
                     }
 
                     //读取结果
-                    var result = await ReadLineAsync(pipeReader);
-                    resultList.Add(new RedisValue(result.First));
+                    var result = await ReadLineAsync(pipeReader, offset);
+                    resultList.Add(new RedisValue(result));
                     break;
                 }
                 //数组
                 case RespMessage.ArrayString:
                 {
+                    //读取剩下的消息
+                    var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1));
                     var result = await ReadMLineAsync(pipeReader, remindMessage);
                     resultList.Add(result);
                     break;
                 }
                 case RespMessage.Error:
                 {
-                    resultList.Add(remindMessage);
+                    resultList.Add(RedisValue.Error(firstByteSequence.Slice(1, firstByteSequence.Length - 1)));
                     break;
                 }
             }
@@ -210,78 +166,117 @@ public sealed class PipeMessageTransport : IMessageTransport
 
     private static async Task PipeWrite(PipeWriter writer, Stream stream)
     {
-        var mem = writer.GetMemory(512);
-        var es = await stream.ReadAsync(mem);
-        //告诉PipeWriter从Socket中读取了多少。
-        writer.Advance(es);
-        // 使数据对piperreader可用。
-        await writer.FlushAsync();
-        // 通过完成PipeWriter，告诉piperreader没有更多的数据了。
-        await writer.CompleteAsync();
-    }
-
-
-    private static async IAsyncEnumerable<ReadOnlySequence<byte>> PipeRead(PipeReader reader)
-    {
         while (true)
         {
-            var result = await reader.ReadAsync();
-            var buffer = result.Buffer;
-
-            while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
-            {
-                yield return line;
-            }
-
-            // 告诉piperreader已经占用了多少缓冲区。
-            reader.AdvanceTo(buffer.Start, buffer.End);
-
-            // Stop reading if there's no more data coming.
-            if (result.IsCompleted)
+            var mem = writer.GetMemory(513);
+            var es = await stream.ReadAsync(mem);
+            //告诉PipeWriter从Socket中读取了多少。
+            writer.Advance(es);
+            // 使数据对piperreader可用。
+            await writer.FlushAsync();
+            //判断消息是否读取完毕 如果消息长度小于实际长度 或者 结尾是换行的话
+            if (es < mem.Length || mem.TrimEnd(NewLine).Length == mem.Length - 2)
             {
                 break;
             }
         }
 
-        // Mark the PipeReader as complete.
-        await reader.CompleteAsync();
+        // 通过完成PipeWriter，告诉piperreader没有更多的数据了。
+        await writer.CompleteAsync();
     }
 
-    private static async Task<ReadOnlySequence<byte>> ReadLineAsync(PipeReader reader)
+
+    private static async Task<ReadOnlyMemory<byte>> ReadLineAsync(PipeReader reader, int offset = 0)
     {
         var result = await reader.ReadAsync();
         var buffer = result.Buffer;
-        TryReadLine(ref buffer, out ReadOnlySequence<byte> line);
-        // 告诉piperreader已经占用了多少缓冲区。
-        reader.AdvanceTo(buffer.Start, buffer.End);
-        return line;
+        var line = offset == 0 ? ReadLine(ref buffer) : ReadLineByOffset(ref buffer, offset);
+        //转换结果
+        var memory = new ReadOnlyMemory<byte>(line.ToArray());
+        // 告诉piperreader数据已经读取到哪里了
+        reader.AdvanceTo(buffer.Start);
+        return memory;
     }
 
     /// <summary>
     /// 读取行消息
+    /// 简单消息的获取
     /// </summary>
     /// <param name="buffer"></param>
-    /// <param name="line"></param>
     /// <returns></returns>
-    private static bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
+    private static ReadOnlySequence<byte> ReadLine(ref ReadOnlySequence<byte> buffer)
     {
-        // 根据\n 进行拆分
-        SequencePosition? position = buffer.PositionOf((byte) '\r');
+        //因为是简单消息的处理 所以直接获取第一个span 来判断 行消息
+        var length = buffer.FirstSpan.IndexOf(NewLine);
+        return ReadLineByOffset(ref buffer, length);
+        // var line = buffer.Slice(0, length);
+        // // //如果消息已经读取完毕就不拆分了
+        // // if (length + 2 != buffer.Length)
+        // // {
+        // //     buffer = buffer.Slice(length + 2);
+        // // }
+        // buffer = buffer.Slice(length + 2);
+        // return line;
 
-        if (position == null)
-        {
-            line = default;
-            return false;
-        }
+        #region 方案1
 
-        // Skip the line + the \n.
-        line = buffer.Slice(0, position.Value);
-        if (line.PositionOf((byte) '\n') != null)
-        {
-            line = line.Slice(1, line.Length - 1);
-        }
+        // var reader = new SequenceReader<byte>(buffer);
+        // reader.TryReadTo(out ReadOnlySpan<byte> span, NewLine);
+        // buffer = buffer.Slice(span.Length + 2);
+        // // 
+        // return new ReadOnlySequence<byte>(span.ToArray());
 
-        buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
-        return true;
+        #endregion
+
+        #region 方案2
+
+        // //找到 \r 最近的一个偏移数据
+        // var position = buffer.PositionOf((byte) '\r');
+        // if (position == null)
+        // {
+        //     return default;
+        // }
+        //
+        // // Skip the line + the \n.
+        // var line = buffer.Slice(0, position.Value);
+        // if (line.PositionOf((byte) '\n') != null)
+        // {
+        //     line = line.Slice(1, line.Length - 1);
+        // }
+        // else if (line.Length + 2 != buffer.Length)
+        // {
+        //     //过滤掉\r\n
+        //     buffer = buffer.Slice(buffer.GetPosition(2, position.Value));
+        //     return line;
+        // }
+        //
+        // //过滤掉\n
+        // buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+        // return line;
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 读取行消息
+    /// 获取批量字符串消息格式的
+    /// </summary>
+    /// <param name="buffer"></param>
+    /// <param name="offset">偏移的长度</param>
+    /// <returns></returns>
+    private static ReadOnlySequence<byte> ReadLineByOffset(ref ReadOnlySequence<byte> buffer,
+        int offset)
+    {
+        //读取指定的数据
+        var line = buffer.Slice(0, offset);
+        // //如果已经读取到最后的就不进行Slice拆分了
+        // if (offset + 2 == buffer.Length)
+        // {
+        //     return line;
+        // }
+
+        //过滤掉后面的\r\n
+        buffer = buffer.Slice(offset + 2, buffer.Length - (offset + 2));
+        return line;
     }
 }

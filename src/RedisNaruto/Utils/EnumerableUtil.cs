@@ -37,14 +37,14 @@ internal static class EnumerableUtil
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>
-    public static Task<List<RedisValue>> ToRedisValueListAsync(this IAsyncEnumerable<object> source)
+    public static async Task<List<RedisValue>> ToRedisValueListAsync(this IAsyncEnumerable<object> source)
     {
         if (source is null)
         {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return ExecuteAsync();
+        return await ExecuteAsync();
 
         async Task<List<RedisValue>> ExecuteAsync()
         {

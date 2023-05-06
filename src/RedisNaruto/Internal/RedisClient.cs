@@ -97,9 +97,10 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 开启流水线
     /// </summary>
-    public void BeginPipe()
+    public async Task BeginPipeAsync()
     {
         _isBeginPipe = true;
+        await AuthAsync();
     }
 
     /// <summary>
@@ -211,6 +212,7 @@ internal class RedisClient : IRedisClient
         {
             return default;
         }
+
         return await _messageTransport.PipeReceiveAsync(TcpClient.GetStream(), _pipeCommand);
     }
 
