@@ -1,3 +1,5 @@
+using System.Text.Json;
+using RedisNaruto.Models;
 using Xunit.Abstractions;
 
 namespace TestProject1;
@@ -29,7 +31,7 @@ public class UnitTest_Tran : BaseUnit
         var res = await tran.ExecAsync();
         foreach (var item in res)
         {
-            _testOutputHelper.WriteLine(item.ToString());
+            _testOutputHelper.WriteLine(JsonSerializer.Serialize(item));
         }
     }
 
@@ -61,7 +63,7 @@ public class UnitTest_Tran : BaseUnit
         //监视key
         await redisCommand.WatchAsync(new[] {"TranDiscard11"});
         //变动值
-        await redisCommand.SetAsync("TranDiscard11", "2");
+        // await redisCommand.SetAsync("TranDiscard11", "2");
         //开启事务
         await using var tran = await redisCommand.MultiAsync();
         var res1 = await tran.SetAsync("TranDiscard11", "2");
@@ -73,6 +75,25 @@ public class UnitTest_Tran : BaseUnit
         });
         //事务提交 由于TranDiscard11在监听之后已经被修改了，所以事务提交失败 返回null
         var res = await tran.ExecAsync();
-        
+    }
+
+    /// <summary>
+    /// 事务提交
+    /// </summary>
+    [Fact]
+    public async Task TranExecError()
+    {
+        var redisCommand = await GetRedisAsync();
+        await using var tran = await redisCommand.MultiAsync();
+        var res1 = await tran.SetAsync("transtr11", "1");
+        var res2 = await tran.HSetAsync("transtr11", new Dictionary<string, object>()
+        {
+            {"1", "2"}
+        });
+        var res = await tran.ExecAsync();
+        foreach (var item in res)
+        {
+            _testOutputHelper.WriteLine(item.ToString());
+        }
     }
 }

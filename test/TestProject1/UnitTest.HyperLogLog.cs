@@ -17,7 +17,7 @@ public class UnitTest_HyperLogLog : BaseUnit
         var redisCommand = await GetRedisAsync();
         var res = await redisCommand.PfAddAsync("hy", new[]
         {
-            "2",
+           Guid.NewGuid().ToString(),
         });
         _testOutputHelper.WriteLine(res.ToString());
     }
