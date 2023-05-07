@@ -1,7 +1,7 @@
 # RedisNaruto
 
 #### Description
-c#版本的redis客户端
+c#版本的redis客户端（使用RESP3协议对接，所以服务端最少需要6.0）
 
 ## 已完成
 - Generic
