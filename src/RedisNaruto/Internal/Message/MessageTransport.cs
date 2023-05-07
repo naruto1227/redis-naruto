@@ -94,12 +94,12 @@ internal class MessageTransport : IMessageTransport
             {
                 var strlen = ReadLine(stream);
                 //如果为null
-                if (strlen == "-1")
+                if (strlen == -1)
                 {
                     return RedisValue.Null();
                 }
 
-                var result = ReadLine(stream);
+                var result = ReadMLine(stream, strlen);
                 return result;
             }
             default:
@@ -158,6 +158,18 @@ internal class MessageTransport : IMessageTransport
     }
 
     /// <summary>
+    /// 读取行数据
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private static RedisValue ReadMLine(Stream stream, int offset)
+    {
+        Span<byte> bytes = new byte[offset + 2];
+        _ = stream.Read(bytes);
+        return new RedisValue(bytes.Slice(0, offset).ToArray());
+    }
+
+    /// <summary>
     /// 多行读取
     /// </summary>
     /// <param name="stream"></param>
@@ -192,14 +204,14 @@ internal class MessageTransport : IMessageTransport
                     //去除第一位的长度
                     var strlen = ReadLine(stream);
                     //如果为null
-                    if (strlen == "-1")
+                    if (strlen == -1)
                     {
                         resultList.Add(RedisValue.Null());
                         break;
                     }
 
                     //读取结果
-                    var result = ReadLine(stream);
+                    var result = ReadMLine(stream, strlen);
                     resultList.Add(result);
                     break;
                 }
