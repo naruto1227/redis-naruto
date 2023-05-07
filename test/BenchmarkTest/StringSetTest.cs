@@ -28,11 +28,6 @@ public class StringSetTest
     [Benchmark()]
     public async Task StringSet()
     {
-        await _redisCommand.SetAsync("testobj",new TestModel
-        {
-            Id = Guid.NewGuid(),
-            Name = "123",
-            Time = DateTime.Now
-        });
+         var fileBytes = await _redisCommand.GetAsync("file");
     }
 }

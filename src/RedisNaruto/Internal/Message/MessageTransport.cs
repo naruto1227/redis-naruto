@@ -11,29 +11,29 @@ namespace RedisNaruto.Internal.Message;
 /// <summary>
 /// 消息传输
 /// </summary>
-internal sealed class MessageTransport : IMessageTransport
+internal class MessageTransport : IMessageTransport
 {
     /// <summary>
     /// 池
     /// </summary>
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+    protected static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
 
     /// <summary>
     /// 换行
     /// </summary>
-    private static readonly byte[] NewLine = "\r\n".ToEncode();
+    protected static readonly byte[] NewLine = "\r\n".ToEncode();
 
     /// <summary>
     /// 序列化
     /// </summary>
-    private readonly ISerializer _serializer = new Serializer();
+    protected readonly ISerializer Serializer = new Serializer();
 
     /// <summary>
     /// 发送消息
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="args"></param>
-    public async Task SendAsync(Stream stream, object[] args)
+    public virtual async Task SendAsync(Stream stream, object[] args)
     {
         if (args is not {Length: > 0})
         {
@@ -42,7 +42,7 @@ internal sealed class MessageTransport : IMessageTransport
 
         await using var ms = MemoryStreamManager.GetStream();
         ms.Position = 0;
-        await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.ArrayString}{args.Length}"));
+        await ms.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.ArrayString}{args.Length}"));
         await ms.WriteAsync(NewLine);
         //判断参数长度
         foreach (var item in args)
@@ -52,10 +52,10 @@ internal sealed class MessageTransport : IMessageTransport
             }
             else
             {
-                argBytes = await _serializer.SerializeAsync(item);
+                argBytes = await Serializer.SerializeAsync(item);
             }
 
-            await ms.WriteAsync(await _serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
+            await ms.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
             await ms.WriteAsync(NewLine);
             await ms.WriteAsync(argBytes);
             await ms.WriteAsync(NewLine);
@@ -70,7 +70,7 @@ internal sealed class MessageTransport : IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    public async Task<object> ReceiveAsync(Stream stream)
+    public virtual async Task<object> ReceiveAsync(Stream stream)
     {
         //获取首位的 符号 判断消息回复类型
         var bytes = new byte[1];
@@ -94,12 +94,12 @@ internal sealed class MessageTransport : IMessageTransport
             {
                 var strlen = ReadLine(stream);
                 //如果为null
-                if (strlen == "-1")
+                if (strlen == -1)
                 {
                     return RedisValue.Null();
                 }
 
-                var result = ReadLine(stream);
+                var result = ReadMLine(stream, strlen);
                 return result;
             }
             default:
@@ -110,6 +110,24 @@ internal sealed class MessageTransport : IMessageTransport
             }
         }
     }
+
+    /// <summary>
+    /// 接收消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="pipeCount"></param>
+    /// <returns></returns>
+    public virtual async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
+    {
+        var result = new object[pipeCount];
+        for (var i = 0; i < pipeCount; i++)
+        {
+            result[i] = await ReceiveAsync(stream);
+        }
+
+        return result;
+    }
+
 
     /// <summary>
     /// 读取行数据
@@ -137,6 +155,18 @@ internal sealed class MessageTransport : IMessageTransport
         }
 
         return new RedisValue(bytes.ToArray());
+    }
+
+    /// <summary>
+    /// 读取行数据
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private static RedisValue ReadMLine(Stream stream, int offset)
+    {
+        Span<byte> bytes = new byte[offset + 2];
+        _ = stream.Read(bytes);
+        return new RedisValue(bytes.Slice(0, offset).ToArray());
     }
 
     /// <summary>
@@ -174,14 +204,14 @@ internal sealed class MessageTransport : IMessageTransport
                     //去除第一位的长度
                     var strlen = ReadLine(stream);
                     //如果为null
-                    if (strlen == "-1")
+                    if (strlen == -1)
                     {
                         resultList.Add(RedisValue.Null());
                         break;
                     }
 
                     //读取结果
-                    var result = ReadLine(stream);
+                    var result = ReadMLine(stream, strlen);
                     resultList.Add(result);
                     break;
                 }

@@ -53,7 +53,7 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 消息传输
     /// </summary>
-    private readonly IMessageTransport _messageTransport = new MessageTransport();
+    private readonly IMessageTransport _messageTransport = new PipeMessageTransport();
 
     private static readonly Random Random = new Random();
 
@@ -97,9 +97,10 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 开启流水线
     /// </summary>
-    public void BeginPipe()
+    public async Task BeginPipeAsync()
     {
         _isBeginPipe = true;
+        await AuthAsync();
     }
 
     /// <summary>
@@ -212,13 +213,7 @@ internal class RedisClient : IRedisClient
             return default;
         }
 
-        var result = new object[_pipeCommand];
-        for (var i = 0; i < _pipeCommand; i++)
-        {
-            result[i] = await ReadMessageAsync<object>();
-        }
-
-        return result;
+        return await _messageTransport.PipeReceiveAsync(TcpClient.GetStream(), _pipeCommand);
     }
 
     /// <summary>
@@ -295,6 +290,11 @@ internal class RedisClient : IRedisClient
                 if (!IsAuth)
                 {
                     IsAuth = await AuthAsync(ConnectionModel.UserName, ConnectionModel.Password);
+                    if (!IsAuth)
+                    {
+                        throw new InvalidOperationException("login fail");
+                    }
+
                     await SelectDb(ConnectionModel.DataBase);
                 }
             }

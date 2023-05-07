@@ -78,14 +78,14 @@ public class UnitTest1_Stream : BaseUnit
         var redisCommand = await GetRedisAsync();
         var res = await redisCommand.XReadAsync(new[]
         {
-            new ReadStreamOffset("stream", ReadStreamOffset.BeginMessage)
+            new ReadStreamOffset("mystream3", ReadStreamOffset.BeginMessage)
         }, 10);
         if (res != null)
         {
-            // foreach (var item in res)
-            // {
-            //     _testOutputHelper.WriteLine(JsonConvert.SerializeObject(item));
-            // }
+            foreach (var item in res)
+            {
+                _testOutputHelper.WriteLine(JsonConvert.SerializeObject(item));
+            }
         }
     }
 

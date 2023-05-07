@@ -102,7 +102,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// <summary>
     /// 开启流水线
     /// </summary>
-    void BeginPipe();
+    Task BeginPipeAsync();
 
     /// <summary>
     /// 结束流水线

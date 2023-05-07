@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace TestProject1;
@@ -32,18 +33,47 @@ public partial class UnitTest1 : BaseUnit
     }
 
     [Fact]
+    public async Task Test_StringSet2()
+    {
+        var redisCommand = await GetRedisAsync();
+        List<TestDto> li = Enumerable.Repeat(new TestDto
+        {
+            Id = Guid.NewGuid(),
+            Name = "123",
+            Time = DateTime.Now
+        }, 1_000).ToList();
+        await redisCommand.SetAsync("testBigobj",li);
+    }
+
+    [Fact]
+    public async Task Test_StringSetRN()
+    {
+        var redisCommand = await GetRedisAsync();
+        await redisCommand.SetAsync("strrn", new byte[]
+        {
+            (byte) '1',
+            (byte) '\r',
+            (byte) '\n'
+        });
+        var res = await redisCommand.GetAsync("strrn");
+        // Assert.Equal(res.Length, 3);
+        _testOutputHelper.WriteLine(res.ToBytes.Length.ToString());
+    }
+
+    [Fact]
     public async Task Test_StringSetBytes()
     {
         var redisCommand = await GetRedisAsync();
-        using FileStream fileStream = new FileStream(Path.Combine(AppContext.BaseDirectory, "未命名.docx"),
-            FileMode.Open,
-            FileAccess.Read);
-        using MemoryStream memoryStream = new MemoryStream();
-
-        await fileStream.CopyToAsync(memoryStream);
-
-
-        var res = await redisCommand.SetAsync("file", memoryStream.ToArray());
+       //  using FileStream fileStream = new FileStream(Path.Combine(AppContext.BaseDirectory, "未命名.docx"),
+       //      FileMode.Open,
+       //      FileAccess.Read);
+       //  using MemoryStream memoryStream = new MemoryStream();
+       //  
+       //  await fileStream.CopyToAsync(memoryStream);
+       //
+       //
+       // var ss= memoryStream.ToArray();
+       //  var res = await redisCommand.SetAsync("file", memoryStream.ToArray());
 
         //读取
         var newPath = Path.Combine(AppContext.BaseDirectory, "未命名2.docx");
@@ -58,6 +88,7 @@ public partial class UnitTest1 : BaseUnit
             FileAccess.Write);
         await file.WriteAsync(fileBytes.ToBytes);
     }
+
     //
     [Fact]
     public async Task Test_StringMGet()
@@ -133,6 +164,7 @@ public partial class UnitTest1 : BaseUnit
     {
         var redisCommand = await GetRedisAsync();
         var res = await redisCommand.GetAsync<TestDto>("testobj");
+        _testOutputHelper.WriteLine(JsonSerializer.Serialize(res));
     }
 
 

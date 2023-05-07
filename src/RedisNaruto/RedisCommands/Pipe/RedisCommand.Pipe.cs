@@ -14,7 +14,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         var client = await GetRedisClient(cancellationToken);
-        client.BeginPipe();
+        await client.BeginPipeAsync();
         var pipeRedisCommand = new PipeRedisCommand(RedisClientPool);
         pipeRedisCommand.ChangeRedisClient(client);
         return pipeRedisCommand;
