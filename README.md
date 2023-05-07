@@ -3,6 +3,10 @@
 #### Description
 c#版本的redis客户端（使用RESP3协议对接，所以服务端最少需要6.0）
 
+[码云地址](https://gitee.com/haiboi/redis-naruto)
+
+[github](https://github.com/zhanghaiboshiwo/redis-naruto)
+
 ## 已完成
 - Generic
 - String
