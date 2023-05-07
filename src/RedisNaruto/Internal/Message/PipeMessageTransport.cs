@@ -209,52 +209,6 @@ internal sealed class PipeMessageTransport : MessageTransport
         //因为是简单消息的处理 所以直接获取第一个span 来判断 行消息
         var length = buffer.FirstSpan.IndexOf(NewLine);
         return ReadLineByOffset(ref buffer, length);
-        // var line = buffer.Slice(0, length);
-        // // //如果消息已经读取完毕就不拆分了
-        // // if (length + 2 != buffer.Length)
-        // // {
-        // //     buffer = buffer.Slice(length + 2);
-        // // }
-        // buffer = buffer.Slice(length + 2);
-        // return line;
-
-        #region 方案1
-
-        // var reader = new SequenceReader<byte>(buffer);
-        // reader.TryReadTo(out ReadOnlySpan<byte> span, NewLine);
-        // buffer = buffer.Slice(span.Length + 2);
-        // // 
-        // return new ReadOnlySequence<byte>(span.ToArray());
-
-        #endregion
-
-        #region 方案2
-
-        // //找到 \r 最近的一个偏移数据
-        // var position = buffer.PositionOf((byte) '\r');
-        // if (position == null)
-        // {
-        //     return default;
-        // }
-        //
-        // // Skip the line + the \n.
-        // var line = buffer.Slice(0, position.Value);
-        // if (line.PositionOf((byte) '\n') != null)
-        // {
-        //     line = line.Slice(1, line.Length - 1);
-        // }
-        // else if (line.Length + 2 != buffer.Length)
-        // {
-        //     //过滤掉\r\n
-        //     buffer = buffer.Slice(buffer.GetPosition(2, position.Value));
-        //     return line;
-        // }
-        //
-        // //过滤掉\n
-        // buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
-        // return line;
-
-        #endregion
     }
 
     /// <summary>
@@ -269,12 +223,6 @@ internal sealed class PipeMessageTransport : MessageTransport
     {
         //读取指定的数据
         var line = buffer.Slice(0, offset);
-        // //如果已经读取到最后的就不进行Slice拆分了
-        // if (offset + 2 == buffer.Length)
-        // {
-        //     return line;
-        // }
-
         //过滤掉后面的\r\n
         buffer = buffer.Slice(offset + 2, buffer.Length - (offset + 2));
         return line;
