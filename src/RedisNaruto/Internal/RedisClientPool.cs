@@ -24,12 +24,9 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// 最大创建数
     /// </summary>
     private readonly int _maxCount;
-
-    // /// <summary>
-    // /// 等待创建事件 300 ms
-    // /// </summary>
-    // private readonly int WaitTime = 300;
-
+    /// <summary>
+    /// 
+    /// </summary>
     private readonly IRedisClientFactory _redisClientFactory;
 
     /// <summary>
@@ -39,7 +36,8 @@ internal sealed class RedisClientPool : IRedisClientPool
     {
         _maxCount = connectionModel.ConnectionPoolCount;
         _redisClientFactory = new RedisClientFactory(connectionModel);
-        //todo 思考如何实现将空闲的客户端释放
+        //
+        new Thread(TrimPoolAsync).Start();
     }
 
     public async Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default)
@@ -69,20 +67,38 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// <returns></returns>
     public ValueTask ReturnAsync([NotNull] IRedisClient redisClient)
     {
-        //递增当前池中的数量 验证 是否小于等于 最大的数量
-        if (Interlocked.Increment(ref _freeCount) <= _maxCount)
-        {
-            //入队
-            _freeClients.Enqueue(redisClient);
-            return new ValueTask();
-        }
-
-        //多余的就释放资源
-        redisClient.Close();
-        Interlocked.Decrement(ref _freeCount);
-        return new ValueTask();
+        Interlocked.Increment(ref _freeCount);
+        //入队
+        _freeClients.Enqueue(redisClient);
+        return ValueTask.CompletedTask;
     }
 
+
+    /// <summary>
+    /// 释放多余的连接
+    /// </summary>
+    private async void TrimPoolAsync()
+    {
+        using var periodicTimer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            var excessCount = _freeClients.Count - _maxCount;
+            while (excessCount > 0)
+            {
+                if (_freeClients.TryDequeue(out var redisClient))
+                {
+                    redisClient.Close();
+                    Interlocked.Decrement(ref _freeCount);
+                    excessCount--;
+                }
+                else
+                {
+                    // 如果队列为空，可以中断循环
+                    break;
+                }
+            }
+        }
+    }
 
     #region Dispose
 
@@ -94,8 +110,10 @@ internal sealed class RedisClientPool : IRedisClientPool
 
     private void Dispose(bool isDispose)
     {
-        if (isDispose)
+        if (!isDispose) return;
+        while (_freeClients.TryDequeue(out var redisClient))
         {
+            redisClient.Close();
         }
     }
 
