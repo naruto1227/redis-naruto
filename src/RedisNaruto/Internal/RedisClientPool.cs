@@ -24,10 +24,13 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// 最大创建数
     /// </summary>
     private readonly int _maxCount;
+
     /// <summary>
     /// 
     /// </summary>
     private readonly IRedisClientFactory _redisClientFactory;
+
+    private readonly SemaphoreSlim _semaphoreSlim;
 
     /// <summary>
     /// 
@@ -36,13 +39,16 @@ internal sealed class RedisClientPool : IRedisClientPool
     {
         _maxCount = connectionModel.ConnectionPoolCount;
         _redisClientFactory = new RedisClientFactory(connectionModel);
+        _semaphoreSlim = new(_maxCount, _maxCount);
         //
+        new Thread(InitAsync).Start();
         new Thread(TrimPoolAsync).Start();
     }
 
     public async Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        await _semaphoreSlim.WaitAsync(cancellationToken);
         //从队列中获取
         if (_freeClients.TryDequeue(out var redisClient))
         {
@@ -61,12 +67,25 @@ internal sealed class RedisClientPool : IRedisClientPool
     }
 
     /// <summary>
+    /// 初始化所有的连接
+    /// </summary>
+    private async void InitAsync()
+    {
+        for (var i = 0; i < _maxCount; i++)
+        {
+            var redisClient = await _redisClientFactory.GetAsync(async (client) => { await this.ReturnAsync(client); });
+            _freeClients.Enqueue(redisClient);
+        }
+    }
+
+    /// <summary>
     /// 归还
     /// </summary>
     /// <param name="redisClient"></param>
     /// <returns></returns>
     public ValueTask ReturnAsync([NotNull] IRedisClient redisClient)
     {
+        _semaphoreSlim.Release();
         Interlocked.Increment(ref _freeCount);
         //入队
         _freeClients.Enqueue(redisClient);
@@ -115,6 +134,8 @@ internal sealed class RedisClientPool : IRedisClientPool
         {
             redisClient.Close();
         }
+
+        _semaphoreSlim.Dispose();
     }
 
     #endregion
