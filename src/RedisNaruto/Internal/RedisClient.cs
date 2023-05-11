@@ -46,6 +46,11 @@ internal class RedisClient : IRedisClient
     public int CurrentPort { get; }
 
     /// <summary>
+    /// 客户端id
+    /// </summary>
+    public string ClientId { get; protected set; }
+
+    /// <summary>
     /// 是否授权
     /// </summary>
     protected bool IsAuth { get; set; }
@@ -149,6 +154,18 @@ internal class RedisClient : IRedisClient
         TcpClient = null;
         DisposeTask = null;
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// 初始化客户端id
+    /// </summary>
+    /// <returns></returns>
+    public async Task InitClientIdAsync()
+    {
+        ClientId = await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Client, new[]
+        {
+            "ID"
+        }));
     }
 
     /// <summary>
@@ -352,6 +369,7 @@ internal class RedisClient : IRedisClient
         var localClient = new TcpClient();
         await localClient.ConnectAsync(hostInfo.hostPort.Host, hostInfo.hostPort.Port, cancellationToken);
         TcpClient = localClient;
+        await InitClientIdAsync();
     }
 
     /// <summary>

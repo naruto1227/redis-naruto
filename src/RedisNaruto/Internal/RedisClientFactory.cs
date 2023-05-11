@@ -31,12 +31,14 @@ internal class RedisClientFactory : IRedisClientFactory
         Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return _connectionModel.ServerType switch
+        var client = _connectionModel.ServerType switch
         {
             ServerType.Sentinel => await CreateSentinelClient(disposeTask, cancellationToken),
             ServerType.Cluster => await CreateClusterClient(disposeTask, cancellationToken),
             _ => await CreateSimpleClient(disposeTask, cancellationToken)
         };
+        await client.InitClientIdAsync();
+        return client;
     }
 
     /// <summary>

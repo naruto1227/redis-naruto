@@ -19,6 +19,11 @@ internal interface IRedisClient : IAsyncDisposable
     Guid ConnectionId { get; }
 
     /// <summary>
+    /// 客户端id
+    /// </summary>
+    string ClientId { get; }
+
+    /// <summary>
     /// 当前连接的主机信息
     /// </summary>
     string CurrentHost { get; }
@@ -27,6 +32,12 @@ internal interface IRedisClient : IAsyncDisposable
     /// 当前连接的端口信息
     /// </summary>
     int CurrentPort { get; }
+
+    /// <summary>
+    /// 初始化客户端id
+    /// </summary>
+    /// <returns></returns>
+    Task InitClientIdAsync();
 
     /// <summary>
     /// 执行命令接口
