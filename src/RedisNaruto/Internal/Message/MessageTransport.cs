@@ -47,6 +47,15 @@ internal class MessageTransport : IMessageTransport
         //判断参数长度
         foreach (var item in args)
         {
+            //处理null
+            if (item is null)
+            {
+                await ms.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.BulkStrings}0"));
+                await ms.WriteAsync(NewLine);
+                await ms.WriteAsync(NewLine);
+                continue;
+            }
+
             if (item is byte[] argBytes)
             {
             }
