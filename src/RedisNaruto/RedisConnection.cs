@@ -9,8 +9,8 @@ public static class RedisConnection
     /// 
     /// </summary>
     /// <returns></returns>
-    public static async Task<IRedisCommand> ConnectionAsync(ConnectionModel config)
+    public static async Task<IRedisCommand> CreateAsync(ConnectionBuilder config)
     {
-        return await RedisCommands.RedisCommand.ConnectionAsync(config);
+        return await RedisCommands.RedisCommand.BuilderAsync(config);
     }
 }

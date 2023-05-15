@@ -1,3 +1,4 @@
+using RedisNaruto.Internal.RedisResolvers;
 using RedisNaruto.RedisCommands.Pipe;
 using RedisNaruto.RedisCommands.Transaction;
 
@@ -13,10 +14,9 @@ public partial class RedisCommand : IRedisCommand
     public async Task<IPipeRedisCommand> BeginPipeAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var client = await GetRedisClient(cancellationToken);
-        await client.BeginPipeAsync();
-        var pipeRedisCommand = new PipeRedisCommand(RedisClientPool);
-        pipeRedisCommand.ChangeRedisClient(client);
-        return pipeRedisCommand;
+        var pipeRedisResolver = new PipeRedisResolver(_redisClientPool);
+        await pipeRedisResolver.InitClientAsync();
+        //todo 执行auth select
+        return new PipeRedisCommand(_redisClientPool, pipeRedisResolver);
     }
 }

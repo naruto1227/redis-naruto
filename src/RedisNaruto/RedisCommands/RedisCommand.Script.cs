@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands;
@@ -25,8 +26,8 @@ public partial class RedisCommand : IRedisCommand
             script,
             keys.Length
         }.Concat(keys).Concat(argvs).ToArray();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteWithObjectAsync(new Command(RedisCommandName.Eval, param));
+
+        return await RedisResolver.InvokeAsync<object>(new Command(RedisCommandName.Eval, param));
     }
 
     /// <summary>
@@ -48,8 +49,8 @@ public partial class RedisCommand : IRedisCommand
             sha,
             keys.Length
         }.Concat(keys).Concat(argvs).ToArray();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteWithObjectAsync(new Command(RedisCommandName.EvalSha, param));
+
+        return await RedisResolver.InvokeAsync<object>(new Command(RedisCommandName.EvalSha, param));
     }
 
     /// <summary>
@@ -62,8 +63,8 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.Script, new object[]
+
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Script, new object[]
         {
             "LOAD",
             script
@@ -80,9 +81,9 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
 
-        var result = await client.ExecuteMoreResultAsync(new Command(RedisCommandName.Script,
+
+        var result = await RedisResolver.InvokeMoreResultAsync(new Command(RedisCommandName.Script,
             new object[1]
             {
                 "EXISTS"

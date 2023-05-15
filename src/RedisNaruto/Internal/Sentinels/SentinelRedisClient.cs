@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Internal.RedisClients;
 using RedisNaruto.Models;
 
 namespace RedisNaruto.Internal.Sentinels;
@@ -12,13 +13,14 @@ internal class SentinelRedisClient : RedisClient
     /// <summary>
     /// 
     /// </summary>
-    public SentinelRedisClient(Guid connectionId, TcpClient tcpClient, ConnectionModel connectionModel,
+    public SentinelRedisClient(Guid connectionId, TcpClient tcpClient, ConnectionBuilder connectionBuilder,
         string currentHost,
         int currentPort,
-        Func<IRedisClient, Task> disposeTask) : base(connectionId, tcpClient, connectionModel, currentHost, currentPort,
+        Func<IRedisClient, Task> disposeTask) : base(connectionId, tcpClient, connectionBuilder, currentHost,
+        currentPort,
         disposeTask)
     {
-        _masterName = connectionModel.MasterName;
+        _masterName = connectionBuilder.MasterName;
     }
 
     /// <summary>
@@ -27,8 +29,8 @@ internal class SentinelRedisClient : RedisClient
     /// <returns></returns>
     public async Task<bool> IsMaterAsync()
     {
-        var resultList = ExecuteMoreResultAsync(new Command(RedisCommandName.Role, default));
-        await foreach (var item in resultList)
+        var resultList = await ExecAsync(new Command(RedisCommandName.Role, default));
+        foreach (var item in resultList)
         {
             if (item is RedisValue redisValue &&
                 string.Compare(redisValue, "master", StringComparison.OrdinalIgnoreCase) > 0)
@@ -38,6 +40,25 @@ internal class SentinelRedisClient : RedisClient
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 执行命令
+    /// </summary>
+    /// <param name="command"></param>
+    /// <returns></returns>
+    private async Task<List<object>> ExecAsync(Command command)
+    {
+        var pipeReader = await ExecuteAsync(command);
+        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
+
+        var res = await MessageParse.ParseMessageAsync(pipeReader);
+        if (res is List<object> redisValue)
+        {
+            return redisValue;
+        }
+
+        return default;
     }
 
     /// <summary>

@@ -1,26 +1,27 @@
+using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.RedisResolvers;
 
 namespace RedisNaruto.RedisCommands.Pipe;
 
 public class PipeRedisCommand : RedisCommand, IPipeRedisCommand
 {
-    internal PipeRedisCommand(IRedisClientPool redisClientPool)
+    private readonly PipeRedisResolver _pipeRedisResolver;
+
+    internal PipeRedisCommand(IRedisClientPool redisClientPool, PipeRedisResolver pipeRedisResolver) : base(
+        pipeRedisResolver,
+        redisClientPool)
     {
-        RedisClientPool = redisClientPool;
+        _pipeRedisResolver = pipeRedisResolver;
     }
 
     public async Task<object[]> EndPipeAsync(CancellationToken cancellationToken = default)
     {
-        var client = await GetRedisClient(cancellationToken);
-        var result = await client.PipeReadMessageAsync();
-        //结束流水线
-        client.EndPipe();
-        return result;
+        return await _pipeRedisResolver.PipeReadAsync(cancellationToken);
     }
 
     protected override async ValueTask DisposeCoreAsync(bool isDispose)
     {
-        await base.DisposeCoreAsync(isDispose);
-        await RedisClientPool.ReturnAsync(RedisClient);
+        await _pipeRedisResolver.DisposeAsync();
     }
 }

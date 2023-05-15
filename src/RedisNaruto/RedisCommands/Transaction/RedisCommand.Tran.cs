@@ -1,5 +1,7 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Internal.RedisResolvers;
+using RedisNaruto.Models;
 using RedisNaruto.RedisCommands.Transaction;
 
 namespace RedisNaruto.RedisCommands;
@@ -14,24 +16,21 @@ public partial class RedisCommand : IRedisCommand
     public async Task<ITransactionRedisCommand> MultiAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync(new Command(RedisCommandName.Multi, default));
-        var transactionRedisCommand = new TransactionRedisCommand(RedisClientPool);
-        transactionRedisCommand.ChangeRedisClient(client);
-        return transactionRedisCommand;
+        var tranRedisResolver = new TranRedisResolver(_redisClientPool);
+        await tranRedisResolver.InitClientAsync();
+        await tranRedisResolver.BeginTranAsync();
+        return new TransactionRedisCommand(_redisClientPool, tranRedisResolver);
     }
 
     public async Task UnWatchAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync(new Command(RedisCommandName.UnWatch, default));
+        _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.UnWatch, default));
     }
 
     public async Task WatchAsync(string[] keys, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync(new Command(RedisCommandName.Watch, keys));
+        _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Watch, keys));
     }
 }

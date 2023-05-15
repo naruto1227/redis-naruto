@@ -1,7 +1,4 @@
-using System.Buffers;
-using System.Text;
 using Microsoft.IO;
-using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
@@ -11,7 +8,7 @@ namespace RedisNaruto.Internal.Message;
 /// <summary>
 /// 消息传输
 /// </summary>
-internal class MessageTransport : IMessageTransport
+internal class MessageTransport 
 {
     /// <summary>
     /// 池
@@ -74,69 +71,69 @@ internal class MessageTransport : IMessageTransport
         await ms.CopyToAsync(stream);
     }
 
-    /// <summary>
-    /// 接收消息
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    public virtual async Task<object> ReceiveAsync(Stream stream)
-    {
-        //获取首位的 符号 判断消息回复类型
-        var bytes = new byte[1];
-        _ = await stream.ReadAsync(bytes);
-        var head = (char) bytes[0];
-        switch (head)
-        {
-            case RespMessage.SimpleString:
-            case RespMessage.Number:
-            {
-                var result = ReadLine(stream);
-                return result;
-            }
-            //数组
-            case RespMessage.ArrayString:
-            {
-                var result = await ReadMLineAsync(stream);
-                return result;
-            }
-            case RespMessage.BulkStrings:
-            {
-                var strlen = ReadLine(stream);
-                //如果为null
-                if (strlen == -1)
-                {
-                    return RedisValue.Null();
-                }
-
-                var result = ReadMLine(stream, strlen);
-                return result;
-            }
-            default:
-            {
-                //错误
-                var result = ReadLine(stream);
-                throw new RedisExecException(result.ToString());
-            }
-        }
-    }
-
-    /// <summary>
-    /// 接收消息
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <param name="pipeCount"></param>
-    /// <returns></returns>
-    public virtual async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
-    {
-        var result = new object[pipeCount];
-        for (var i = 0; i < pipeCount; i++)
-        {
-            result[i] = await ReceiveAsync(stream);
-        }
-
-        return result;
-    }
-
+    // /// <summary>
+    // /// 接收消息
+    // /// </summary>
+    // /// <param name="stream"></param>
+    // /// <returns></returns>
+    // public virtual async Task<object> ReceiveAsync(Stream stream)
+    // {
+    //     //获取首位的 符号 判断消息回复类型
+    //     var bytes = new byte[1];
+    //     _ = await stream.ReadAsync(bytes);
+    //     var head = (char) bytes[0];
+    //     switch (head)
+    //     {
+    //         case RespMessage.SimpleString:
+    //         case RespMessage.Number:
+    //         {
+    //             var result = ReadLine(stream);
+    //             return result;
+    //         }
+    //         //数组
+    //         case RespMessage.ArrayString:
+    //         {
+    //             var result = await ReadMLineAsync(stream);
+    //             return result;
+    //         }
+    //         case RespMessage.BulkStrings:
+    //         {
+    //             var strlen = ReadLine(stream);
+    //             //如果为null
+    //             if (strlen == -1)
+    //             {
+    //                 return RedisValue.Null();
+    //             }
+    //
+    //             var result = ReadMLine(stream, strlen);
+    //             return result;
+    //         }
+    //         default:
+    //         {
+    //             //错误
+    //             var result = ReadLine(stream);
+    //             throw new RedisExecException(result.ToString());
+    //         }
+    //     }
+    // }
+    //
+    // /// <summary>
+    // /// 接收消息
+    // /// </summary>
+    // /// <param name="stream"></param>
+    // /// <param name="pipeCount"></param>
+    // /// <returns></returns>
+    // public virtual async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
+    // {
+    //     var result = new object[pipeCount];
+    //     for (var i = 0; i < pipeCount; i++)
+    //     {
+    //         result[i] = await ReceiveAsync(stream);
+    //     }
+    //
+    //     return result;
+    // }
+    //
 
     /// <summary>
     /// 读取行数据

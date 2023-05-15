@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.RedisCommands;
 
@@ -18,8 +19,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<long> ClientIdAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.Client, new[] {"ID"}));
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Client, new[] {"ID"}));
     }
 
     /// <summary>
@@ -29,7 +29,6 @@ public partial class RedisCommand : IRedisCommand
     public async Task<bool> PingAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.PingAsync();
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Ping, null)) == "PONG";
     }
 }

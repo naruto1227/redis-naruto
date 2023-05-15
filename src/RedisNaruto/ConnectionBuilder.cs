@@ -3,12 +3,12 @@ namespace RedisNaruto;
 /// <summary>
 /// 连接模型
 /// </summary>
-public sealed class ConnectionModel
+public sealed class ConnectionBuilder
 {
-    public ConnectionModel()
+    public ConnectionBuilder()
     {
         DataBase = 0;
-        ConnectionPoolCount = Environment.ProcessorCount * 2;
+        PoolCount = Environment.ProcessorCount * 2;
         ServerType = ServerType.Standalone;
     }
 
@@ -45,5 +45,5 @@ public sealed class ConnectionModel
     /// <summary>
     /// 连接池
     /// </summary>
-    public int ConnectionPoolCount { get; set; }
+    public int PoolCount { get; set; }
 }

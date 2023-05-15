@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.RedisResolvers;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 
@@ -7,22 +8,27 @@ namespace RedisNaruto.RedisCommands;
 
 public partial class RedisCommand : IRedisCommand
 {
-    internal IRedisClientPool RedisClientPool;
-
-    internal IRedisClient RedisClient;
+    private readonly IRedisClientPool _redisClientPool;
+    //
+    // internal IRedisClient RedisClient;
 
     /// <summary>
     /// 序列化
     /// </summary>
     private static readonly ISerializer _serializer = new Serializer();
 
-    protected RedisCommand()
+    internal readonly IRedisResolver RedisResolver;
+
+    internal RedisCommand(IRedisResolver redisResolver, IRedisClientPool redisClientPool)
     {
+        RedisResolver = redisResolver;
+        _redisClientPool = redisClientPool;
     }
 
     private RedisCommand(IRedisClientPool redisClientPool)
     {
-        RedisClientPool = redisClientPool;
+        _redisClientPool = redisClientPool;
+        RedisResolver = new DefaultRedisResolver(redisClientPool);
     }
 
     /// <summary>
@@ -34,32 +40,32 @@ public partial class RedisCommand : IRedisCommand
     private static async Task<TResult> DeserializeAsync<TResult>(byte[] redisValue) => await
         _serializer.DeserializeAsync<TResult>(redisValue);
 
-    private void ChangeRedisClient(IRedisClient redisClient)
-    {
-        RedisClient = redisClient;
-    }
+    // private void ChangeRedisClient(IRedisClient redisClient)
+    // {
+    //     RedisClient = redisClient;
+    // }
 
 
-    /// <summary>
-    /// 获取redis客户端
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    internal async Task<IRedisClient> GetRedisClient(CancellationToken cancellationToken)
-    {
-        if (RedisClient != default)
-        {
-            return RedisClient;
-        }
-
-        return await RedisClientPool.RentAsync(cancellationToken);
-    }
+    // /// <summary>
+    // /// 获取redis客户端
+    // /// </summary>
+    // /// <param name="cancellationToken"></param>
+    // /// <returns></returns>
+    // internal async Task<IRedisClient> GetRedisClient(CancellationToken cancellationToken)
+    // {
+    //     if (RedisClient != default)
+    //     {
+    //         return RedisClient;
+    //     }
+    //
+    //     return await RedisClientPool.RentAsync(cancellationToken);
+    // }
 
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    internal static ValueTask<RedisCommand> ConnectionAsync(ConnectionModel config)
+    internal static ValueTask<RedisCommand> BuilderAsync(ConnectionBuilder config)
     {
         var redisCommand = new RedisCommand(new RedisClientPool(config));
         //连接配置
@@ -74,10 +80,10 @@ public partial class RedisCommand : IRedisCommand
 
     protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
-        if (isDispose && RedisClient != default)
-        {
-            await RedisClientPool.ReturnAsync(RedisClient);
-            RedisClient = null;
-        }
+        // if (isDispose && RedisClient != default)
+        // {
+        //     await RedisClientPool.ReturnAsync(RedisClient);
+        //     RedisClient = null;
+        // }
     }
 }

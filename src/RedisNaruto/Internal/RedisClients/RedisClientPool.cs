@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using Microsoft.Extensions.ObjectPool;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
-using RedisNaruto.Internal.Sentinels;
 
 namespace RedisNaruto.Internal;
 
@@ -35,10 +34,10 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// <summary>
     /// 
     /// </summary>
-    public RedisClientPool(ConnectionModel connectionModel)
+    public RedisClientPool(ConnectionBuilder connectionBuilder)
     {
-        _maxCount = connectionModel.ConnectionPoolCount;
-        _redisClientFactory = new RedisClientFactory(connectionModel);
+        _maxCount = connectionBuilder.PoolCount;
+        _redisClientFactory = new RedisClientFactory(connectionBuilder);
         _semaphoreSlim = new(_maxCount, _maxCount);
         //
         new Thread(InitAsync).Start();

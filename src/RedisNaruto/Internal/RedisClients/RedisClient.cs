@@ -1,17 +1,13 @@
-using System.Net;
+using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using System.Text;
-using Microsoft.IO;
-using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message;
+using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
-using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
-namespace RedisNaruto.Internal;
+namespace RedisNaruto.Internal.RedisClients;
 
 internal class RedisClient : IRedisClient
 {
@@ -28,7 +24,7 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 
     /// </summary>
-    public ConnectionModel ConnectionModel { get; }
+    public ConnectionBuilder ConnectionBuilder { get; }
 
     /// <summary>
     /// 连接id
@@ -58,76 +54,26 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 消息传输
     /// </summary>
-    private readonly IMessageTransport _messageTransport = new PipeMessageTransport();
+    protected readonly IMessageTransport MessageTransport = new PipeMessageTransport();
 
-    private static readonly Random Random = new Random();
+    protected readonly IMessageParse MessageParse = new MessageParse();
 
     /// <summary>
     /// 
     /// </summary>
     protected Func<IRedisClient, Task> DisposeTask;
 
-
-    /// <summary>
-    ///是否开启流水线
-    /// </summary>
-    private bool _isBeginPipe = false;
-
-    /// <summary>
-    /// 流水线命令数
-    /// </summary>
-    private int _pipeCommand = 0;
-
-    /// <summary>
-    /// 是否开启事务
-    /// </summary>
-    private bool isBeginTran = false;
-
-    /// <summary>
-    /// 开启事务
-    /// </summary>
-    public void BeginTran()
-    {
-        isBeginTran = true;
-    }
-
-    /// <summary>
-    /// 结束事务
-    /// </summary>
-    private void EndTran()
-    {
-        isBeginTran = false;
-    }
-
-    /// <summary>
-    /// 开启流水线
-    /// </summary>
-    public async Task BeginPipeAsync()
-    {
-        _isBeginPipe = true;
-        await AuthAsync();
-    }
-
-    /// <summary>
-    /// 结束流水线
-    /// </summary>
-    public void EndPipe()
-    {
-        Interlocked.Exchange(ref _pipeCommand, 0);
-        _isBeginPipe = false;
-    }
-
     /// <summary>
     /// 
     /// </summary>
-    public RedisClient(Guid connectionId, TcpClient tcpClient, ConnectionModel connectionModel, string currentHost,
+    public RedisClient(Guid connectionId, TcpClient tcpClient, ConnectionBuilder connectionBuilder, string currentHost,
         int currentPort,
         Func<IRedisClient, Task> disposeTask)
     {
         TcpClient = tcpClient;
         CurrentHost = currentHost;
         CurrentPort = currentPort;
-        ConnectionModel = connectionModel;
+        ConnectionBuilder = connectionBuilder;
         DisposeTask = disposeTask;
         ConnectionId = connectionId;
     }
@@ -139,7 +85,7 @@ internal class RedisClient : IRedisClient
 
     protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
-        if (isDispose && !isBeginTran && !_isBeginPipe)
+        if (isDispose)
         {
             await DisposeTask.Invoke(this);
         }
@@ -160,9 +106,9 @@ internal class RedisClient : IRedisClient
     /// 初始化客户端id
     /// </summary>
     /// <returns></returns>
-    public async Task InitClientIdAsync()
+    public virtual async Task InitClientIdAsync()
     {
-        ClientId = await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Client, new[]
+        ClientId = await InvokeAsync(new Command(RedisCommandName.Client, new[]
         {
             "ID"
         }));
@@ -174,106 +120,36 @@ internal class RedisClient : IRedisClient
     /// <param name="command"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private async Task<TResult> ExecuteAsync<TResult>(Command command)
+    public virtual async Task<PipeReader> ExecuteAsync(Command command)
     {
-        //开启结束事务
-        switch (command.Cmd)
-        {
-            case RedisCommandName.Multi:
-                this.BeginTran();
-                break;
-            case RedisCommandName.Exec or RedisCommandName.DisCard:
-                this.EndTran();
-                break;
-        }
-
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await _messageTransport.SendAsync(stream, command.CombinArgs());
-        //判断是否开启了 流水线 并且 不是在授权的方法中调用
-        if (!_isBeginPipe ||
-            _authLock.CurrentCount == 0) return await ReadMessageAsync<TResult>();
-        Interlocked.Increment(ref _pipeCommand);
-        return default;
+        await MessageTransport.SendAsync(stream, command.CombinArgs());
+
+        return await MessageTransport.ReceiveAsync(this.TcpClient.GetStream());
     }
 
     /// <summary>
-    /// 执行命令
+    /// 执行命令 无返回值
     /// </summary>
     /// <param name="command"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public virtual async Task<RedisValue> ExecuteAsync(Command command)
+    public virtual async Task ExecuteNoResultAsync(Command command)
     {
-        return await ExecuteAsync<RedisValue>(command);
-    }
-
-
-    /// <summary>
-    /// 执行命令接口 返回结果为对象
-    /// </summary>
-    /// <param name="command">命令参数</param>
-    /// <returns></returns>
-    public async Task<object> ExecuteWithObjectAsync(Command command)
-    {
-        return await ExecuteAsync<object>(command);
-    }
-
-    /// <summary>
-    /// 流水线消息读取
-    /// </summary>
-    /// <returns></returns>
-    public async Task<object[]> PipeReadMessageAsync()
-    {
-        if (_pipeCommand <= 0)
-        {
-            return default;
-        }
-
-        return await _messageTransport.PipeReceiveAsync(TcpClient.GetStream(), _pipeCommand);
+        var stream =
+            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
+        await MessageTransport.SendAsync(stream, command.CombinArgs());
     }
 
     /// <summary>
     /// 读取消息
     /// </summary>
-    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task<TResult> ReadMessageAsync<TResult>()
+    public async Task<PipeReader> ReadMessageAsync()
     {
-        var response = await _messageTransport.ReceiveAsync(this.TcpClient.GetStream());
-        //判断是否为事务
-        if (isBeginTran && response is RedisValue redisValue && redisValue == InternalConsts.TranQueuedResult)
-        {
-            return default;
-        }
-
-        return response switch
-        {
-            TResult result => result, //结果只会为RedisValue和 list<object>
-            null => default,
-            _ => default
-        };
-    }
-
-    /// <summary>
-    /// 返回多结果集
-    /// todo 结果调整 底层增加 IAsyncEnumerable 迭代支持
-    /// </summary>
-    /// <param name="command"></param>
-    /// <returns></returns>
-    public virtual async IAsyncEnumerable<object> ExecuteMoreResultAsync(Command command)
-    {
-        var resultList = await ExecuteAsync<List<object>>(command);
-        if (resultList == null)
-        {
-            yield break;
-        }
-
-        foreach (var item in resultList)
-        {
-            yield return item;
-        }
+        return await MessageTransport.ReceiveAsync(this.TcpClient.GetStream());
     }
 
     /// <summary>
@@ -283,7 +159,7 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task<bool> SelectDb(int db)
     {
-        return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Select, new object[] {db}))) == "OK";
+        return (await InvokeAsync(new Command(RedisCommandName.Select, new object[] {db}))) == "OK";
     }
 
     /// <summary>
@@ -292,7 +168,27 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task<bool> PingAsync()
     {
-        return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Ping, default))) == "PONG";
+        return (await InvokeAsync(new Command(RedisCommandName.Ping, default))) == "PONG";
+    }
+
+
+    /// <summary>
+    /// 执行命令
+    /// </summary>
+    /// <param name="command"></param>
+    /// <returns></returns>
+    public async Task<RedisValue> InvokeAsync(Command command)
+    {
+        var pipeReader = await ExecuteAsync(command);
+        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
+
+        var res = await MessageParse.ParseMessageAsync(pipeReader);
+        if (res is RedisValue redisValue)
+        {
+            return redisValue;
+        }
+
+        return RedisValue.Null();
     }
 
     /// <summary>
@@ -306,13 +202,13 @@ internal class RedisClient : IRedisClient
             {
                 if (!IsAuth)
                 {
-                    IsAuth = await AuthAsync(ConnectionModel.UserName, ConnectionModel.Password);
+                    IsAuth = await AuthAsync(ConnectionBuilder.UserName, ConnectionBuilder.Password);
                     if (!IsAuth)
                     {
                         throw new InvalidOperationException("login fail");
                     }
 
-                    await SelectDb(ConnectionModel.DataBase);
+                    await SelectDb(ConnectionBuilder.DataBase);
                 }
             }
         }
@@ -327,13 +223,13 @@ internal class RedisClient : IRedisClient
     public virtual async Task<bool> AuthAsync(string userName, string password)
     {
         if (userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
-            return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Auth, new object[] {password}))) ==
+            return (await InvokeAsync(new Command(RedisCommandName.Auth, new object[] {password}))) ==
                    "OK";
         if (!userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
-            return (await ExecuteAsync<RedisValue>(
+            return (await InvokeAsync(
                        new Command(RedisCommandName.Auth, new object[] {userName, password}))) ==
                    "OK";
-        return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Auth, default))) == "OK";
+        return (await InvokeAsync(new Command(RedisCommandName.Auth, default))) == "OK";
     }
 
     /// <summary>
@@ -342,7 +238,7 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task<bool> QuitAsync()
     {
-        return (await ExecuteAsync<RedisValue>(new Command(RedisCommandName.Quit, default))) == "OK";
+        return (await InvokeAsync(new Command(RedisCommandName.Quit, default))) == "OK";
     }
 
     /// <summary>

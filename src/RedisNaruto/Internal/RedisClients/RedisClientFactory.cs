@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using RedisNaruto.Internal.Cluster;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Internal.RedisClients;
 using RedisNaruto.Internal.Sentinels;
 
 namespace RedisNaruto.Internal;
@@ -13,12 +14,12 @@ namespace RedisNaruto.Internal;
 /// </summary>
 internal class RedisClientFactory : IRedisClientFactory
 {
-    private readonly ConnectionModel _connectionModel;
+    private readonly ConnectionBuilder _connectionBuilder;
 
-    public RedisClientFactory(ConnectionModel connectionModel)
+    public RedisClientFactory(ConnectionBuilder connectionBuilder)
     {
-        _connectionModel = connectionModel;
-        ConnectionStateManage.Init(connectionModel.Connection);
+        _connectionBuilder = connectionBuilder;
+        ConnectionStateManage.Init(connectionBuilder.Connection);
     }
 
     /// <summary>
@@ -31,7 +32,7 @@ internal class RedisClientFactory : IRedisClientFactory
         Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var client = _connectionModel.ServerType switch
+        var client = _connectionBuilder.ServerType switch
         {
             ServerType.Sentinel => await CreateSentinelClient(disposeTask, cancellationToken),
             ServerType.Cluster => await CreateClusterClient(disposeTask, cancellationToken),
@@ -49,7 +50,7 @@ internal class RedisClientFactory : IRedisClientFactory
         CancellationToken cancellationToken)
     {
         var connectionInfo = await GetConnectionInfo(cancellationToken);
-        return new RedisClient(connectionInfo.connectionId, connectionInfo.tcpClient, _connectionModel,
+        return new RedisClient(connectionInfo.connectionId, connectionInfo.tcpClient, _connectionBuilder,
             connectionInfo.currentHost,
             connectionInfo.port,
             disposeTask);
@@ -63,7 +64,7 @@ internal class RedisClientFactory : IRedisClientFactory
         CancellationToken cancellationToken)
     {
         var connectionInfo = await GetConnectionInfo(cancellationToken);
-        return new ClusterRedisClient(connectionInfo.connectionId, connectionInfo.tcpClient, _connectionModel,
+        return new ClusterRedisClient(connectionInfo.connectionId, connectionInfo.tcpClient, _connectionBuilder,
             connectionInfo.currentHost,
             connectionInfo.port,
             disposeTask);
@@ -81,13 +82,15 @@ internal class RedisClientFactory : IRedisClientFactory
         //初始化tcp客户端
         var tcpClient = new TcpClient();
         //获取ip地址
-        var ips = await Dns.GetHostAddressesAsync(hostInfo.hostPort.Host, cancellationToken);
+        if (!IPAddress.TryParse(hostInfo.hostPort.Host, out var ips))
+        {
+            ips = (await Dns.GetHostAddressesAsync(hostInfo.hostPort.Host, cancellationToken)).FirstOrDefault();
+        }
+
         await tcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
             cancellationToken);
-        var currentHost = string.Join(',',
-            ips.OrderBy(a => a.ToString()).Select(x => x.MapToIPv4().ToString()).ToArray());
 
-        return (hostInfo.connectionId, tcpClient, currentHost, hostInfo.hostPort.Port);
+        return (hostInfo.connectionId, tcpClient, ips.MapToIPv4().ToString(), hostInfo.hostPort.Port);
     }
 
     /// <summary>
@@ -97,13 +100,13 @@ internal class RedisClientFactory : IRedisClientFactory
     private async Task<IRedisClient> CreateSentinelClient(Func<IRedisClient, Task> disposeTask,
         CancellationToken cancellationToken)
     {
-        var hostPort = await SentinelConnection.GetMaserAddressAsync(_connectionModel.MasterName, cancellationToken);
+        var hostPort = await SentinelConnection.GetMaserAddressAsync(_connectionBuilder.MasterName, cancellationToken);
         //初始化tcp客户端
         var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(hostPort.Host, hostPort.Port,
             cancellationToken);
         var sentinelClient =
-            new SentinelRedisClient(default, tcpClient, _connectionModel, hostPort.Host, hostPort.Port, disposeTask);
+            new SentinelRedisClient(default, tcpClient, _connectionBuilder, hostPort.Host, hostPort.Port, disposeTask);
         //当不是master节点的时候重新走流程
         if (await sentinelClient.IsMaterAsync()) return sentinelClient;
         //等待100ms

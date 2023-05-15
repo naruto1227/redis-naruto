@@ -1,6 +1,8 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Internal.RedisResolvers;
+using RedisNaruto.Models;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.RedisCommands.Transaction;
@@ -10,9 +12,13 @@ namespace RedisNaruto.RedisCommands.Transaction;
 /// </summary>
 public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
 {
-    internal TransactionRedisCommand(IRedisClientPool redisClientPool)
+    private readonly TranRedisResolver _tranRedisResolver;
+
+    internal TransactionRedisCommand(IRedisClientPool redisClientPool, TranRedisResolver tranRedisResolver) : base(
+        tranRedisResolver,
+        redisClientPool)
     {
-        RedisClientPool = redisClientPool;
+        _tranRedisResolver = tranRedisResolver;
     }
 
     /// <summary>
@@ -23,8 +29,7 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
     public async Task<List<object>> ExecAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var client = await GetRedisClient(cancellationToken);
-        return (await client.ExecuteMoreResultAsync(new Command(RedisCommandName.Exec, default)).ToListAsync());
+        return (await RedisResolver.InvokeMoreResultAsync(new Command(RedisCommandName.Exec, default)).ToListAsync());
     }
 
     /// <summary>
@@ -34,7 +39,11 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
     public async Task DiscardAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync(new Command(RedisCommandName.DisCard, default));
+        _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.DisCard, default));
+    }
+
+    protected override async ValueTask DisposeCoreAsync(bool isDispose)
+    {
+        await _tranRedisResolver.DisposeAsync();
     }
 }

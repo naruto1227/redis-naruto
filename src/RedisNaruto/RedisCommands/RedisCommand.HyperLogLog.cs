@@ -33,8 +33,8 @@ public partial class RedisCommand : IRedisCommand
         argv.AddRange(elements);
 
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.PfAdd, argv.ToArray()));
+        
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PfAdd, argv.ToArray()));
     }
 
     /// <summary>
@@ -47,8 +47,8 @@ public partial class RedisCommand : IRedisCommand
     {
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.PfCount, keys));
+        
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PfCount, keys));
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public partial class RedisCommand : IRedisCommand
             destKey
         };
         argv.AddRange(keys);
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.PfMerge, argv.ToArray())) == "OK";
+        
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PfMerge, argv.ToArray())) == "OK";
     }
 }

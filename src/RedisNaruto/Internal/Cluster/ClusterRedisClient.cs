@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.RedisClients;
 
 namespace RedisNaruto.Internal.Cluster;
 
@@ -11,9 +12,11 @@ internal class ClusterRedisClient : RedisClient
     /// <summary>
     /// 
     /// </summary>
-    public ClusterRedisClient(Guid connectionId,TcpClient tcpClient, ConnectionModel connectionModel, string currentHost,
+    public ClusterRedisClient(Guid connectionId, TcpClient tcpClient, ConnectionBuilder connectionBuilder,
+        string currentHost,
         int currentPort,
-        Func<IRedisClient, Task> disposeTask) : base(connectionId,tcpClient, connectionModel, currentHost, currentPort, disposeTask)
+        Func<IRedisClient, Task> disposeTask) : base(connectionId, tcpClient, connectionBuilder, currentHost, currentPort,
+        disposeTask)
     {
     }
 
@@ -21,5 +24,10 @@ internal class ClusterRedisClient : RedisClient
     {
         //集群只有一个db 不允许切换数据库
         return Task.FromResult(true);
+    }
+
+    public override Task InitClientIdAsync()
+    {
+        return Task.CompletedTask;
     }
 }

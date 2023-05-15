@@ -35,10 +35,8 @@ public partial class RedisCommand : IRedisCommand
                 "PX",
                 timeSpan == default ? 0 : timeSpan.TotalMilliseconds
             };
-        await using var client = await GetRedisClient(cancellationToken);
-
         var result =
-            await client.ExecuteAsync(new Command(RedisCommandName.Set, argv));
+            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Set, argv));
         return result == "OK";
     }
 
@@ -53,9 +51,8 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync(new Command(RedisCommandName.SetNx, new[]
+            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.SetNx, new[]
             {
                 key, value
             }));
@@ -72,9 +69,8 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync(new Command(RedisCommandName.StrLen, new[]
+            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.StrLen, new[]
             {
                 key
             }));
@@ -93,9 +89,8 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
         var result =
-            await client.ExecuteAsync(new Command(RedisCommandName.SetRange, new object[]
+            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.SetRange, new object[]
             {
                 key, offset, value
             }));
@@ -122,10 +117,8 @@ public partial class RedisCommand : IRedisCommand
             idx++;
         }
 
-        await using var client = await GetRedisClient(cancellationToken);
-
         var result =
-            await client.ExecuteAsync(new Command(RedisCommandName.MSet, argv));
+            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.MSet, argv));
         return result == "OK";
     }
 
@@ -139,8 +132,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.Get,
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Get,
             new object[] {key}));
     }
 
@@ -153,8 +145,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<TResult> GetAsync<TResult>(string key, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await DeserializeAsync<TResult>(await client.ExecuteAsync(new Command(RedisCommandName.Get,
+        return await DeserializeAsync<TResult>(await RedisResolver.InvokeAsync<RedisValue>(new Command(
+            RedisCommandName.Get,
             new object[] {key})));
     }
 
@@ -168,14 +160,13 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await (client.ExecuteMoreResultAsync(
+        return await (RedisResolver.InvokeMoreResultAsync(
             new Command(RedisCommandName.MGET, key))).ToRedisValueListAsync();
     }
 
     ///  <summary>
     /// 如果key已经存在并且是一个字符串，此命令将value在字符串末尾附加。如果key不存在，则创建它并将其设置为空字符串，因此与这种特殊情况APPEND 类似SET。
-        ///  </summary>
+    ///  </summary>
     ///  <param name="key"></param>
     ///  <param name="val">值</param>
     ///  <param name="cancellationToken"></param>
@@ -183,8 +174,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task AppendAsync(string key, string val, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        _ = await client.ExecuteAsync(new Command(RedisCommandName.Append, new object[] {key, val}));
+        _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Append, new object[] {key, val}));
     }
 
     /// <summary>
@@ -197,8 +187,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<long> DecrByAsync(string key, long val = 1, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.DecrBy, new object[] {key, val}));
+        return await RedisResolver.InvokeAsync<RedisValue>(
+            new Command(RedisCommandName.DecrBy, new object[] {key, val}));
     }
 
     /// <summary>
@@ -210,8 +200,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<RedisValue> GetDelAsync(string key, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.GetDel, new object[] {key}));
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.GetDel, new object[] {key}));
     }
 
     ///  <summary>
@@ -225,8 +214,7 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.GetEx,
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.GetEx,
             new object[] {key, "PX", expireTime.TotalMilliseconds}));
     }
 
@@ -242,8 +230,7 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.GetRange,
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.GetRange,
             new object[] {key, begin, end}));
     }
 
@@ -257,8 +244,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<long> IncrByAsync(string key, long val = 1, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.IncrBy, new object[] {key, val}));
+        return await RedisResolver.InvokeAsync<RedisValue>(
+            new Command(RedisCommandName.IncrBy, new object[] {key, val}));
     }
 
     /// <summary>
@@ -272,8 +259,8 @@ public partial class RedisCommand : IRedisCommand
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.Lcs, new object[] {key1, key2}));
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Lcs,
+            new object[] {key1, key2}));
     }
 
     /// <summary>
@@ -286,8 +273,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<long> LcsWithLenAsync(string key1, string key2, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(
+        return await RedisResolver.InvokeAsync<RedisValue>(
             new Command(RedisCommandName.Lcs, new object[] {key1, key2, "LEN"}));
     }
 }

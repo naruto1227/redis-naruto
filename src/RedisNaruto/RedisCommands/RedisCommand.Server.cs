@@ -17,8 +17,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<long> DbSizeAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.DbSize, default));
+        
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.DbSize, default));
     }
 
     /// <summary>
@@ -29,8 +29,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<SlowLogModel[]> SlowLogAsync(int count, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        var result = await client.ExecuteWithObjectAsync(new Command(RedisCommandName.SlowLog, new object[]
+        
+        var result = await RedisResolver.InvokeAsync<object>(new Command(RedisCommandName.SlowLog, new object[]
         {
             "Get",
             count
@@ -65,8 +65,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<int> SlowLogLenAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.SlowLog, new object[]
+        
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.SlowLog, new object[]
         {
             "LEN"
         }));
@@ -79,8 +79,8 @@ public partial class RedisCommand : IRedisCommand
     public async Task<bool> SlowLogResetAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await using var client = await GetRedisClient(cancellationToken);
-        return await client.ExecuteAsync(new Command(RedisCommandName.SlowLog, new object[]
+        
+        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.SlowLog, new object[]
         {
             "RESET"
         })) == "OK";

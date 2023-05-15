@@ -1,3 +1,4 @@
+using System.IO.Pipelines;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 
@@ -11,7 +12,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// <summary>
     /// 连接信息
     /// </summary>
-    ConnectionModel ConnectionModel { get; }
+    ConnectionBuilder ConnectionBuilder { get; }
 
     /// <summary>
     /// 连接id
@@ -41,36 +42,57 @@ internal interface IRedisClient : IAsyncDisposable
 
     /// <summary>
     /// 执行命令接口
+    /// todo 返回 pipereader
     /// </summary>
     /// <param name="command">命令参数</param>
     /// <returns></returns>
-    Task<RedisValue> ExecuteAsync(Command command);
-
+    Task<PipeReader> ExecuteAsync(Command command);
     /// <summary>
-    /// 执行命令接口 返回结果为对象
-    /// </summary>
-    /// <param name="command">命令参数</param>
-    /// <returns></returns>
-    Task<object> ExecuteWithObjectAsync(Command command);
-
-    /// <summary>
-    /// 返回多结果集
+    /// 执行命令 无返回值
     /// </summary>
     /// <param name="command"></param>
     /// <returns></returns>
-    IAsyncEnumerable<object> ExecuteMoreResultAsync(Command command);
+    /// <exception cref="InvalidOperationException"></exception>
+    Task ExecuteNoResultAsync(Command command);
 
     /// <summary>
     /// 读取消息
     /// </summary>
     /// <returns></returns>
-    Task<TResult> ReadMessageAsync<TResult>();
+    /// <exception cref="InvalidOperationException"></exception>
+    Task<PipeReader> ReadMessageAsync();
 
     /// <summary>
-    /// 流水线消息读取
+    /// 执行命令
     /// </summary>
+    /// <param name="command"></param>
     /// <returns></returns>
-    Task<object[]> PipeReadMessageAsync();
+    Task<RedisValue> InvokeAsync(Command command);
+    // /// <summary>
+    // /// 执行命令接口 返回结果为对象
+    // /// </summary>
+    // /// <param name="command">命令参数</param>
+    // /// <returns></returns>
+    // Task<object> ExecuteWithObjectAsync(Command command);
+
+    // /// <summary>
+    // /// 返回多结果集
+    // /// </summary>
+    // /// <param name="command"></param>
+    // /// <returns></returns>
+    // IAsyncEnumerable<object> ExecuteMoreResultAsync(Command command);
+
+    // /// <summary>
+    // /// 读取消息
+    // /// </summary>
+    // /// <returns></returns>
+    // Task<TResult> ReadMessageAsync<TResult>();
+
+    // /// <summary>
+    // /// 流水线消息读取
+    // /// </summary>
+    // /// <returns></returns>
+    // Task<object[]> PipeReadMessageAsync();
 
     /// <summary>
     /// 选择 db库
@@ -110,13 +132,13 @@ internal interface IRedisClient : IAsyncDisposable
     /// </summary>
     void Close();
 
-    /// <summary>
-    /// 开启流水线
-    /// </summary>
-    Task BeginPipeAsync();
-
-    /// <summary>
-    /// 结束流水线
-    /// </summary>
-    void EndPipe();
+    // /// <summary>
+    // /// 开启流水线
+    // /// </summary>
+    // Task BeginPipeAsync();
+    //
+    // /// <summary>
+    // /// 结束流水线
+    // /// </summary>
+    // void EndPipe();
 }

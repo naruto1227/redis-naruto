@@ -1,3 +1,5 @@
+using System.IO.Pipelines;
+
 namespace RedisNaruto.Internal.Message;
 
 /// <summary>
@@ -17,13 +19,13 @@ internal interface IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    Task<object> ReceiveAsync(Stream stream);
+    Task<PipeReader> ReceiveAsync(Stream stream);
 
-    /// <summary>
-    /// pipe 接收消息
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <param name="pipeCount">管道的读取次数</param>
-    /// <returns></returns>
-    Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount);
+    // /// <summary>
+    // /// pipe 接收消息
+    // /// </summary>
+    // /// <param name="stream"></param>
+    // /// <param name="pipeCount">管道的读取次数</param>
+    // /// <returns></returns>
+    // Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount);
 }
