@@ -35,6 +35,11 @@ internal interface IRedisClient : IAsyncDisposable
     int CurrentPort { get; }
 
     /// <summary>
+    /// 当前db
+    /// </summary>
+    int CurrentDb { get; }
+
+    /// <summary>
     /// 初始化客户端id
     /// </summary>
     /// <returns></returns>
@@ -47,6 +52,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// <param name="command">命令参数</param>
     /// <returns></returns>
     Task<PipeReader> ExecuteAsync(Command command);
+
     /// <summary>
     /// 执行命令 无返回值
     /// </summary>

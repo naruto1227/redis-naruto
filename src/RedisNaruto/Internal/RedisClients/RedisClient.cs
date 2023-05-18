@@ -52,11 +52,16 @@ internal class RedisClient : IRedisClient
     protected bool IsAuth { get; set; }
 
     /// <summary>
+    /// 当前db
+    /// </summary>
+    public int CurrentDb { get; private set; }
+
+    /// <summary>
     /// 消息传输
     /// </summary>
-    protected readonly IMessageTransport MessageTransport = new PipeMessageTransport();
+    protected static readonly IMessageTransport MessageTransport = new PipeMessageTransport();
 
-    protected readonly IMessageParse MessageParse = new MessageParse();
+    protected static readonly IMessageParse MessageParse = new MessageParse();
 
     /// <summary>
     /// 
@@ -124,7 +129,7 @@ internal class RedisClient : IRedisClient
     {
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await MessageTransport.SendAsync(stream, command.CombinArgs());
+        await MessageTransport.SendAsync(stream, command);
 
         return await MessageTransport.ReceiveAsync(this.TcpClient.GetStream());
     }
@@ -139,7 +144,7 @@ internal class RedisClient : IRedisClient
     {
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await MessageTransport.SendAsync(stream, command.CombinArgs());
+        await MessageTransport.SendAsync(stream, command);
     }
 
     /// <summary>
@@ -159,7 +164,18 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task<bool> SelectDb(int db)
     {
-        return (await InvokeAsync(new Command(RedisCommandName.Select, new object[] {db}))) == "OK";
+        if (db == CurrentDb)
+        {
+            return true;
+        }
+
+        var res = (await InvokeAsync(new Command(RedisCommandName.Select, new object[] {db}))) == "OK";
+        if (res)
+        {
+            CurrentDb = db;
+        }
+
+        return res;
     }
 
     /// <summary>
@@ -180,15 +196,9 @@ internal class RedisClient : IRedisClient
     public async Task<RedisValue> InvokeAsync(Command command)
     {
         var pipeReader = await ExecuteAsync(command);
-        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
+        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
 
-        var res = await MessageParse.ParseMessageAsync(pipeReader);
-        if (res is RedisValue redisValue)
-        {
-            return redisValue;
-        }
-
-        return RedisValue.Null();
+        return await MessageParse.ParseSimpleMessageAsync(pipeReader);
     }
 
     /// <summary>
