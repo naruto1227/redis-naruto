@@ -46,6 +46,22 @@ internal class DefaultRedisResolver : IRedisResolver
         return default(T);
     }
 
+    /// <summary>
+    /// 执行
+    /// </summary>
+    public virtual async Task<RedisValue> InvokeSimpleAsync(Command command)
+    {
+        PipeReader pipeReader = default;
+        await using (var redisClient = await _redisClientPool.RentAsync())
+        {
+            pipeReader = await redisClient.ExecuteAsync(command);
+        }
+
+        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
+
+        return await MessageParse.ParseSimpleMessageAsync(pipeReader);
+    }
+
     public virtual async IAsyncEnumerable<object> InvokeMoreResultAsync(Command command)
     {
         //todo 使用迭代器

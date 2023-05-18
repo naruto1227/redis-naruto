@@ -16,5 +16,10 @@ internal interface IRedisResolver
     /// <summary>
     /// 执行
     /// </summary>
+    Task<RedisValue> InvokeSimpleAsync(Command command);
+
+    /// <summary>
+    /// 执行
+    /// </summary>
     IAsyncEnumerable<object> InvokeMoreResultAsync(Command command);
 }

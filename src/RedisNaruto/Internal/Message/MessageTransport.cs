@@ -1,4 +1,7 @@
+using System.Buffers;
+using System.Text;
 using Microsoft.IO;
+using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
@@ -8,7 +11,7 @@ namespace RedisNaruto.Internal.Message;
 /// <summary>
 /// 消息传输
 /// </summary>
-internal class MessageTransport 
+internal class MessageTransport
 {
     /// <summary>
     /// 池
@@ -23,48 +26,64 @@ internal class MessageTransport
     /// <summary>
     /// 序列化
     /// </summary>
-    protected readonly ISerializer Serializer = new Serializer();
+    protected static readonly ISerializer Serializer = new Serializer();
 
     /// <summary>
     /// 发送消息
     /// </summary>
     /// <param name="stream"></param>
-    /// <param name="args"></param>
-    public virtual async Task SendAsync(Stream stream, object[] args)
+    /// <param name="command"></param>
+    public virtual async Task SendAsync(Stream stream, Command command)
     {
-        if (args is not {Length: > 0})
-        {
-            return;
-        }
-
         await using var ms = MemoryStreamManager.GetStream();
         ms.Position = 0;
-        await ms.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.ArrayString}{args.Length}"));
+        await ms.WriteAsync($"{RespMessage.ArrayString}{command.Length}".ToEncode());
         await ms.WriteAsync(NewLine);
-        //判断参数长度
-        foreach (var item in args)
+        //写入命令
+        var cmdBytes = command.Cmd.ToEncode();
+        await ms.WriteAsync($"{RespMessage.BulkStrings}{cmdBytes.Length}".ToEncode());
+        await ms.WriteAsync(NewLine);
+        await ms.WriteAsync(cmdBytes);
+        await ms.WriteAsync(NewLine);
+        if (command.Length > 1)
         {
-            //处理null
-            if (item is null)
+            //判断参数长度
+            foreach (var item in command.Args)
             {
-                await ms.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.BulkStrings}0"));
-                await ms.WriteAsync(NewLine);
-                await ms.WriteAsync(NewLine);
-                continue;
-            }
+                //处理null
+                if (item is null)
+                {
+                    await ms.WriteAsync($"{RespMessage.BulkStrings}0".ToEncode());
+                    await ms.WriteAsync(NewLine);
+                    await ms.WriteAsync(NewLine);
+                    continue;
+                }
 
-            if (item is byte[] argBytes)
-            {
-            }
-            else
-            {
-                argBytes = await Serializer.SerializeAsync(item);
-            }
+                if (item is not byte[] argBytes)
+                {
+                    var bytes = await Serializer.SerializeAsync(item);
 
-            await ms.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
-            await ms.WriteAsync(NewLine);
-            await ms.WriteAsync(argBytes);
-            await ms.WriteAsync(NewLine);
+                    await ms.WriteAsync($"{RespMessage.BulkStrings}{bytes.Item2}".ToEncode());
+                    await ms.WriteAsync(NewLine);
+                    if (bytes.Item2 == 0)
+                    {
+                        await ms.WriteAsync(bytes.Item1);
+                    }
+                    else
+                    {
+                        await ms.WriteAsync(bytes.Item1, 0, bytes.Item2);
+                        ArrayPool<byte>.Shared.Return(bytes.Item1);
+                    }
+
+                    await ms.WriteAsync(NewLine);
+                    continue;
+                }
+
+                await ms.WriteAsync($"{RespMessage.BulkStrings}{argBytes.Length}".ToEncode());
+                await ms.WriteAsync(NewLine);
+                await ms.WriteAsync(argBytes);
+                await ms.WriteAsync(NewLine);
+            }
         }
 
         ms.Position = 0;

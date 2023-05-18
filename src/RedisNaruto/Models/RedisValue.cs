@@ -74,12 +74,17 @@ public readonly struct RedisValue
     /// 
     /// </summary>
     /// <returns></returns>
-    public override string ToString() => Encoding.Default.GetString(_memory.ToArray());
+    public override string ToString() => Encoding.UTF8.GetString(_memory.ToArray());
 
     /// <summary>
     /// 转成字节
     /// </summary>
     public byte[] ToBytes => _memory.ToArray();
+
+    /// <summary>
+    /// 转成字节
+    /// </summary>
+    public ReadOnlyMemory<byte> ToReadOnlyMemory => _memory;
 
     public int ToInt()
     {
@@ -141,13 +146,13 @@ public readonly struct RedisValue
     public static implicit operator string(RedisValue value) => value.ToString();
 
     // public static explicit operator RedisValue(string value) => new RedisValue(Encoding.Default.GetBytes(value));
-    public static implicit operator RedisValue(string value) => new RedisValue(Encoding.Default.GetBytes(value));
+    public static implicit operator RedisValue(string value) => new RedisValue(value.ToEncode());
 
     public static implicit operator RedisValue(byte[] value) => new RedisValue(value);
 
     public static implicit operator RedisValue(int value) =>
-        new RedisValue(Encoding.Default.GetBytes(value.ToString()));
+        new RedisValue(value.ToEncode());
 
     public static implicit operator RedisValue(long value) =>
-        new RedisValue(Encoding.Default.GetBytes(value.ToString()));
+        new RedisValue(value.ToEncode());
 }

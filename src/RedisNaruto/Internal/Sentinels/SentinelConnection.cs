@@ -65,14 +65,13 @@ internal static class SentinelConnection
             }
 
             //执行获取主节点地址
-            await MessageTransport.SendAsync(sentinelTcpClient.GetStream(), new object[]
+            await MessageTransport.SendAsync(sentinelTcpClient.GetStream(), new Command(RedisCommandName.Sentinel, new[]
             {
-                RedisCommandName.Sentinel,
                 "get-master-addr-by-name",
                 // "sentinels",
                 // "master",
                 masterName
-            });
+            }));
             var pipeReader = await MessageTransport.ReceiveAsync(sentinelTcpClient.GetStream());
             await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
             var result = await MessageParse.ParseMessageAsync(pipeReader);
@@ -102,10 +101,7 @@ internal static class SentinelConnection
     private static async Task<bool> IsVaildAsync(this TcpClient tcpClient)
     {
         //ping
-        await MessageTransport.SendAsync(tcpClient.GetStream(), new object[]
-        {
-            "ping"
-        });
+        await MessageTransport.SendAsync(tcpClient.GetStream(), new Command(RedisCommandName.Ping, null));
         var result = await MessageTransport.ReceiveAsync(tcpClient.GetStream());
         if (result != null && !string.Equals(result.ToString(), "PONG", StringComparison.OrdinalIgnoreCase))
         {

@@ -54,7 +54,7 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
     {
         cancellationToken.ThrowIfCancellationRequested();
         var pipeReader = await _redisClient.ReadMessageAsync();
-        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
+        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
         var result = new object[_pipeCommand];
         for (var i = 0; i < _pipeCommand; i++)
         {

@@ -1,4 +1,6 @@
 using System.IO.Pipelines;
+using RedisNaruto.Internal.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto.Internal.Message;
 
@@ -7,6 +9,51 @@ namespace RedisNaruto.Internal.Message;
 /// </summary>
 internal sealed class PipeMessageTransport : MessageTransport, IMessageTransport
 {
+    // /// <summary>
+    // /// 发送消息
+    // /// </summary>
+    // /// <param name="stream"></param>
+    // /// <param name="command"></param>
+    // public override async Task SendAsync(Stream stream, Command command)
+    // {
+    //     var pipeWriter = PipeWriter.Create(stream);
+    //     await pipeWriter.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.ArrayString}{command.Length}"));
+    //     await pipeWriter.WriteAsync(NewLine);
+    //
+    //     //写入命令
+    //     var cmdBytes = command.Cmd.ToEncode();
+    //     await pipeWriter.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.BulkStrings}{cmdBytes.Length}"));
+    //     await pipeWriter.WriteAsync(NewLine);
+    //     await pipeWriter.WriteAsync(cmdBytes);
+    //     await pipeWriter.WriteAsync(NewLine);
+    //     if (command.Length > 1)
+    //     {
+    //         //判断参数长度
+    //         foreach (var item in command.Args)
+    //         {
+    //             //处理null
+    //             if (item is null)
+    //             {
+    //                 await pipeWriter.WriteAsync(await Serializer.SerializeAsync($"{RespMessage.BulkStrings}0"));
+    //                 await pipeWriter.WriteAsync(NewLine);
+    //                 await pipeWriter.WriteAsync(NewLine);
+    //                 continue;
+    //             }
+    //
+    //             if (item is not byte[] argBytes)
+    //             {
+    //                 argBytes = await Serializer.SerializeAsync(item);
+    //             }
+    //
+    //             await pipeWriter.WriteAsync(
+    //                 await Serializer.SerializeAsync($"{RespMessage.BulkStrings}{argBytes.Length}"));
+    //             await pipeWriter.WriteAsync(NewLine);
+    //             await pipeWriter.WriteAsync(argBytes);
+    //             await pipeWriter.WriteAsync(NewLine);
+    //         }
+    //     }
+    // }
+
     /// <summary>
     /// 接收消息
     /// </summary>
@@ -14,7 +61,7 @@ internal sealed class PipeMessageTransport : MessageTransport, IMessageTransport
     /// <returns></returns>
     public async Task<PipeReader> ReceiveAsync(Stream stream)
     {
-        var pipe = new Pipe(new PipeOptions(null, null, null, -1L, -1L, 513));
+        var pipe = new Pipe(new PipeOptions(null, null, null, -1L, -1L, 213));
         //读取消息 将消息写入到 pipe˙中
         //todo 消息读取完成 应该释放
         await PipeWrite(pipe.Writer, stream);
@@ -23,11 +70,11 @@ internal sealed class PipeMessageTransport : MessageTransport, IMessageTransport
         return pipe.Reader;
     }
 
-    private static async Task PipeWrite(PipeWriter writer, Stream stream)
+    private static async ValueTask PipeWrite(PipeWriter writer, Stream stream)
     {
         while (true)
         {
-            var mem = writer.GetMemory(513);
+            var mem = writer.GetMemory(213);
             var es = await stream.ReadAsync(mem);
             //告诉PipeWriter从Socket中读取了多少。
             writer.Advance(es);

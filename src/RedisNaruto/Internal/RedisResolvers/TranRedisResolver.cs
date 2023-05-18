@@ -38,7 +38,7 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
     public override async Task<T> InvokeAsync<T>(Command command)
     {
         var pipeReader = await _redisClient.ExecuteAsync(command);
-        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
+        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
         var res = await MessageParse.ParseMessageAsync(pipeReader);
         if (res is T redisValue)
         {

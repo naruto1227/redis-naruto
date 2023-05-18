@@ -23,7 +23,7 @@ internal sealed class MessageParse : IMessageParse
     {
         //获取首位的 符号 判断消息回复类型
         var firstByteSequence = await ReadLineAsync(pipeReader);
-        var head = (char) firstByteSequence.Slice(0, 1).ToArray().First();
+        var head = (char) firstByteSequence.Slice(0, 1).Span[0];
         //读取剩下的消息
         var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1));
         switch (head)
@@ -38,6 +38,53 @@ internal sealed class MessageParse : IMessageParse
             {
                 var result = await ReadMLineAsync(pipeReader, remindMessage);
                 return result;
+            }
+            case RespMessage.BulkStrings:
+            {
+                int offset = remindMessage;
+                //如果为null
+                if (offset == -1)
+                {
+                    return RedisValue.Null();
+                }
+
+                var result = await ReadLineAsync(pipeReader, offset);
+
+                return new RedisValue(result);
+            }
+            default:
+            {
+                //错误
+                throw new RedisExecException(remindMessage);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 读取简易消息
+    /// </summary>
+    /// <param name="pipeReader"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    /// <exception cref="RedisExecException"></exception>
+    public async Task<RedisValue> ParseSimpleMessageAsync(PipeReader pipeReader)
+    {
+        //获取首位的 符号 判断消息回复类型
+        var firstByteSequence = await ReadLineAsync(pipeReader);
+        var head = (char) firstByteSequence.Slice(0, 1).Span[0];
+        //读取剩下的消息
+        var remindMessage = new RedisValue(firstByteSequence.Slice(1, firstByteSequence.Length - 1));
+        switch (head)
+        {
+            case RespMessage.SimpleString:
+            case RespMessage.Number:
+            {
+                return remindMessage;
+            }
+            //数组
+            case RespMessage.ArrayString:
+            {
+                throw new NotSupportedException(nameof(RespMessage.ArrayString));
             }
             case RespMessage.BulkStrings:
             {
@@ -79,7 +126,7 @@ internal sealed class MessageParse : IMessageParse
         {
             //获取 符号 判断消息类型 是字符串还是 数字 
             var firstByteSequence = await ReadLineAsync(pipeReader);
-            var head = (char) firstByteSequence.Slice(0, 1).ToArray().First();
+            var head = (char) firstByteSequence.Slice(0, 1).Span[0];
             switch (head)
             {
                 case RespMessage.SimpleString:
@@ -127,45 +174,59 @@ internal sealed class MessageParse : IMessageParse
     }
 
 
+    /// <summary>
+    /// 读取行数据
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
     private static async Task<ReadOnlyMemory<byte>> ReadLineAsync(PipeReader reader, int offset = 0)
     {
         var result = await reader.ReadAsync();
         var buffer = result.Buffer;
-        var line = offset == 0 ? ReadLine(ref buffer) : ReadLineByOffset(ref buffer, offset);
+        if (offset == 0)
+        {
+            //因为是简单消息的处理 所以直接获取第一个span 来判断 行消息
+            offset = buffer.FirstSpan.IndexOf(NewLine);
+        }
+
+        //读取行消息
+        var line = buffer.Slice(0, offset);
         //转换结果
         var memory = new ReadOnlyMemory<byte>(line.ToArray());
         // 告诉piperreader数据已经读取到哪里了
-        reader.AdvanceTo(buffer.Start);
+        //offset+2 是因为需要过滤尾部的换行
+        reader.AdvanceTo(buffer.GetPosition(offset + 2));
         return memory;
     }
 
-    /// <summary>
-    /// 读取行消息
-    /// 简单消息的获取
-    /// </summary>
-    /// <param name="buffer"></param>
-    /// <returns></returns>
-    private static ReadOnlySequence<byte> ReadLine(ref ReadOnlySequence<byte> buffer)
-    {
-        //因为是简单消息的处理 所以直接获取第一个span 来判断 行消息
-        var length = buffer.FirstSpan.IndexOf(NewLine);
-        return ReadLineByOffset(ref buffer, length);
-    }
-
-    /// <summary>
-    /// 读取行消息
-    /// 获取批量字符串消息格式的
-    /// </summary>
-    /// <param name="buffer"></param>
-    /// <param name="offset">偏移的长度</param>
-    /// <returns></returns>
-    private static ReadOnlySequence<byte> ReadLineByOffset(ref ReadOnlySequence<byte> buffer,
-        int offset)
-    {
-        //读取指定的数据
-        var line = buffer.Slice(0, offset);
-        //过滤掉后面的\r\n
-        buffer = buffer.Slice(offset + 2, buffer.Length - (offset + 2));
-        return line;
-    }
+    // /// <summary>
+    // /// 读取行消息
+    // /// 简单消息的获取
+    // /// </summary>
+    // /// <param name="buffer"></param>
+    // /// <returns></returns>
+    // private static ReadOnlySequence<byte> ReadLine(ref ReadOnlySequence<byte> buffer)
+    // {
+    //     //因为是简单消息的处理 所以直接获取第一个span 来判断 行消息
+    //     var length = buffer.FirstSpan.IndexOf(NewLine);
+    //     return ReadLineByOffset(ref buffer, length);
+    // }
+    //
+    // /// <summary>
+    // /// 读取行消息
+    // /// 获取批量字符串消息格式的
+    // /// </summary>
+    // /// <param name="buffer"></param>
+    // /// <param name="offset">偏移的长度</param>
+    // /// <returns></returns>
+    // private static ReadOnlySequence<byte> ReadLineByOffset(ref ReadOnlySequence<byte> buffer,
+    //     int offset)
+    // {
+    //     //读取指定的数据
+    //     var line = buffer.Slice(0, offset);
+    //     //过滤掉后面的\r\n
+    //     buffer = buffer.Slice(offset + 2, buffer.Length - (offset + 2));
+    //     return line;
+    // }
 }

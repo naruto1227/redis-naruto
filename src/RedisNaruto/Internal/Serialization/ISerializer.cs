@@ -10,7 +10,7 @@ public interface ISerializer
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>
-    Task<byte[]> SerializeAsync(object source);
+    Task<(byte[], int)> SerializeAsync(object source);
 
     /// <summary>
     /// 反序列化

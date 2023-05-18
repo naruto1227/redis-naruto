@@ -1,9 +1,11 @@
+using RedisNaruto.Models;
+
 namespace RedisNaruto.Internal.Models;
 
 /// <summary>
 /// 命令
 /// </summary>
-internal class Command
+internal sealed class Command
 {
     private Command()
     {
@@ -13,6 +15,7 @@ internal class Command
     {
         Cmd = cmd;
         Args = args;
+        Length = ((Args?.Length) ?? 0) + 1;
     }
 
     /// <summary>
@@ -23,24 +26,10 @@ internal class Command
     /// <summary>
     /// 参数
     /// </summary>
-    private object[] Args { get; }
+    public object[] Args { get; }
 
     /// <summary>
-    /// 组合参数
+    /// 长度
     /// </summary>
-    /// <returns></returns>
-    internal object[] CombinArgs()
-    {
-        var res = new object[(Args?.Length ?? 0) + 1];
-        res[0] = Cmd;
-        if (Args is {Length: > 0})
-        {
-            for (var i = 0; i < Args.Length; i++)
-            {
-                res[i + 1] = Args[i];
-            }
-        }
-
-        return res;
-    }
+    public int Length { get; }
 }

@@ -1,4 +1,5 @@
 using System.IO.Pipelines;
+using RedisNaruto.Internal.Models;
 
 namespace RedisNaruto.Internal.Message;
 
@@ -11,8 +12,8 @@ internal interface IMessageTransport
     /// 发送消息
     /// </summary>
     /// <param name="stream"></param>
-    /// <param name="args"></param>
-    Task SendAsync(Stream stream, object[] args);
+    /// <param name="command"></param>
+    Task SendAsync(Stream stream, Command command);
 
     /// <summary>
     /// 接收消息

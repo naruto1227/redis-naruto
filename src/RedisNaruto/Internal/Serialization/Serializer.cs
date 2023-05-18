@@ -12,17 +12,17 @@ namespace RedisNaruto.Internal.Serialization;
 /// </summary>
 public sealed class Serializer : ISerializer
 {
-    public async Task<byte[]> SerializeAsync(object source)
+    public async Task<(byte[], int)> SerializeAsync(object source)
     {
         return source switch
         {
-            byte[] sourceByte => sourceByte,
-            DateOnly dateOnly => dateOnly.ToString("yyyy-MM-dd").ToEncode(),
-            DateTime dateTime => dateTime.ToString("yyyy-MM-dd HH:mm:ss").ToEncode(),
+            byte[] sourceByte => (sourceByte, sourceByte.Length),
+            DateOnly dateOnly => dateOnly.ToString("yyyy-MM-dd").ToEncodePool(),
+            DateTime dateTime => dateTime.ToString("yyyy-MM-dd HH:mm:ss").ToEncodePool(),
             _ => Type.GetTypeCode(source.GetType()) switch
             {
                 TypeCode.Object => await ToJsonAsync(source),
-                _ => source.ToEncode()
+                _ => source.ToEncodePool()
             }
         };
         //获取类型编码
@@ -33,15 +33,20 @@ public sealed class Serializer : ISerializer
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>
-    private async Task<byte[]> ToJsonAsync(object source)
+    private async Task<(byte[], int)> ToJsonAsync(object source)
     {
         await using var memoryStream = new MemoryStream();
         await JsonSerializer.SerializeAsync(memoryStream, source, BuildJsonSerializerOptions());
-        return memoryStream.ToArray();
+        return (memoryStream.ToArray(), 0);
     }
 
     public async Task<TResult> DeserializeAsync<TResult>(byte[] source)
     {
+        if (source is not {Length: > 0})
+        {
+            return default;
+        }
+
         await using var memoryStream = new MemoryStream(source);
         return await JsonSerializer.DeserializeAsync<TResult>(memoryStream);
     }
