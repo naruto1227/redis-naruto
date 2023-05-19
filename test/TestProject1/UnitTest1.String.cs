@@ -42,7 +42,7 @@ public partial class UnitTest1 : BaseUnit
             Name = "123",
             Time = DateTime.Now
         }, 1_000).ToList();
-        await redisCommand.SetAsync("testBigobj",li);
+        await redisCommand.SetAsync("testBigobj", li);
     }
 
     [Fact]
@@ -64,16 +64,16 @@ public partial class UnitTest1 : BaseUnit
     public async Task Test_StringSetBytes()
     {
         var redisCommand = await GetRedisAsync();
-       //  using FileStream fileStream = new FileStream(Path.Combine(AppContext.BaseDirectory, "未命名.docx"),
-       //      FileMode.Open,
-       //      FileAccess.Read);
-       //  using MemoryStream memoryStream = new MemoryStream();
-       //  
-       //  await fileStream.CopyToAsync(memoryStream);
-       //
-       //
-       // var ss= memoryStream.ToArray();
-       //  var res = await redisCommand.SetAsync("file", memoryStream.ToArray());
+        //  using FileStream fileStream = new FileStream(Path.Combine(AppContext.BaseDirectory, "未命名.docx"),
+        //      FileMode.Open,
+        //      FileAccess.Read);
+        //  using MemoryStream memoryStream = new MemoryStream();
+        //  
+        //  await fileStream.CopyToAsync(memoryStream);
+        //
+        //
+        // var ss= memoryStream.ToArray();
+        //  var res = await redisCommand.SetAsync("file", memoryStream.ToArray());
 
         //读取
         var newPath = Path.Combine(AppContext.BaseDirectory, "未命名2.docx");
@@ -156,7 +156,11 @@ public partial class UnitTest1 : BaseUnit
     public async Task Test_StringGet_String()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.GetAsync("testobj");
+        var res = await redisCommand.GetAsync("sr");
+        if (!res.IsEmpty())
+        {
+            _testOutputHelper.WriteLine(res);
+        }
     }
 
     [Fact]
@@ -224,5 +228,22 @@ public partial class UnitTest1 : BaseUnit
         _testOutputHelper.WriteLine(res.ToString());
         var res2 = await redisCommand.LcsWithStringAsync("testobj2", "testobj");
         _testOutputHelper.WriteLine(res2.ToString());
+    }
+
+    [Fact]
+    public async Task Test_StringSet_Null()
+    {
+        var redisCommand = await GetRedisAsync();
+        var res = await redisCommand.SetAsync("Test_StringSet_Null", null);
+        var res2 = await redisCommand.GetAsync("Test_StringSet_Null");
+    }
+
+    [Fact]
+    public void TestBytes()
+    {
+        double number = 11222211112222222222;
+        var b1 = Encoding.Default.GetBytes(number.ToString());
+        var b2 = BitConverter.GetBytes(number);
+        var ss = BitConverter.ToDouble(b2);
     }
 }

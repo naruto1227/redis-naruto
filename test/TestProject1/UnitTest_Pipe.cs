@@ -37,29 +37,20 @@ public class UnitTest_Pipe : BaseUnit
     [Fact]
     public async Task UsePipe()
     {
-        for (int i = 0; i < 10; i++)
+        var redisCommand = await GetRedisAsync();
+        //开启管道
+        await using var pipe = await redisCommand.BeginPipeAsync();
+//发送命令 其中结果res1 res2 res3 res4 都是空值，因为结果需要使用EndPipeAsync读取
+        var res1 = await pipe.IncrByAsync("x");
+        var res2 = await pipe.IncrByAsync("x");
+        var res3 = await pipe.IncrByAsync("x");
+        var res4 = await pipe.IncrByAsync("x");
+//结束 一次性读取所有的消息，从管道中
+        var res = await pipe.EndPipeAsync();
+//遍利所有的结果，res数组中的结果值顺序按照命令写入顺序进行返回
+        foreach (var item in res)
         {
-            var redisCommand = await GetRedisAsync();
-            await using var pipe = await redisCommand.BeginPipeAsync();
-            // var res1 = await pipe.SetAsync("pipe1", "pipe1");
-            // var res2 = await pipe.SetAsync("pipe2", "pipe2");
-            // var res3 = await pipe.SetAsync("pipe3", "pipe3");
-            var res4 = await pipe.MGetAsync(new[]
-            {
-                "pipe1",
-                "pipe2",
-                "pipe3"
-            });
-            await pipe.GetAsync("pipe1");
-            //等待 redis所有结果处理完成，不然的话有可能会造成消息读取不完整
-            await Task.Delay(50);
-            //结束
-            var res = await pipe.EndPipeAsync();
-            foreach (var item in res)
-            {
-                _testOutputHelper.WriteLine(JsonConvert.SerializeObject(item));
-            }
+            _testOutputHelper.WriteLine(JsonConvert.SerializeObject(item.ToString()));
         }
-       
     }
 }

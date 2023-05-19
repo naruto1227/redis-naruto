@@ -64,6 +64,12 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
         return result;
     }
 
+    public override async Task<RedisValue> InvokeSimpleAsync(Command command)
+    {
+        await _redisClient.ExecuteNoResultAsync(command);
+        Interlocked.Increment(ref _pipeCommand);
+        return RedisValue.Null();
+    }
 
     public async ValueTask DisposeAsync()
     {

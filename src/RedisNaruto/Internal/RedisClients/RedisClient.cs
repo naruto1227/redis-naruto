@@ -113,10 +113,11 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task InitClientIdAsync()
     {
-        ClientId = await InvokeAsync(new Command(RedisCommandName.Client, new[]
-        {
-            "ID"
-        }));
+        //todo 待处理
+        // ClientId = await InvokeAsync(new Command(RedisCommandName.Client, new[]
+        // {
+        //     "ID"
+        // }));
     }
 
     /// <summary>

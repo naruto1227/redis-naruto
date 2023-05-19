@@ -48,6 +48,12 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
         return default(T);
     }
 
+    public override Task<RedisValue> InvokeSimpleAsync(Command command)
+    {
+        //todo 
+        return base.InvokeSimpleAsync(command);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _redisClientPool.ReturnAsync(_redisClient);

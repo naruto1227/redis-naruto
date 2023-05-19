@@ -1,4 +1,5 @@
 using System.IO.Pipelines;
+using System.Net.Sockets;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
 
@@ -74,14 +75,14 @@ internal sealed class PipeMessageTransport : MessageTransport, IMessageTransport
     {
         while (true)
         {
-            var mem = writer.GetMemory(213);
+            var mem = writer.GetMemory(1);
             var es = await stream.ReadAsync(mem);
             //告诉PipeWriter从Socket中读取了多少。
             writer.Advance(es);
             // 使数据对piperreader可用。
             await writer.FlushAsync();
             //判断消息是否读取完毕 如果消息长度小于实际长度 或者 结尾是换行的话
-            if (es < mem.Length || mem.TrimEnd(NewLine).Length == mem.Length - 2)
+            if (es < mem.Length || mem.Span.LastIndexOf(NewLine) == mem.Length - 2)
             {
                 break;
             }

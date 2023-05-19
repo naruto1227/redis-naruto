@@ -23,6 +23,11 @@ internal class MessageTransport
     /// </summary>
     protected static readonly byte[] NewLine = "\r\n".ToEncode();
 
+    protected static readonly byte CR = (byte) '\r';
+
+
+    protected static readonly byte LF = (byte) '\n';
+
     /// <summary>
     /// 序列化
     /// </summary>

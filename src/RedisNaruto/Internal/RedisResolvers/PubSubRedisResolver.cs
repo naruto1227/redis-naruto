@@ -1,6 +1,7 @@
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.Internal.RedisResolvers;
 
@@ -39,7 +40,11 @@ internal class PubSubRedisResolver : DefaultRedisResolver
 
         return default(T);
     }
-
+    public override Task<RedisValue> InvokeSimpleAsync(Command command)
+    {
+        //todo 
+        return base.InvokeSimpleAsync(command);
+    }
     /// <summary>
     /// 流水线消息读取
     /// </summary>
