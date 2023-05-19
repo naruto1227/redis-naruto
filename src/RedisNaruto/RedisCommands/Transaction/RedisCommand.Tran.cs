@@ -25,12 +25,12 @@ public partial class RedisCommand : IRedisCommand
     public async Task UnWatchAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.UnWatch, default));
+        _ = await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.UnWatch, default));
     }
 
     public async Task WatchAsync(string[] keys, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Watch, keys));
+        _ = await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Watch, keys));
     }
 }

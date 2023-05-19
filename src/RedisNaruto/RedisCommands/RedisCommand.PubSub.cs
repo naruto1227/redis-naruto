@@ -20,7 +20,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Pub, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Pub, new object[]
             {
                 topic,
                 message

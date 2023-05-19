@@ -21,7 +21,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeSpan"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> SetAsync(string key, Object value, TimeSpan timeSpan = default,
+    Task<bool> SetAsync(string key, object value, TimeSpan timeSpan = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -59,7 +59,7 @@ public partial class RedisCommand : IRedisCommand
         }
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZAdd, datas.ToArray()));
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZAdd, datas.ToArray()));
         return result;
     }
 
@@ -132,7 +132,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZCard, new[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZCard, new[]
             {
                 key,
             }));
@@ -153,7 +153,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZCount, new[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZCount, new[]
             {
                 key,
                 min,
@@ -220,7 +220,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZDiffStore,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZDiffStore,
                 new object[] {destination, keys.Length}
                     .Concat(keys).ToArray()));
         return result;
@@ -243,7 +243,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZIncrBy, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZIncrBy, new object[]
             {
                 key,
                 increment,
@@ -363,7 +363,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add(aggregate.ToString());
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZUnionStore, args.ToArray()));
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZUnionStore, args.ToArray()));
         return result;
     }
 
@@ -448,7 +448,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZScore, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZScore, new object[]
         {
             key,
             member
@@ -473,7 +473,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZInterCard,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZInterCard,
                 new object[]
                 {
                     key.Length
@@ -515,7 +515,7 @@ public partial class RedisCommand : IRedisCommand
         args.Add(aggregate.ToString());
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZInterStore,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZInterStore,
                 args.ToArray()));
         return result;
     }
@@ -533,7 +533,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZLexCount, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZLexCount, new object[]
         {
             key,
             min,
@@ -967,7 +967,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRangeStore,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRangeStore,
                 argv.ToArray()));
         return result;
     }
@@ -987,7 +987,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRank, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRank, new object[]
             {
                 key, member
             }));
@@ -1009,7 +1009,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRevRank, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRevRank, new object[]
             {
                 key, member
             }));
@@ -1031,7 +1031,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRem, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRem, new object[]
             {
                 key
             }.Concat(member).ToArray()));
@@ -1054,7 +1054,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRemRangeByLex, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRemRangeByLex, new object[]
             {
                 key,
                 min,
@@ -1078,7 +1078,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRemRangeByRank, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRemRangeByRank, new object[]
             {
                 key,
                 start,
@@ -1102,7 +1102,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
 
         var result =
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ZRemRangeByScore, new object[]
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ZRemRangeByScore, new object[]
             {
                 key,
                 min,

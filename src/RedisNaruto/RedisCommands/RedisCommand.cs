@@ -9,13 +9,11 @@ namespace RedisNaruto.RedisCommands;
 public partial class RedisCommand : IRedisCommand
 {
     private readonly IRedisClientPool _redisClientPool;
-    //
-    // internal IRedisClient RedisClient;
 
     /// <summary>
     /// 序列化
     /// </summary>
-    private static readonly ISerializer _serializer = new Serializer();
+    private static readonly ISerializer Serializer = new Serializer();
 
     internal readonly IRedisResolver RedisResolver;
 
@@ -38,29 +36,8 @@ public partial class RedisCommand : IRedisCommand
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     private static async Task<TResult> DeserializeAsync<TResult>(byte[] redisValue) => await
-        _serializer.DeserializeAsync<TResult>(redisValue);
-
-    // private void ChangeRedisClient(IRedisClient redisClient)
-    // {
-    //     RedisClient = redisClient;
-    // }
-
-
-    // /// <summary>
-    // /// 获取redis客户端
-    // /// </summary>
-    // /// <param name="cancellationToken"></param>
-    // /// <returns></returns>
-    // internal async Task<IRedisClient> GetRedisClient(CancellationToken cancellationToken)
-    // {
-    //     if (RedisClient != default)
-    //     {
-    //         return RedisClient;
-    //     }
-    //
-    //     return await RedisClientPool.RentAsync(cancellationToken);
-    // }
-
+        Serializer.DeserializeAsync<TResult>(redisValue);
+    
     /// <summary>
     /// 
     /// </summary>

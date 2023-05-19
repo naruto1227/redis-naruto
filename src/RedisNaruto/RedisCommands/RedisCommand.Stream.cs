@@ -28,7 +28,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(messageId);
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XAck, new object[]
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XAck, new object[]
             {
                 key, group
             }.Concat(messageId).ToArray()));
@@ -89,7 +89,7 @@ public partial class RedisCommand : IRedisCommand
 
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XAdd, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XAdd, argv.ToArray()));
         return result;
     }
 
@@ -108,7 +108,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(messageId);
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XDel, new object[]
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XDel, new object[]
             {
                 key
             }.Concat(messageId).ToArray()));
@@ -127,7 +127,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XLen, new object[]
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XLen, new object[]
             {
                 key
             }));
@@ -173,7 +173,7 @@ public partial class RedisCommand : IRedisCommand
         argv.IfAdd(limitCount != null, limitCount);
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XTrim, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XTrim, argv.ToArray()));
         return result;
     }
 
@@ -204,7 +204,7 @@ public partial class RedisCommand : IRedisCommand
         argv.IfAdd(createStream, StreamConst.MkStream);
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result == "OK";
     }
 
@@ -231,7 +231,7 @@ public partial class RedisCommand : IRedisCommand
         };
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result == 1;
     }
 
@@ -258,7 +258,7 @@ public partial class RedisCommand : IRedisCommand
         };
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result;
     }
 
@@ -282,7 +282,7 @@ public partial class RedisCommand : IRedisCommand
         };
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result;
     }
 
@@ -309,7 +309,7 @@ public partial class RedisCommand : IRedisCommand
         };
         cancellationToken.ThrowIfCancellationRequested();
         var result = await
-            RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.XGroup, argv.ToArray()));
+            RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.XGroup, argv.ToArray()));
         return result == "OK";
     }
 

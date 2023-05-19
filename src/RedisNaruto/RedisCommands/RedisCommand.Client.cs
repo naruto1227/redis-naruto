@@ -19,7 +19,7 @@ public partial class RedisCommand : IRedisCommand
     public async Task<long> ClientIdAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Client, new[] {"ID"}));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Client, new[] {"ID"}));
     }
 
     /// <summary>
@@ -29,6 +29,6 @@ public partial class RedisCommand : IRedisCommand
     public async Task<bool> PingAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Ping, null)) == "PONG";
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Ping, null)) == "PONG";
     }
 }

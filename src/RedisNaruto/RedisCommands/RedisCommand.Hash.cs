@@ -23,7 +23,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
         return
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HDel,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HDel,
                 new object[] {key}.Concat(fields).ToArray()));
     }
 
@@ -51,7 +51,7 @@ public partial class RedisCommand : IRedisCommand
         }
 
         return
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HSet,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HSet,
                 argv));
     }
 
@@ -67,7 +67,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
         return
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HExists,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HExists,
                 new object[]
                 {
                     key, field
@@ -86,7 +86,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
         return
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HGet,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HGet,
                 new object[]
                 {
                     key, field
@@ -126,7 +126,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
         return
-            await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HIncrBy,
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HIncrBy,
                 new object[]
                 {
                     key, field, increment
@@ -164,7 +164,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HLen,
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HLen,
             new object[]
             {
                 key
@@ -288,7 +288,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HStrLen,
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HStrLen,
             new object[]
             {
                 key,
@@ -315,7 +315,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.HSetNx,
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.HSetNx,
             new[]
             {
                 key,

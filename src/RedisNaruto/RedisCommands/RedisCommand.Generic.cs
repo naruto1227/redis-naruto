@@ -42,7 +42,7 @@ public partial class RedisCommand : IRedisCommand
 
         argv.IfAdd(isReplace, StreamConst.Replace);
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Copy, argv.ToArray())) == 1;
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Copy, argv.ToArray())) == 1;
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Del, keys));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Del, keys));
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Dump, new[] {key}));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Dump, new[] {key}));
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public partial class RedisCommand : IRedisCommand
         argv.IfAdd(isReplace, StreamConst.Replace);
 
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ReStore, argv.ToArray())) == "OK";
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ReStore, argv.ToArray())) == "OK";
     }
 
     /// <summary>
@@ -115,7 +115,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Exists, keys));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Exists, keys));
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ public partial class RedisCommand : IRedisCommand
             expire.TotalSeconds
         };
         argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Expire, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Expire, argv.ToArray()));
     }
 
     /// <summary>
@@ -161,7 +161,7 @@ public partial class RedisCommand : IRedisCommand
             unixTimeSeconds
         };
         argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ExpireAt, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ExpireAt, argv.ToArray()));
     }
 
     /// <summary>
@@ -179,7 +179,7 @@ public partial class RedisCommand : IRedisCommand
         {
             key
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ExpireTime, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ExpireTime, argv.ToArray()));
     }
 
     /// <summary>
@@ -250,7 +250,7 @@ public partial class RedisCommand : IRedisCommand
             argv.AddRange(keys);
         }
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.MiGrate, argv.ToArray())) == "OK";
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.MiGrate, argv.ToArray())) == "OK";
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public partial class RedisCommand : IRedisCommand
             key,
             db
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Move, argv.ToArray())) == 1;
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Move, argv.ToArray())) == 1;
     }
 
     /// <summary>
@@ -291,7 +291,7 @@ public partial class RedisCommand : IRedisCommand
             "ENCODING",
             key,
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Object, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Object, argv.ToArray()));
     }
 
     /// <summary>
@@ -311,7 +311,7 @@ public partial class RedisCommand : IRedisCommand
             "FREQ",
             key,
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Object, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Object, argv.ToArray()));
     }
 
     /// <summary>
@@ -331,7 +331,7 @@ public partial class RedisCommand : IRedisCommand
             "IDLETIME",
             key,
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Object, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Object, argv.ToArray()));
     }
 
     /// <summary>
@@ -351,7 +351,7 @@ public partial class RedisCommand : IRedisCommand
             "REFCOUNT",
             key,
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Object, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Object, argv.ToArray()));
     }
 
     /// <summary>
@@ -370,7 +370,7 @@ public partial class RedisCommand : IRedisCommand
         {
             key,
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Persist, argv.ToArray())) == 1;
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Persist, argv.ToArray())) == 1;
     }
 
 
@@ -394,7 +394,7 @@ public partial class RedisCommand : IRedisCommand
             expire.TotalMilliseconds
         };
         argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PExpire, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.PExpire, argv.ToArray()));
     }
 
     /// <summary>
@@ -417,7 +417,7 @@ public partial class RedisCommand : IRedisCommand
             unixTimeMillSeconds
         };
         argv.IfAdd(expireEnum != ExpireEnum.No, expireEnum);
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PExpireAt, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.PExpireAt, argv.ToArray()));
     }
 
     /// <summary>
@@ -435,7 +435,7 @@ public partial class RedisCommand : IRedisCommand
         {
             key
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PExpireTime, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.PExpireTime, argv.ToArray()));
     }
 
     /// <summary>
@@ -453,7 +453,7 @@ public partial class RedisCommand : IRedisCommand
         {
             key
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.PTtl, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.PTtl, argv.ToArray()));
     }
 
     /// <summary>
@@ -471,7 +471,7 @@ public partial class RedisCommand : IRedisCommand
         {
             key
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Ttl, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Ttl, argv.ToArray()));
     }
 
     /// <summary>
@@ -483,7 +483,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.RandomKey, default));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.RandomKey, default));
     }
 
     /// <summary>
@@ -504,7 +504,7 @@ public partial class RedisCommand : IRedisCommand
             key,
             newName
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ReName, argv.ToArray())) == 1;
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ReName, argv.ToArray())) == 1;
     }
 
     /// <summary>
@@ -525,7 +525,7 @@ public partial class RedisCommand : IRedisCommand
             key,
             newName
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.ReNameNx, argv.ToArray())) == 1;
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.ReNameNx, argv.ToArray())) == 1;
     }
 
     /// <summary>
@@ -543,7 +543,7 @@ public partial class RedisCommand : IRedisCommand
         {
             key,
         };
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Type, argv.ToArray()));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Type, argv.ToArray()));
     }
 
     /// <summary>
@@ -557,7 +557,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.UnLink, keys));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.UnLink, keys));
     }
 
     /// <summary>
@@ -573,7 +573,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Wait, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Wait, new object[]
         {
             numreplicas,
             timeout?.TotalMilliseconds ?? 0
@@ -594,7 +594,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.WaitAof, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.WaitAof, new object[]
         {
             numlocal,
             numreplicas,
@@ -612,7 +612,7 @@ public partial class RedisCommand : IRedisCommand
         ArgumentNullException.ThrowIfNull(keys);
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Touch, keys));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Touch, keys));
     }
 
 }

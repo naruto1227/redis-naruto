@@ -64,7 +64,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.Script, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Script, new object[]
         {
             "LOAD",
             script

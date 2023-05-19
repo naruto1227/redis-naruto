@@ -18,7 +18,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.DbSize, default));
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.DbSize, default));
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.SlowLog, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.SlowLog, new object[]
         {
             "LEN"
         }));
@@ -80,7 +80,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         
-        return await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.SlowLog, new object[]
+        return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.SlowLog, new object[]
         {
             "RESET"
         })) == "OK";
