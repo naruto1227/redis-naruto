@@ -1,5 +1,4 @@
 using RedisNaruto.Internal.Interfaces;
-using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 
@@ -10,8 +9,6 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// </summary>
 internal class PubSubRedisResolver : DefaultRedisResolver
 {
-    private static readonly IMessageParse MessageParse = new MessageParse();
-
     private IRedisClient _redisClient;
 
     public PubSubRedisResolver(IRedisClientPool redisClientPool) : base(redisClientPool)
@@ -28,23 +25,14 @@ internal class PubSubRedisResolver : DefaultRedisResolver
 
     public override async Task<T> InvokeAsync<T>(Command command)
     {
-        var pipeReader = await _redisClient.ExecuteAsync(command);
-
-        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-
-        var res = await MessageParse.ParseMessageAsync(pipeReader);
-        if (res is T redisValue)
-        {
-            return redisValue;
-        }
-
-        return default(T);
+        return await _redisClient.ExecuteAsync<T>(command);
     }
-    public override Task<RedisValue> InvokeSimpleAsync(Command command)
+
+    public override async Task<RedisValue> InvokeSimpleAsync(Command command)
     {
-        //todo 
-        return base.InvokeSimpleAsync(command);
+        return await _redisClient.ExecuteSampleAsync(command);
     }
+
     /// <summary>
     /// 流水线消息读取
     /// </summary>
@@ -53,9 +41,7 @@ internal class PubSubRedisResolver : DefaultRedisResolver
     public async Task<T> ReadMessageAsync<T>(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var pipeReader = await _redisClient.ReadMessageAsync();
-        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-        var res = await MessageParse.ParseMessageAsync(pipeReader);
+        var res = await _redisClient.ReadMessageAsync();
         if (res is T redisValue)
         {
             return redisValue;

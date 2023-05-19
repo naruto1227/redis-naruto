@@ -1,5 +1,7 @@
 using System.IO.Pipelines;
+using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.Internal.Message;
 
@@ -16,17 +18,18 @@ internal interface IMessageTransport
     Task SendAsync(Stream stream, Command command);
 
     /// <summary>
-    /// 接收消息
+    /// 读取消息
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    Task<PipeReader> ReceiveAsync(Stream stream);
+    Task<object> ReceiveMessageAsync(Stream stream);
 
-    // /// <summary>
-    // /// pipe 接收消息
-    // /// </summary>
-    // /// <param name="stream"></param>
-    // /// <param name="pipeCount">管道的读取次数</param>
-    // /// <returns></returns>
-    // Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount);
+    /// <summary>
+    /// 读取简易消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    /// <exception cref="RedisExecException"></exception>
+    Task<RedisValue> ReceiveSimpleMessageAsync(Stream stream);
 }

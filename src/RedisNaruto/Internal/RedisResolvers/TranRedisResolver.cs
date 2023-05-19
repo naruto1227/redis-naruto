@@ -1,6 +1,5 @@
 using System.IO.Pipelines;
 using RedisNaruto.Internal.Interfaces;
-using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 
@@ -11,8 +10,6 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// </summary>
 internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
 {
-    private static readonly IMessageParse MessageParse = new MessageParse();
-
     private IRedisClient _redisClient;
 
     public TranRedisResolver(IRedisClientPool redisClientPool) : base(redisClientPool)
@@ -37,21 +34,29 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
 
     public override async Task<T> InvokeAsync<T>(Command command)
     {
-        var pipeReader = await _redisClient.ExecuteAsync(command);
-        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-        var res = await MessageParse.ParseMessageAsync(pipeReader);
-        if (res is T redisValue)
-        {
-            return redisValue;
-        }
-
-        return default(T);
+        _ = await _redisClient.ExecuteSampleAsync(command);
+        return default;
     }
 
-    public override Task<RedisValue> InvokeSimpleAsync(Command command)
+    public override async Task<RedisValue> InvokeSimpleAsync(Command command)
     {
-        //todo 
-        return base.InvokeSimpleAsync(command);
+        _ = await _redisClient.ExecuteSampleAsync(command);
+        return default;
+    }
+
+    public override async IAsyncEnumerable<object> InvokeMoreResultAsync(Command command)
+    {
+        //todo 使用迭代器
+        var resultList = await _redisClient.ExecuteAsync<List<object>>(command);
+        if (resultList == null)
+        {
+            yield break;
+        }
+
+        foreach (var item in resultList)
+        {
+            yield return item;
+        }
     }
 
     public async ValueTask DisposeAsync()

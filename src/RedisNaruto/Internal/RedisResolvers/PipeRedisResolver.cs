@@ -1,5 +1,4 @@
 using RedisNaruto.Internal.Interfaces;
-using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 
@@ -14,8 +13,6 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
     /// 流水线命令数
     /// </summary>
     private int _pipeCommand = 0;
-
-    private static readonly IMessageParse MessageParse = new MessageParse();
 
     private IRedisClient _redisClient;
 
@@ -53,12 +50,10 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
     public async Task<object[]> PipeReadAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var pipeReader = await _redisClient.ReadMessageAsync();
-        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
         var result = new object[_pipeCommand];
         for (var i = 0; i < _pipeCommand; i++)
         {
-            result[i] = await MessageParse.ParseMessageAsync(pipeReader);
+            result[i] = await _redisClient.ReadMessageAsync();
         }
 
         return result;

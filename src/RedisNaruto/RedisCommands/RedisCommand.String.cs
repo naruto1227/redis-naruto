@@ -130,7 +130,6 @@ public partial class RedisCommand : IRedisCommand
     public async Task<RedisValue> GetAsync(string key, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        cancellationToken.ThrowIfCancellationRequested();
         return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Get,
             new object[] {key}));
     }

@@ -1,6 +1,5 @@
 using System.IO.Pipelines;
 using RedisNaruto.Internal.Interfaces;
-using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 
@@ -15,9 +14,7 @@ internal class DefaultRedisResolver : IRedisResolver
     /// 连接
     /// </summary>
     protected readonly IRedisClientPool _redisClientPool;
-
-
-    private static readonly IMessageParse MessageParse = new MessageParse();
+    
 
     public DefaultRedisResolver(IRedisClientPool redisClientPool)
     {
@@ -29,21 +26,10 @@ internal class DefaultRedisResolver : IRedisResolver
     /// </summary>
     public virtual async Task<T> InvokeAsync<T>(Command command)
     {
-        PipeReader pipeReader = default;
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            pipeReader = await redisClient.ExecuteAsync(command);
+            return await redisClient.ExecuteAsync<T>(command);
         }
-
-        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-
-        var res = await MessageParse.ParseMessageAsync(pipeReader);
-        if (res is T redisValue)
-        {
-            return redisValue;
-        }
-
-        return default(T);
     }
 
     /// <summary>
@@ -51,15 +37,10 @@ internal class DefaultRedisResolver : IRedisResolver
     /// </summary>
     public virtual async Task<RedisValue> InvokeSimpleAsync(Command command)
     {
-        PipeReader pipeReader = default;
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            pipeReader = await redisClient.ExecuteAsync(command);
+            return await redisClient.ExecuteSampleAsync(command);
         }
-
-        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-
-        return await MessageParse.ParseSimpleMessageAsync(pipeReader);
     }
 
     public virtual async IAsyncEnumerable<object> InvokeMoreResultAsync(Command command)

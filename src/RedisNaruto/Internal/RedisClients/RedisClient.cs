@@ -2,7 +2,6 @@ using System.IO.Pipelines;
 using System.Net.Sockets;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message;
-using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
@@ -59,9 +58,7 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 消息传输
     /// </summary>
-    protected static readonly IMessageTransport MessageTransport = new PipeMessageTransport();
-
-    protected static readonly IMessageParse MessageParse = new MessageParse();
+    protected static readonly IMessageTransport MessageTransport = new MessageTransport();
 
     /// <summary>
     /// 
@@ -126,13 +123,34 @@ internal class RedisClient : IRedisClient
     /// <param name="command"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public virtual async Task<PipeReader> ExecuteAsync(Command command)
+    public virtual async Task<T> ExecuteAsync<T>(Command command)
     {
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageTransport.SendAsync(stream, command);
 
-        return await MessageTransport.ReceiveAsync(this.TcpClient.GetStream());
+        var result = await MessageTransport.ReceiveMessageAsync(this.TcpClient.GetStream());
+        if (result is T redisValue)
+        {
+            return redisValue;
+        }
+
+        return default(T);
+    }
+
+    /// <summary>
+    /// 执行命令
+    /// </summary>
+    /// <param name="command"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public virtual async Task<RedisValue> ExecuteSampleAsync(Command command)
+    {
+        var stream =
+            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
+        await MessageTransport.SendAsync(stream, command);
+
+        return await MessageTransport.ReceiveSimpleMessageAsync(this.TcpClient.GetStream());
     }
 
     /// <summary>
@@ -153,9 +171,9 @@ internal class RedisClient : IRedisClient
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task<PipeReader> ReadMessageAsync()
+    public async Task<object> ReadMessageAsync()
     {
-        return await MessageTransport.ReceiveAsync(this.TcpClient.GetStream());
+        return await MessageTransport.ReceiveMessageAsync(this.TcpClient.GetStream());
     }
 
     /// <summary>
@@ -196,10 +214,7 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public async Task<RedisValue> InvokeAsync(Command command)
     {
-        var pipeReader = await ExecuteAsync(command);
-        // await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-
-        return await MessageParse.ParseSimpleMessageAsync(pipeReader);
+        return await ExecuteSampleAsync(command);
     }
 
     /// <summary>

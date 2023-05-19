@@ -22,7 +22,6 @@ c#版本的redis客户端（目前基于使用RESP2协议对接）
 - pipelining
 - 哨兵
 - 集群
-- 使用System.IO.Pipelines替换底层消息处理,减少内存分配
 - RESP2
 ### todo
 - 增加针对于 参数或者 方法的 redis版本号标识

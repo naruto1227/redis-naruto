@@ -49,16 +49,7 @@ internal class SentinelRedisClient : RedisClient
     /// <returns></returns>
     private async Task<List<object>> ExecAsync(Command command)
     {
-        var pipeReader = await ExecuteAsync(command);
-        await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-
-        var res = await MessageParse.ParseMessageAsync(pipeReader);
-        if (res is List<object> redisValue)
-        {
-            return redisValue;
-        }
-
-        return default;
+        return await ExecuteAsync<List<object>>(command);
     }
 
     /// <summary>

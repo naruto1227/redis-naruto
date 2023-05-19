@@ -66,7 +66,5 @@ public class BaseTest
 
 
         TestMsg = stringBuilder.ToString();
-        _redisClient.Set("1", "1");
-        RedisCommand.SetAsync("1", "1").GetAwaiter().GetResult();
     }
 }

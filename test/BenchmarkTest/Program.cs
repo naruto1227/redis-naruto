@@ -12,7 +12,7 @@ Console.WriteLine("Hello, World!");
 
 
 #if DEBUG
-BenchmarkRunner.Run<StringGetTest>(new DebugBuildConfig());
+BenchmarkRunner.Run<StringSetTest>(new DebugBuildConfig());
 #else
 
 var config = new ManualConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)

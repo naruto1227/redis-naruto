@@ -1,6 +1,8 @@
 using System.Buffers;
+using System.IO.Pipelines;
 using System.Text;
 using Microsoft.IO;
+using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
@@ -11,7 +13,7 @@ namespace RedisNaruto.Internal.Message;
 /// <summary>
 /// 消息传输
 /// </summary>
-internal class MessageTransport
+internal class MessageTransport : IMessageTransport
 {
     /// <summary>
     /// 池
@@ -95,69 +97,207 @@ internal class MessageTransport
         await ms.CopyToAsync(stream);
     }
 
-    // /// <summary>
-    // /// 接收消息
-    // /// </summary>
-    // /// <param name="stream"></param>
-    // /// <returns></returns>
-    // public virtual async Task<object> ReceiveAsync(Stream stream)
-    // {
-    //     //获取首位的 符号 判断消息回复类型
-    //     var bytes = new byte[1];
-    //     _ = await stream.ReadAsync(bytes);
-    //     var head = (char) bytes[0];
-    //     switch (head)
-    //     {
-    //         case RespMessage.SimpleString:
-    //         case RespMessage.Number:
-    //         {
-    //             var result = ReadLine(stream);
-    //             return result;
-    //         }
-    //         //数组
-    //         case RespMessage.ArrayString:
-    //         {
-    //             var result = await ReadMLineAsync(stream);
-    //             return result;
-    //         }
-    //         case RespMessage.BulkStrings:
-    //         {
-    //             var strlen = ReadLine(stream);
-    //             //如果为null
-    //             if (strlen == -1)
-    //             {
-    //                 return RedisValue.Null();
-    //             }
-    //
-    //             var result = ReadMLine(stream, strlen);
-    //             return result;
-    //         }
-    //         default:
-    //         {
-    //             //错误
-    //             var result = ReadLine(stream);
-    //             throw new RedisExecException(result.ToString());
-    //         }
-    //     }
-    // }
-    //
-    // /// <summary>
-    // /// 接收消息
-    // /// </summary>
-    // /// <param name="stream"></param>
-    // /// <param name="pipeCount"></param>
-    // /// <returns></returns>
-    // public virtual async Task<object[]> PipeReceiveAsync(Stream stream, int pipeCount)
-    // {
-    //     var result = new object[pipeCount];
-    //     for (var i = 0; i < pipeCount; i++)
-    //     {
-    //         result[i] = await ReceiveAsync(stream);
-    //     }
-    //
-    //     return result;
-    // }
-    //
+    /// <summary>
+    /// 转换消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    public async Task<object> ReceiveMessageAsync(Stream stream)
+    {
+        //获取首位的 符号 判断消息回复类型
+        var head = ReadFirstChar(stream);
+        switch (head)
+        {
+            case RespMessage.SimpleString:
+            case RespMessage.Number:
+            {
+                return ReadLine(stream);
+            }
+            //数组
+            case RespMessage.ArrayString:
+            {
+                var result = await ReadMLineAsync(stream, ReadLine(stream));
+                return result;
+            }
+            case RespMessage.BulkStrings:
+            {
+                int offset = ReadLine(stream);
+                //如果为null
+                if (offset == -1)
+                {
+                    return RedisValue.Null();
+                }
+
+                var result = await ReadBlobLineAsync(stream, offset);
+
+                return new RedisValue(result);
+            }
+            default:
+            {
+                //错误
+                throw new RedisExecException(ReadLine(stream).ToString());
+            }
+        }
+    }
+
+    /// <summary>
+    /// 读取简易消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    /// <exception cref="RedisExecException"></exception>
+    public async Task<RedisValue> ReceiveSimpleMessageAsync(Stream stream)
+    {
+        //获取首位的 符号 判断消息回复类型
+        var head = ReadFirstChar(stream);
+        switch (head)
+        {
+            case RespMessage.SimpleString:
+            case RespMessage.Number:
+            {
+                return ReadLine(stream);
+            }
+            //数组
+            case RespMessage.ArrayString:
+            {
+                throw new NotSupportedException(nameof(RespMessage.ArrayString));
+            }
+            case RespMessage.BulkStrings:
+            {
+                int offset = ReadLine(stream);
+                //如果为null
+                if (offset == -1)
+                {
+                    return RedisValue.Null();
+                }
+
+                var result = await ReadBlobLineAsync(stream, offset);
+
+                return new RedisValue(result);
+            }
+            default:
+            {
+                Console.WriteLine("输出：" + head.ToString().ToInt());
+                //错误
+                throw new RedisExecException(ReadLine(stream).ToString());
+            }
+        }
+    }
+
+    /// <summary>
+    /// 多行读取
+    /// </summary>
+    /// <param name="pipeReader"></param>
+    /// <param name="length"></param>
+    /// <returns></returns>
+    private static async Task<List<object>> ReadMLineAsync(Stream stream, int length)
+    {
+        //读取数组的长度
+        if (length == -1)
+        {
+            return default;
+        }
+
+        List<object> resultList = new();
+        for (var i = 0; i < length; i++)
+        {
+            //获取 符号 判断消息类型 是字符串还是 数字 
+            var head = ReadFirstChar(stream);
+            switch (head)
+            {
+                case RespMessage.SimpleString:
+                case RespMessage.Number:
+                {
+                    //读取剩下的消息
+                    resultList.Add(ReadLine(stream));
+                    break;
+                }
+                case RespMessage.BulkStrings:
+                {
+                    //获取字符串的长度
+                    int offset = ReadLine(stream);
+                    //如果为null
+                    if (offset == -1)
+                    {
+                        resultList.Add(RedisValue.Null());
+                        break;
+                    }
+
+                    //读取结果
+                    var result = await ReadBlobLineAsync(stream, offset);
+                    resultList.Add(new RedisValue(result));
+                    break;
+                }
+                //数组
+                case RespMessage.ArrayString:
+                {
+                    //读取剩下的消息
+                    var result = await ReadMLineAsync(stream, ReadLine(stream));
+                    resultList.Add(result);
+                    break;
+                }
+                case RespMessage.Error:
+                {
+                    //todo 错误消息
+                    resultList.Add(ReadLine(stream));
+                    break;
+                }
+            }
+        }
+
+        return resultList;
+    }
+
+    /// <summary>
+    /// 读取指定长度数据
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="length">长度</param>
+    /// <returns></returns>
+    private static async Task<ReadOnlyMemory<byte>> ReadBlobLineAsync(Stream stream, int length)
+    {
+        //从内存池中租借
+        await using var ms = MemoryStreamManager.GetStream();
+        ms.Position = 0;
+        var totalLength = 0;
+        while (true)
+        {
+            var bytes2 = ArrayPool<byte>.Shared.Rent(length);
+            try
+            {
+                var mem = await stream.ReadAsync(bytes2, 0, length - totalLength);
+                await ms.WriteAsync(bytes2[..mem]);
+                totalLength += mem;
+                //读取
+                if (totalLength == length)
+                {
+                    break;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(bytes2);
+            }
+        }
+        //读取换行信息
+        ReadCrlf(stream);
+        //获取真实的数据
+        return new ReadOnlyMemory<byte>(ms.ToArray());
+    }
+
+    private static void ReadCrlf(Stream stream)
+    {
+        _ = stream.ReadByte();
+        _ = stream.ReadByte();
+    }
+
+    /// <summary>
+    /// 读取第一行的字节信息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private static char ReadFirstChar(Stream stream) => (char) stream.ReadByte();
 
     /// <summary>
     /// 读取行数据
@@ -185,76 +325,5 @@ internal class MessageTransport
         }
 
         return new RedisValue(bytes.ToArray());
-    }
-
-    /// <summary>
-    /// 读取行数据
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    private static RedisValue ReadMLine(Stream stream, int offset)
-    {
-        Span<byte> bytes = new byte[offset + 2];
-        _ = stream.Read(bytes);
-        return new RedisValue(bytes.Slice(0, offset).ToArray());
-    }
-
-    /// <summary>
-    /// 多行读取
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    private async Task<List<object>> ReadMLineAsync(Stream stream)
-    {
-        //读取数组的长度
-        var length = ReadLine(stream).ToInt();
-        if (length == -1)
-        {
-            return default;
-        }
-
-        List<object> resultList = new();
-        for (var i = 0; i < length; i++)
-        {
-            //获取 符号 判断消息类型 是字符串还是 数字 
-            var bytes = new byte[1];
-            _ = await stream.ReadAsync(bytes);
-            var head = (char) bytes[0];
-            switch (head)
-            {
-                case RespMessage.SimpleString:
-                case RespMessage.Number:
-                {
-                    var result = ReadLine(stream);
-                    resultList.Add(result);
-                    break;
-                }
-                case RespMessage.BulkStrings:
-                {
-                    //去除第一位的长度
-                    var strlen = ReadLine(stream);
-                    //如果为null
-                    if (strlen == -1)
-                    {
-                        resultList.Add(RedisValue.Null());
-                        break;
-                    }
-
-                    //读取结果
-                    var result = ReadMLine(stream, strlen);
-                    resultList.Add(result);
-                    break;
-                }
-                //数组
-                case RespMessage.ArrayString:
-                {
-                    var result = await ReadMLineAsync(stream);
-                    resultList.Add(result);
-                    break;
-                }
-            }
-        }
-
-        return resultList;
     }
 }

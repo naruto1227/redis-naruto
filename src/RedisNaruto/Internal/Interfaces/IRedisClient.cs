@@ -47,11 +47,17 @@ internal interface IRedisClient : IAsyncDisposable
 
     /// <summary>
     /// 执行命令接口
-    /// todo 返回 pipereader
     /// </summary>
     /// <param name="command">命令参数</param>
     /// <returns></returns>
-    Task<PipeReader> ExecuteAsync(Command command);
+    Task<T> ExecuteAsync<T>(Command command);
+
+    /// <summary>
+    /// 执行命令接口
+    /// </summary>
+    /// <param name="command">命令参数</param>
+    /// <returns></returns>
+    Task<RedisValue> ExecuteSampleAsync(Command command);
 
     /// <summary>
     /// 执行命令 无返回值
@@ -66,7 +72,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    Task<PipeReader> ReadMessageAsync();
+    Task<object> ReadMessageAsync();
 
     /// <summary>
     /// 执行命令

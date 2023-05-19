@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using Microsoft.Extensions.ObjectPool;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Message;
-using RedisNaruto.Internal.Message.MessageParses;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
 
@@ -17,9 +16,8 @@ internal static class SentinelConnection
     /// <summary>
     /// 消息传输
     /// </summary>
-    private static readonly IMessageTransport MessageTransport = new PipeMessageTransport();
+    private static readonly IMessageTransport MessageTransport = new MessageTransport();
 
-    private static readonly IMessageParse MessageParse = new MessageParse();
 
     private static readonly ObjectPool<TcpClient> ObjectPool;
 
@@ -72,9 +70,7 @@ internal static class SentinelConnection
                 // "master",
                 masterName
             }));
-            var pipeReader = await MessageTransport.ReceiveAsync(sentinelTcpClient.GetStream());
-            await using var dispose = new AsyncDisposeAction(() => pipeReader.CompleteAsync().AsTask());
-            var result = await MessageParse.ParseMessageAsync(pipeReader);
+            var result = await MessageTransport.ReceiveMessageAsync(sentinelTcpClient.GetStream());
             if (result is List<object> list)
             {
                 return new HostPort(list[0].ToString(), list[1].ToString().ToInt());
@@ -102,8 +98,8 @@ internal static class SentinelConnection
     {
         //ping
         await MessageTransport.SendAsync(tcpClient.GetStream(), new Command(RedisCommandName.Ping, null));
-        var result = await MessageTransport.ReceiveAsync(tcpClient.GetStream());
-        if (result != null && !string.Equals(result.ToString(), "PONG", StringComparison.OrdinalIgnoreCase))
+        var result = await MessageTransport.ReceiveSimpleMessageAsync(tcpClient.GetStream());
+        if (!result.IsEmpty() && !string.Equals(result.ToString(), "PONG", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
