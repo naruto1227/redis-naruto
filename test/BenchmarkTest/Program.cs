@@ -10,9 +10,8 @@ using Microsoft.Extensions.Logging;
 
 Console.WriteLine("Hello, World!");
 
-
 #if DEBUG
-BenchmarkRunner.Run<StringSetTest>(new DebugBuildConfig());
+BenchmarkRunner.Run<StringGetTest>(new DebugInProcessConfig());
 #else
 
 var config = new ManualConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)

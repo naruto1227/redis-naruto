@@ -10,7 +10,7 @@ public class BaseUnit
             {
                 "127.0.0.1:55000"
             },
-            DataBase = 4,
+            DataBase = 0,
             UserName = "default",
             Password = "redispw",
             PoolCount = 1

@@ -17,7 +17,7 @@ public class StringGetTest : BaseTest
     {
         for (int i = 0; i < N; i++)
         {
-            var r = await RedisCommand.GetAsync("sr");
+            string r = await RedisCommand.GetAsync("sr");
         }
     }
 
@@ -54,7 +54,7 @@ public class StringGetTest : BaseTest
     {
         for (int i = 0; i < N; i++)
         {
-            var s = await RedisConn.StringGetAsync("sr");
+            string s = (await RedisConn.StringGetAsync("sr"));
         }
     }
 }

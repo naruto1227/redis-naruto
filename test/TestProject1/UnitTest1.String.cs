@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -245,5 +246,70 @@ public partial class UnitTest1 : BaseUnit
         var b1 = Encoding.Default.GetBytes(number.ToString());
         var b2 = BitConverter.GetBytes(number);
         var ss = BitConverter.ToDouble(b2);
+    }
+
+
+    [Fact]
+    public async Task Test()
+    {
+        Memory<byte> newMemory = default;
+        using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+        {
+            memoryOwner.Memory.Span[0] = (byte) '1';
+            memoryOwner.Memory.Span[1] = (byte) '2';
+            memoryOwner.Memory.Span[2] = (byte) '3';
+            //创建一个新的 slice
+            newMemory = memoryOwner.Memory[..3];
+            newMemory.Span[0] = (byte) 'a';
+        }
+
+        byte[] newBytes =default;
+        using (MemoryStream memoryStream = new MemoryStream())
+        {
+            await memoryStream.WriteAsync(newMemory);
+            newBytes= memoryStream.ToArray();
+        }
+
+        using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+        {
+            memoryOwner.Memory.Span[0] = (byte) '1';
+            memoryOwner.Memory.Span[1] = (byte) '2';
+            memoryOwner.Memory.Span[2] = (byte) '3';
+            //创建一个新的 slice
+            newMemory = memoryOwner.Memory[..3];
+            newMemory.Span[0] = (byte) 'a';
+        }
+    }
+    
+    [Fact]
+    public async Task Test2()
+    {
+        Memory<byte> newMemory = default;
+        using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+        {
+            memoryOwner.Memory.Span[0] = (byte) '1';
+            memoryOwner.Memory.Span[1] = (byte) '2';
+            memoryOwner.Memory.Span[2] = (byte) '3';
+            //创建一个新的 slice
+            newMemory = memoryOwner.Memory[..3];
+            newMemory.Span[0] = (byte) 'a';
+        }
+
+        byte[] newBytes =default;
+        using (MemoryStream memoryStream = new MemoryStream())
+        {
+            await memoryStream.WriteAsync(newMemory);
+            newBytes= memoryStream.ToArray();
+        }
+
+        using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+        {
+            memoryOwner.Memory.Span[0] = (byte) '1';
+            memoryOwner.Memory.Span[1] = (byte) '2';
+            memoryOwner.Memory.Span[2] = (byte) '3';
+            //创建一个新的 slice
+            newMemory = memoryOwner.Memory[..3];
+            newMemory.Span[0] = (byte) 'a';
+        }
     }
 }
