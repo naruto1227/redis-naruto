@@ -188,7 +188,7 @@ internal class MessageTransport : IMessageTransport
     /// <summary>
     /// 多行读取
     /// </summary>
-    /// <param name="pipeReader"></param>
+    /// <param name="stream"></param>
     /// <param name="length"></param>
     /// <returns></returns>
     private static async Task<List<object>> ReadMLineAsync(Stream stream, int length)
@@ -263,21 +263,16 @@ internal class MessageTransport : IMessageTransport
         var totalLength = 0;
         while (true)
         {
-            var bytes2 = ArrayPool<byte>.Shared.Rent(length);
-            try
+            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(length))
             {
-                var mem = await stream.ReadAsync(bytes2, 0, length - totalLength);
-                await ms.WriteAsync(bytes2[..mem]);
+                var mem = await stream.ReadAsync(memoryOwner.Memory[..(length - totalLength)]);
+                await ms.WriteAsync(memoryOwner.Memory[..mem]);
                 totalLength += mem;
                 //读取
                 if (totalLength == length)
                 {
                     break;
                 }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(bytes2);
             }
         }
 
@@ -293,9 +288,8 @@ internal class MessageTransport : IMessageTransport
     /// <param name="stream"></param>
     private static async Task ReadCrlfAsync(Stream stream)
     {
-        var crlfByte = ArrayPool<byte>.Shared.Rent(2);
-        _ = await stream.ReadAsync(crlfByte, 0, 2);
-        ArrayPool<byte>.Shared.Return(crlfByte);
+        using var memoryOwner = MemoryPool<byte>.Shared.Rent(2);
+        _ = await stream.ReadAsync(memoryOwner.Memory[..2]);
     }
 
     /// <summary>

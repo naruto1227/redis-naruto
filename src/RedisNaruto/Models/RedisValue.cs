@@ -74,7 +74,7 @@ public readonly struct RedisValue
     /// 
     /// </summary>
     /// <returns></returns>
-    public override string ToString() => Encoding.UTF8.GetString(_memory.ToArray());
+    public override string ToString() => Encoding.UTF8.GetString(_memory.Span);
 
     /// <summary>
     /// 转成字节
