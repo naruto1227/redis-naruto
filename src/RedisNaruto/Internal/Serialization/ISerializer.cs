@@ -1,3 +1,5 @@
+using RedisNaruto.Utils;
+
 namespace RedisNaruto.Internal.Serialization;
 
 /// <summary>
@@ -10,7 +12,7 @@ public interface ISerializer
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>
-    Task<(byte[], int)> SerializeAsync(object source);
+    Task<EncodePool> SerializeAsync(object source);
 
     /// <summary>
     /// 反序列化

@@ -44,13 +44,20 @@ internal class MessageTransport : IMessageTransport
     {
         await using var ms = MemoryStreamManager.GetStream();
         ms.Position = 0;
-        await ms.WriteAsync($"{RespMessage.ArrayString}{command.Length}".ToEncode());
+        using (var encode1 = $"{RespMessage.ArrayString}{command.Length}".ToEncodePool())
+        {
+            await ms.WriteAsync(encode1.Bytes, 0, encode1.Length);
+        }
+
         await ms.WriteAsync(NewLine);
         //写入命令
-        var cmdBytes = command.Cmd.ToEncode();
-        await ms.WriteAsync($"{RespMessage.BulkStrings}{cmdBytes.Length}".ToEncode());
-        await ms.WriteAsync(NewLine);
-        await ms.WriteAsync(cmdBytes);
+        using (var encode1 = command.Cmd.ToEncodePool())
+        {
+            await ms.WriteAsync($"{RespMessage.BulkStrings}{encode1.Length}".ToEncode());
+            await ms.WriteAsync(NewLine);
+            await ms.WriteAsync(encode1.Bytes, 0, encode1.Length);
+        }
+
         await ms.WriteAsync(NewLine);
         if (command.Length > 1)
         {
@@ -68,25 +75,22 @@ internal class MessageTransport : IMessageTransport
 
                 if (item is not byte[] argBytes)
                 {
-                    var bytes = await Serializer.SerializeAsync(item);
-
-                    await ms.WriteAsync($"{RespMessage.BulkStrings}{bytes.Item2}".ToEncode());
-                    await ms.WriteAsync(NewLine);
-                    if (bytes.Item2 == 0)
+                    using (var encode = await Serializer.SerializeAsync(item))
                     {
-                        await ms.WriteAsync(bytes.Item1);
-                    }
-                    else
-                    {
-                        await ms.WriteAsync(bytes.Item1, 0, bytes.Item2);
-                        ArrayPool<byte>.Shared.Return(bytes.Item1);
+                        await ms.WriteAsync($"{RespMessage.BulkStrings}{encode.Length}".ToEncode());
+                        await ms.WriteAsync(NewLine);
+                        await ms.WriteAsync(encode.Bytes, 0, encode.Length);
                     }
 
                     await ms.WriteAsync(NewLine);
                     continue;
                 }
 
-                await ms.WriteAsync($"{RespMessage.BulkStrings}{argBytes.Length}".ToEncode());
+                using (var encode1 = $"{RespMessage.BulkStrings}{argBytes.Length}".ToEncodePool())
+                {
+                    await ms.WriteAsync(encode1.Bytes, 0, encode1.Length);
+                }
+
                 await ms.WriteAsync(NewLine);
                 await ms.WriteAsync(argBytes);
                 await ms.WriteAsync(NewLine);
@@ -161,6 +165,11 @@ internal class MessageTransport : IMessageTransport
             //数组
             case RespMessage.ArrayString:
             {
+                var length = ReadLine(stream);
+                if (length == -1)
+                {
+                    return RedisValue.Null();
+                }
                 throw new NotSupportedException(nameof(RespMessage.ArrayString));
             }
             case RespMessage.BulkStrings:

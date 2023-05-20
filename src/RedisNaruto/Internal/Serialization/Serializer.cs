@@ -12,11 +12,11 @@ namespace RedisNaruto.Internal.Serialization;
 /// </summary>
 public sealed class Serializer : ISerializer
 {
-    public async Task<(byte[], int)> SerializeAsync(object source)
+    public async Task<EncodePool> SerializeAsync(object source)
     {
         return source switch
         {
-            byte[] sourceByte => (sourceByte, sourceByte.Length),
+            byte[] sourceByte => new(sourceByte, sourceByte.Length, false),
             DateOnly dateOnly => dateOnly.ToString("yyyy-MM-dd").ToEncodePool(),
             DateTime dateTime => dateTime.ToString("yyyy-MM-dd HH:mm:ss").ToEncodePool(),
             _ => Type.GetTypeCode(source.GetType()) switch
@@ -33,11 +33,11 @@ public sealed class Serializer : ISerializer
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>
-    private async Task<(byte[], int)> ToJsonAsync(object source)
+    private async Task<EncodePool> ToJsonAsync(object source)
     {
         await using var memoryStream = new MemoryStream();
         await JsonSerializer.SerializeAsync(memoryStream, source, BuildJsonSerializerOptions());
-        return (memoryStream.ToArray(), 0);
+        return new(memoryStream.ToArray(), (int) memoryStream.Length, false);
     }
 
     public async Task<TResult> DeserializeAsync<TResult>(byte[] source)
