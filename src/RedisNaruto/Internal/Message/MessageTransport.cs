@@ -280,16 +280,22 @@ internal class MessageTransport : IMessageTransport
                 ArrayPool<byte>.Shared.Return(bytes2);
             }
         }
+
         //读取换行信息
-        ReadCrlf(stream);
+        await ReadCrlfAsync(stream);
         //获取真实的数据
         return new ReadOnlyMemory<byte>(ms.ToArray());
     }
 
-    private static void ReadCrlf(Stream stream)
+    /// <summary>
+    /// 读取换行
+    /// </summary>
+    /// <param name="stream"></param>
+    private static async Task ReadCrlfAsync(Stream stream)
     {
-        _ = stream.ReadByte();
-        _ = stream.ReadByte();
+        var crlfByte = ArrayPool<byte>.Shared.Rent(2);
+        _ = await stream.ReadAsync(crlfByte, 0, 2);
+        ArrayPool<byte>.Shared.Return(crlfByte);
     }
 
     /// <summary>
@@ -306,24 +312,26 @@ internal class MessageTransport : IMessageTransport
     /// <returns></returns>
     private static RedisValue ReadLine(Stream stream)
     {
-        var bytes = new List<byte>();
+        //从内存池中租借
+        using var ms = MemoryStreamManager.GetStream();
+        ms.Position = 0;
         while (true)
         {
             var msg = stream.ReadByte();
             if (msg < 0) break;
             //判断是否为换行 \r\n
-            if (msg == '\r')
+            if (msg == CR)
             {
                 var msg2 = stream.ReadByte();
                 if (msg2 < 0) break;
-                if (msg2 == '\n') break;
-                bytes.Add((byte) msg);
-                bytes.Add((byte) msg2);
+                if (msg2 == LF) break;
+                ms.WriteByte((byte) msg);
+                ms.WriteByte((byte) msg2);
             }
             else
-                bytes.Add((byte) msg);
+                ms.WriteByte((byte) msg);
         }
 
-        return new RedisValue(bytes.ToArray());
+        return new RedisValue(ms.ToArray());
     }
 }
