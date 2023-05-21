@@ -80,7 +80,11 @@ internal class RedisClientFactory : IRedisClientFactory
     {
         var hostInfo = ConnectionStateManage.Get();
         //初始化tcp客户端
-        var tcpClient = new TcpClient();
+        var tcpClient = new TcpClient()
+        {
+            ReceiveTimeout = _connectionBuilder.TimeOut,
+            SendTimeout = _connectionBuilder.TimeOut
+        };
         //获取ip地址
         if (!IPAddress.TryParse(hostInfo.hostPort.Host, out var ips))
         {

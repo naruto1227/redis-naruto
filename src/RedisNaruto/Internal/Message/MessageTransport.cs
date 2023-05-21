@@ -187,7 +187,6 @@ internal class MessageTransport : IMessageTransport
             }
             default:
             {
-                Console.WriteLine("输出：" + head.ToString().ToInt());
                 //错误
                 throw new RedisExecException(ReadLine(stream).ToString());
             }

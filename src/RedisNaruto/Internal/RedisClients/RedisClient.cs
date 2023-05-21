@@ -34,12 +34,12 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 当前连接的主机信息
     /// </summary>
-    public string CurrentHost { get; }
+    public string CurrentHost { get; protected set; }
 
     /// <summary>
     /// 当前连接的端口信息
     /// </summary>
-    public int CurrentPort { get; }
+    public int CurrentPort { get; protected set; }
 
     /// <summary>
     /// 客户端id
@@ -129,8 +129,7 @@ internal class RedisClient : IRedisClient
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageTransport.SendAsync(stream, command);
-        var tcpClient = TcpClient;
-        var result = await MessageTransport.ReceiveMessageAsync(tcpClient.GetStream());
+        var result = await MessageTransport.ReceiveMessageAsync(stream);
         if (result is T redisValue)
         {
             return redisValue;
@@ -173,8 +172,7 @@ internal class RedisClient : IRedisClient
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<object> ReadMessageAsync()
     {
-        var tcpClient = TcpClient;
-        return await MessageTransport.ReceiveMessageAsync(tcpClient.GetStream());
+        return await MessageTransport.ReceiveMessageAsync(await GetStreamAsync(true));
     }
 
     /// <summary>
@@ -303,6 +301,35 @@ internal class RedisClient : IRedisClient
         await InitClientIdAsync();
     }
 
+
+    /// <summary>
+    /// 重置socket 
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected virtual async Task ResetSocketAsync(CancellationToken cancellationToken = default)
+    {
+        //切换新的连接
+        var hostInfo = ConnectionStateManage.Get();
+        IsAuth = false;
+        //释放连接
+        TcpClient.Dispose();
+        TcpClient = null;
+        //重新打开一个新的连接
+        var localClient = new TcpClient()
+        {
+            ReceiveTimeout = ConnectionBuilder.TimeOut,
+            SendTimeout = ConnectionBuilder.TimeOut
+        };
+        await localClient.ConnectAsync(hostInfo.hostPort.Host, hostInfo.hostPort.Port, cancellationToken);
+        TcpClient = localClient;
+        CurrentHost = hostInfo.hostPort.Host;
+        CurrentPort = hostInfo.hostPort.Port;
+        CurrentDb = ConnectionBuilder.DataBase;
+        //登陆
+        await AuthAsync();
+        await InitClientIdAsync();
+    }
+
     /// <summary>
     /// 清空所有的消息
     /// </summary>
@@ -315,7 +342,7 @@ internal class RedisClient : IRedisClient
             return;
         }
 
-        var stream = tcpClient.GetStream();
+        var stream = await GetStreamAsync(true);
         while (tcpClient.Available > 0)
         {
             using (var memoryOwner = MemoryPool<byte>.Shared.Rent(1024))
@@ -328,15 +355,21 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 获取流
     /// </summary>
+    /// <param name="isSkipAuth">是否需要跳过授权</param>
     /// <returns></returns>
-    private async Task<Stream> GetStreamAsync(bool isAuth)
+    private async Task<Stream> GetStreamAsync(bool isSkipAuth)
     {
-        if (!isAuth)
+        if (!isSkipAuth)
         {
             await AuthAsync();
         }
 
         var tcp = TcpClient;
+        if (!tcp.Connected)
+        {
+            await ResetSocketAsync();
+        }
+
         return tcp.GetStream();
     }
 }

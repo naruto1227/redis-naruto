@@ -10,6 +10,7 @@ public sealed class ConnectionBuilder
         DataBase = 0;
         PoolCount = Environment.ProcessorCount * 2;
         ServerType = ServerType.Standalone;
+        TimeOut = 3000;
     }
 
     /// <summary>
@@ -46,4 +47,9 @@ public sealed class ConnectionBuilder
     /// 连接池
     /// </summary>
     public int PoolCount { get; set; }
+
+    /// <summary>
+    /// 超时时间 ms 默认3000
+    /// </summary>
+    public int TimeOut { get; set; }
 }
