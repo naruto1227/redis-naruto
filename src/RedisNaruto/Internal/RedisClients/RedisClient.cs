@@ -150,8 +150,7 @@ internal class RedisClient : IRedisClient
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageTransport.SendAsync(stream, command);
-        var tcpClient = TcpClient;
-        return await MessageTransport.ReceiveSimpleMessageAsync(tcpClient.GetStream());
+        return await MessageTransport.ReceiveSimpleMessageAsync(stream);
     }
 
     /// <summary>
