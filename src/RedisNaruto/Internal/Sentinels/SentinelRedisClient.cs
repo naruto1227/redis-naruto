@@ -62,6 +62,7 @@ internal class SentinelRedisClient : RedisClient
         var hostPort = await SentinelConnection.GetMaserAddressAsync(_masterName, cancellationToken);
         if (this.CurrentHost == hostPort.Host && this.CurrentPort == hostPort.Port)
         {
+            await base.ClearMessageAsync(cancellationToken);
             return;
         }
 
