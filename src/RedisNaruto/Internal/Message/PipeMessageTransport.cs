@@ -8,7 +8,7 @@
 // /// <summary>
 // /// 消息传输
 // /// </summary>
-// internal sealed class PipeMessageTransport : MessageTransport, IMessageTransport
+// internal sealed class PipeMessageTransport
 // {
 //     // /// <summary>
 //     // /// 发送消息
