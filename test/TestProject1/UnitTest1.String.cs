@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -158,6 +159,7 @@ public partial class UnitTest1 : BaseUnit
     {
         var redisCommand = await GetRedisAsync();
         var res = await redisCommand.GetAsync("sr");
+        var res2 = await redisCommand.GetAsync("sr");
         if (!res.IsEmpty())
         {
             _testOutputHelper.WriteLine(res);
@@ -263,11 +265,11 @@ public partial class UnitTest1 : BaseUnit
             newMemory.Span[0] = (byte) 'a';
         }
 
-        byte[] newBytes =default;
+        byte[] newBytes = default;
         using (MemoryStream memoryStream = new MemoryStream())
         {
             await memoryStream.WriteAsync(newMemory);
-            newBytes= memoryStream.ToArray();
+            newBytes = memoryStream.ToArray();
         }
 
         using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
@@ -280,7 +282,7 @@ public partial class UnitTest1 : BaseUnit
             newMemory.Span[0] = (byte) 'a';
         }
     }
-    
+
     [Fact]
     public async Task Test2()
     {
@@ -295,11 +297,11 @@ public partial class UnitTest1 : BaseUnit
             newMemory.Span[0] = (byte) 'a';
         }
 
-        byte[] newBytes =default;
+        byte[] newBytes = default;
         using (MemoryStream memoryStream = new MemoryStream())
         {
             await memoryStream.WriteAsync(newMemory);
-            newBytes= memoryStream.ToArray();
+            newBytes = memoryStream.ToArray();
         }
 
         using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
@@ -311,5 +313,24 @@ public partial class UnitTest1 : BaseUnit
             newMemory = memoryOwner.Memory[..3];
             newMemory.Span[0] = (byte) 'a';
         }
+    }
+
+    [Fact]
+    public async Task Test_StringSet_Large()
+    {
+        var redisCommand = await GetRedisAsync();
+        //初始化400m的数据
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < 40000000; i++)
+        {
+            stringBuilder.Append("test" + i);
+        }
+
+        _testOutputHelper.WriteLine(Encoding.Default.GetBytes(stringBuilder.ToString()).Length.ToString());
+        Stopwatch stopwatch =  Stopwatch.StartNew();
+        await redisCommand.SetAsync("setbig", stringBuilder.ToString());
+        stopwatch.Stop();
+        _testOutputHelper.WriteLine(stopwatch.ElapsedMilliseconds.ToString());
+
     }
 }

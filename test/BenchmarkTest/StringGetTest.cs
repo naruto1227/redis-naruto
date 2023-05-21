@@ -8,6 +8,7 @@ using NewLife.Caching;
 using RedisNaruto;
 using StackExchange.Redis;
 using RedisClient = FreeRedis.RedisClient;
+using RedisValue = RedisNaruto.Models.RedisValue;
 
 [MemoryDiagnoser()]
 public class StringGetTest : BaseTest
@@ -17,7 +18,8 @@ public class StringGetTest : BaseTest
     {
         for (int i = 0; i < N; i++)
         {
-            string r = await RedisCommand.GetAsync("sr");
+            RedisValue r = await RedisCommand.GetAsync("sr");
+            string str = r.ToString();
         }
     }
 

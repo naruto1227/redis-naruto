@@ -11,14 +11,14 @@ using Microsoft.Extensions.Logging;
 Console.WriteLine("Hello, World!");
 
 #if DEBUG
-BenchmarkRunner.Run<StringGetTest>(new DebugInProcessConfig());
+BenchmarkRunner.Run<StringSetTest>(
+    new DebugInProcessConfig().AddColumn(RankColumn.Arabic));
 #else
-
 var config = new ManualConfig().WithOptions(ConfigOptions.DisableOptimizationsValidator)
     .AddLogger(new ConsoleLogger());
 config.AddDiagnoser(MemoryDiagnoser.Default);
 config.AddColumnProvider(DefaultColumnProviders.Instance);
-BenchmarkRunner.Run<StringGetTest>(config);
+BenchmarkRunner.Run<StringSetTest>(config);
 #endif
 
 
