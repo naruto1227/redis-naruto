@@ -321,7 +321,7 @@ internal class RedisClient : IRedisClient
         {
             using (var memoryOwner = MemoryPool<byte>.Shared.Rent(1024))
             {
-                _ = await stream.ReadAsync(memoryOwner.Memory[..tcpClient.Available], cancellationToken);
+                _ = await stream.ReadAsync(memoryOwner.Memory, cancellationToken);
             }
         }
     }
