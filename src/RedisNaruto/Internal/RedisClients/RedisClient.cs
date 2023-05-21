@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using RedisNaruto.Internal.Interfaces;
@@ -128,8 +129,8 @@ internal class RedisClient : IRedisClient
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageTransport.SendAsync(stream, command);
-
-        var result = await MessageTransport.ReceiveMessageAsync(this.TcpClient.GetStream());
+        var tcpClient = TcpClient;
+        var result = await MessageTransport.ReceiveMessageAsync(tcpClient.GetStream());
         if (result is T redisValue)
         {
             return redisValue;
@@ -149,8 +150,8 @@ internal class RedisClient : IRedisClient
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageTransport.SendAsync(stream, command);
-
-        return await MessageTransport.ReceiveSimpleMessageAsync(this.TcpClient.GetStream());
+        var tcpClient = TcpClient;
+        return await MessageTransport.ReceiveSimpleMessageAsync(tcpClient.GetStream());
     }
 
     /// <summary>
@@ -173,7 +174,8 @@ internal class RedisClient : IRedisClient
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<object> ReadMessageAsync()
     {
-        return await MessageTransport.ReceiveMessageAsync(this.TcpClient.GetStream());
+        var tcpClient = TcpClient;
+        return await MessageTransport.ReceiveMessageAsync(tcpClient.GetStream());
     }
 
     /// <summary>
@@ -273,6 +275,14 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task ResetAsync(CancellationToken cancellationToken = default)
     {
+        await ClearMessageAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// 心跳检查
+    /// </summary>
+    protected virtual async Task HeartbeatCheckAsync()
+    {
         //检查连接是否有效
         if (await this.PingAsync())
         {
@@ -289,9 +299,31 @@ internal class RedisClient : IRedisClient
         TcpClient = null;
         //重新打开一个新的连接
         var localClient = new TcpClient();
-        await localClient.ConnectAsync(hostInfo.hostPort.Host, hostInfo.hostPort.Port, cancellationToken);
+        await localClient.ConnectAsync(hostInfo.hostPort.Host, hostInfo.hostPort.Port);
         TcpClient = localClient;
         await InitClientIdAsync();
+    }
+
+    /// <summary>
+    /// 清空所有的消息
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected virtual async Task ClearMessageAsync(CancellationToken cancellationToken = default)
+    {
+        var tcpClient = TcpClient;
+        if (tcpClient.Available <= 0)
+        {
+            return;
+        }
+
+        var stream = tcpClient.GetStream();
+        while (tcpClient.Available > 0)
+        {
+            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(1024))
+            {
+                _ = await stream.ReadAsync(memoryOwner.Memory[..tcpClient.Available], cancellationToken);
+            }
+        }
     }
 
     /// <summary>
@@ -305,6 +337,7 @@ internal class RedisClient : IRedisClient
             await AuthAsync();
         }
 
-        return TcpClient.GetStream();
+        var tcp = TcpClient;
+        return tcp.GetStream();
     }
 }

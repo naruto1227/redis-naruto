@@ -68,6 +68,7 @@ internal static class ConnectionStateManage
             {
                 try
                 {
+                    //todo 优化
                     using var tcp = new TcpClient();
                     await tcp.ConnectAsync(connectionState.Value.Host, connectionState.Value.Port);
                     connectionState.Value.SetVaild();

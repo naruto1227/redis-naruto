@@ -53,8 +53,8 @@ internal sealed class RedisClientPool : IRedisClientPool
         {
             //池内 空闲数减少
             Interlocked.Decrement(ref _freeCount);
-            //todo 重置连接
-            // await redisClient.ResetAsync(cancellationToken);
+            // 重置连接
+            await redisClient.ResetAsync(cancellationToken);
         }
         else
         {
