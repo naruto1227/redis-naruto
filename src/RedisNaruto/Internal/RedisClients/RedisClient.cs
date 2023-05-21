@@ -11,10 +11,10 @@ namespace RedisNaruto.Internal.RedisClients;
 
 internal class RedisClient : IRedisClient
 {
-    /// <summary>
-    /// 授权锁
-    /// </summary>
-    private readonly SemaphoreSlim _authLock = new(1);
+    // /// <summary>
+    // /// 授权锁
+    // /// </summary>
+    // private readonly SemaphoreSlim _authLock = new(1);
 
     /// <summary>
     /// tcp 客户端
@@ -225,19 +225,19 @@ internal class RedisClient : IRedisClient
     {
         if (!IsAuth)
         {
-            using (await _authLock.LockAsync())
+            // using (await _authLock.LockAsync())
+            // {
+            //     if (!IsAuth)
+            //     {
+            IsAuth = await AuthAsync(ConnectionBuilder.UserName, ConnectionBuilder.Password);
+            if (!IsAuth)
             {
-                if (!IsAuth)
-                {
-                    IsAuth = await AuthAsync(ConnectionBuilder.UserName, ConnectionBuilder.Password);
-                    if (!IsAuth)
-                    {
-                        throw new InvalidOperationException("login fail");
-                    }
-
-                    await SelectDb(ConnectionBuilder.DataBase);
-                }
+                throw new InvalidOperationException("login fail");
             }
+
+            await SelectDb(ConnectionBuilder.DataBase);
+            // }
+            // }
         }
     }
 
