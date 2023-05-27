@@ -7,6 +7,7 @@ using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
+using System;
 
 namespace RedisNaruto.Internal.Message;
 
@@ -31,22 +32,28 @@ internal class MessageTransport : IMessageTransport
     protected static readonly byte LF = (byte) '\n';
 
     /// <summary>
+    /// 空
+    /// </summary>
+    protected static readonly byte[] Nil = $"{RespMessage.BulkStrings}0".ToEncode();
+
+    /// <summary>
     /// 序列化
     /// </summary>
     protected static readonly ISerializer Serializer = new Serializer();
 
     /// <summary>
     /// 发送消息
+    ///使用MemoryStream 进行消息的缓冲再发送优点，一 是为了当数据过大进行分块处理，二 利于扩展，如果进行二次修改的话
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="command"></param>
-    public virtual async Task SendAsync(Stream stream, Command command)
+    public virtual async Task SendWithMemoryAsync(Stream stream, Command command)
     {
         await using var ms = MemoryStreamManager.GetStream();
         ms.Position = 0;
         using (var encode1 = $"{RespMessage.ArrayString}{command.Length}".ToEncodePool())
         {
-            await ms.WriteAsync(encode1.Bytes, 0, encode1.Length);
+            await ms.WriteAsync(encode1.Bytes.AsMemory(0, encode1.Length));
         }
 
         await ms.WriteAsync(NewLine);
@@ -55,7 +62,7 @@ internal class MessageTransport : IMessageTransport
         {
             await ms.WriteAsync($"{RespMessage.BulkStrings}{encode1.Length}".ToEncode());
             await ms.WriteAsync(NewLine);
-            await ms.WriteAsync(encode1.Bytes, 0, encode1.Length);
+            await ms.WriteAsync(encode1.Bytes.AsMemory(0, encode1.Length));
         }
 
         await ms.WriteAsync(NewLine);
@@ -67,7 +74,7 @@ internal class MessageTransport : IMessageTransport
                 //处理null
                 if (item is null)
                 {
-                    await ms.WriteAsync($"{RespMessage.BulkStrings}0".ToEncode());
+                    await ms.WriteAsync(Nil);
                     await ms.WriteAsync(NewLine);
                     await ms.WriteAsync(NewLine);
                     continue;
@@ -79,7 +86,7 @@ internal class MessageTransport : IMessageTransport
                     {
                         await ms.WriteAsync($"{RespMessage.BulkStrings}{encode.Length}".ToEncode());
                         await ms.WriteAsync(NewLine);
-                        await ms.WriteAsync(encode.Bytes, 0, encode.Length);
+                        await ms.WriteAsync(encode.Bytes.AsMemory(0, encode.Length));
                     }
 
                     await ms.WriteAsync(NewLine);
@@ -88,7 +95,7 @@ internal class MessageTransport : IMessageTransport
 
                 using (var encode1 = $"{RespMessage.BulkStrings}{argBytes.Length}".ToEncodePool())
                 {
-                    await ms.WriteAsync(encode1.Bytes, 0, encode1.Length);
+                    await ms.WriteAsync(encode1.Bytes.AsMemory(0, encode1.Length));
                 }
 
                 await ms.WriteAsync(NewLine);
@@ -99,6 +106,70 @@ internal class MessageTransport : IMessageTransport
 
         ms.Position = 0;
         await ms.CopyToAsync(stream);
+    }
+
+
+    /// <summary>
+    ///发送消息 直接往网络中写入
+    ///优点 减少额外的内存分配
+    ///直接使用NetworkStream 进行发送，原因一 如果消息过大，IP层会自动进行分块处理， 二 不需要二次进行消息的修改 。 综上所述 目前不太需要 使用  MemoryStream增加额外的一层 缓冲
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="command"></param>
+    public virtual async Task SendAsync(Stream stream, Command command)
+    {
+        using (var encode1 = $"{RespMessage.ArrayString}{command.Length}".ToEncodePool())
+        {
+            await stream.WriteAsync(encode1.Bytes.AsMemory(0, encode1.Length));
+        }
+
+        await stream.WriteAsync(NewLine);
+        //写入命令
+        using (var encode1 = command.Cmd.ToEncodePool())
+        {
+            await stream.WriteAsync($"{RespMessage.BulkStrings}{encode1.Length}".ToEncode());
+            await stream.WriteAsync(NewLine);
+            await stream.WriteAsync(encode1.Bytes.AsMemory(0, encode1.Length));
+        }
+
+        await stream.WriteAsync(NewLine);
+        if (command.Length > 1)
+        {
+            //判断参数长度
+            foreach (var item in command.Args)
+            {
+                //处理null
+                if (item is null)
+                {
+                    await stream.WriteAsync(Nil);
+                    await stream.WriteAsync(NewLine);
+                    await stream.WriteAsync(NewLine);
+                    continue;
+                }
+
+                if (item is not byte[] argBytes)
+                {
+                    using (var encode = await Serializer.SerializeAsync(item))
+                    {
+                        await stream.WriteAsync($"{RespMessage.BulkStrings}{encode.Length}".ToEncode());
+                        await stream.WriteAsync(NewLine);
+                        await stream.WriteAsync(encode.Bytes.AsMemory(0, encode.Length));
+                    }
+
+                    await stream.WriteAsync(NewLine);
+                    continue;
+                }
+
+                using (var encode1 = $"{RespMessage.BulkStrings}{argBytes.Length}".ToEncodePool())
+                {
+                    await stream.WriteAsync(encode1.Bytes.AsMemory(0, encode1.Length));
+                }
+
+                await stream.WriteAsync(NewLine);
+                await stream.WriteAsync(argBytes);
+                await stream.WriteAsync(NewLine);
+            }
+        }
     }
 
     /// <summary>
@@ -170,6 +241,7 @@ internal class MessageTransport : IMessageTransport
                 {
                     return RedisValue.Null();
                 }
+
                 throw new NotSupportedException(nameof(RespMessage.ArrayString));
             }
             case RespMessage.BulkStrings:
@@ -276,8 +348,9 @@ internal class MessageTransport : IMessageTransport
                 var mem = await stream.ReadAsync(memoryOwner.Memory[..(length - totalLength)]);
                 await ms.WriteAsync(memoryOwner.Memory[..mem]);
                 totalLength += mem;
-                //读取
-                if (totalLength == length)
+                //读取 
+                //这里用大于等于 是因为访问其它情况导致 陷入死循环
+                if (totalLength >= length)
                 {
                     break;
                 }
