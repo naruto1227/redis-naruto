@@ -14,7 +14,7 @@ internal class DefaultRedisResolver : IRedisResolver
     /// 连接
     /// </summary>
     protected readonly IRedisClientPool _redisClientPool;
-    
+
 
     public DefaultRedisResolver(IRedisClientPool redisClientPool)
     {

@@ -1,13 +1,10 @@
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using RedisNaruto.Internal.Cluster;
 using RedisNaruto.Internal.Interfaces;
-using RedisNaruto.Internal.Models;
-using RedisNaruto.Internal.RedisClients;
 using RedisNaruto.Internal.Sentinels;
 
-namespace RedisNaruto.Internal;
+namespace RedisNaruto.Internal.RedisClients;
 
 /// <summary>
 /// 

@@ -1,5 +1,6 @@
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
+using RedisNaruto.Internal.RedisClients;
 using RedisNaruto.Internal.RedisResolvers;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;

@@ -13,9 +13,9 @@ internal interface IRedisClientPool : IDisposable
     /// <returns></returns>
     Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// 归还
-    /// </summary>
-    /// <returns></returns>
-    ValueTask ReturnAsync([NotNull]IRedisClient redisClient);
+    // /// <summary>
+    // /// 归还
+    // /// </summary>
+    // /// <returns></returns>
+    // ValueTask ReturnAsync([NotNull] IRedisClient redisClient);
 }

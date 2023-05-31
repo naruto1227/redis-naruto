@@ -40,6 +40,11 @@ internal interface IRedisClient : IAsyncDisposable
     int CurrentDb { get; }
 
     /// <summary>
+    /// 最近一次包更新时间
+    /// </summary>
+    long LastDataTime { get; }
+
+    /// <summary>
     /// 初始化客户端id
     /// </summary>
     /// <returns></returns>
@@ -80,31 +85,6 @@ internal interface IRedisClient : IAsyncDisposable
     /// <param name="command"></param>
     /// <returns></returns>
     Task<RedisValue> InvokeAsync(Command command);
-    // /// <summary>
-    // /// 执行命令接口 返回结果为对象
-    // /// </summary>
-    // /// <param name="command">命令参数</param>
-    // /// <returns></returns>
-    // Task<object> ExecuteWithObjectAsync(Command command);
-
-    // /// <summary>
-    // /// 返回多结果集
-    // /// </summary>
-    // /// <param name="command"></param>
-    // /// <returns></returns>
-    // IAsyncEnumerable<object> ExecuteMoreResultAsync(Command command);
-
-    // /// <summary>
-    // /// 读取消息
-    // /// </summary>
-    // /// <returns></returns>
-    // Task<TResult> ReadMessageAsync<TResult>();
-
-    // /// <summary>
-    // /// 流水线消息读取
-    // /// </summary>
-    // /// <returns></returns>
-    // Task<object[]> PipeReadMessageAsync();
 
     /// <summary>
     /// 选择 db库
@@ -143,14 +123,4 @@ internal interface IRedisClient : IAsyncDisposable
     /// 关闭
     /// </summary>
     void Close();
-
-    // /// <summary>
-    // /// 开启流水线
-    // /// </summary>
-    // Task BeginPipeAsync();
-    //
-    // /// <summary>
-    // /// 结束流水线
-    // /// </summary>
-    // void EndPipe();
 }

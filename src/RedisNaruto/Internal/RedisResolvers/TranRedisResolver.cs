@@ -61,7 +61,7 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await _redisClientPool.ReturnAsync(_redisClient);
+        await _redisClient.DisposeAsync();
         _redisClient = null;
     }
 }

@@ -11,6 +11,8 @@ public sealed class ConnectionBuilder
         PoolCount = Environment.ProcessorCount * 2;
         ServerType = ServerType.Standalone;
         TimeOut = 3000;
+        //默认5分钟
+        Idle = 1000 * 60 * 5;
     }
 
     /// <summary>
@@ -49,7 +51,32 @@ public sealed class ConnectionBuilder
     public int PoolCount { get; set; }
 
     /// <summary>
+    /// 最大
+    /// </summary>
+    private readonly int _maxPoolCount;
+
+    /// <summary>
+    /// 最大连接池
+    /// </summary>
+    public int MaxPoolCount
+    {
+        get
+        {
+            if (_maxPoolCount == 0) return PoolCount * 2;
+            return _maxPoolCount;
+        }
+        init => _maxPoolCount = value;
+    }
+    
+
+    /// <summary>
     /// 超时时间 ms 默认3000
     /// </summary>
     public int TimeOut { get; set; }
+
+    /// <summary>
+    /// 0 不开启
+    /// 闲置时间 闲置多久进行释放 ，当池中的数量低于 最小不做处理
+    /// </summary>
+    public int Idle { get; set; }
 }

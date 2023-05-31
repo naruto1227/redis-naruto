@@ -52,6 +52,11 @@ internal class RedisClient : IRedisClient
     protected bool IsAuth { get; set; }
 
     /// <summary>
+    /// 最近一次包更新时间
+    /// </summary>
+    public long LastDataTime { get; private set; }
+
+    /// <summary>
     /// 当前db
     /// </summary>
     public int CurrentDb { get; private set; }
@@ -85,6 +90,11 @@ internal class RedisClient : IRedisClient
     {
         await this.DisposeCoreAsync(true);
     }
+
+    /// <summary>
+    /// todo 增加 是否释放的处理，为了在兮构函数判断
+    /// </summary>
+    private bool _isDispose;
 
     protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
     {
@@ -128,7 +138,7 @@ internal class RedisClient : IRedisClient
     {
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await MessageTransport.SendAsync(stream, command);
+        await MessageSendAsync(stream, command);
         var result = await MessageTransport.ReceiveMessageAsync(stream);
         if (result is T redisValue)
         {
@@ -148,7 +158,7 @@ internal class RedisClient : IRedisClient
     {
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await MessageTransport.SendAsync(stream, command);
+        await MessageSendAsync(stream, command);
         return await MessageTransport.ReceiveSimpleMessageAsync(stream);
     }
 
@@ -162,7 +172,7 @@ internal class RedisClient : IRedisClient
     {
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
-        await MessageTransport.SendAsync(stream, command);
+        await MessageSendAsync(stream, command);
     }
 
     /// <summary>
@@ -273,6 +283,18 @@ internal class RedisClient : IRedisClient
     public virtual async Task ResetAsync(CancellationToken cancellationToken = default)
     {
         await ClearMessageAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// 消息发送
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="command"></param>
+    private async Task MessageSendAsync(Stream stream, Command command)
+    {
+        await MessageTransport.SendAsync(stream, command);
+        //更新时间
+        this.LastDataTime = TimeUtil.GetTimestamp();
     }
 
     /// <summary>
