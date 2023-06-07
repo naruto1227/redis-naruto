@@ -444,7 +444,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     IAsyncEnumerable<Dictionary<string, RedisValue>> HScanAsync(string key,
         string matchPattern = "*", int count = 10,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 
@@ -620,7 +620,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     IAsyncEnumerable<List<RedisValue>> SScanAsync(string key,
         string matchPattern = "*", int count = 10,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 往list的指定元素 前或者后插入新的元素
@@ -874,7 +874,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     IAsyncEnumerable<Dictionary<string, RedisValue>> ZScanAsync(string key,
         string matchPattern = "*", int count = 10,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 返回zset中集合的长度
