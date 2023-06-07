@@ -7,6 +7,7 @@ internal class ConnectionState
         this.Host = host;
         this.Port = port;
         State = ConnectionStateEnum.Valid;
+        //todo 考虑维护一个失败的次数，如果达到指定的次数 不再连接，直接废弃当前主机
     }
 
     public string Host { get; init; }

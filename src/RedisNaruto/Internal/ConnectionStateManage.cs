@@ -20,31 +20,12 @@ internal static class ConnectionStateManage
 
     private static readonly ConcurrentDictionary<Guid, TcpClient> TcpClients = new();
 
-    // /// <summary>
-    // /// 锁
-    // /// </summary>
-    // private static object _lock = new();
-
     /// <summary>
     /// 初始化
     /// </summary>
     /// <param name="connections"></param>
     public static async Task InitAsync(IEnumerable<string> connections)
     {
-        // if (_connectionStates is {Count: > 0})
-        // {
-        //     return;
-        // }
-        //
-        // //todo 通过构造函数
-        // lock (_lock)
-        // {
-        //     if (_connectionStates is {Count: > 0})
-        //     {
-        //         return;
-        //     }
-
-        //
         foreach (var item in connections)
         {
             var hostString = item.Split(":");
@@ -65,8 +46,6 @@ internal static class ConnectionStateManage
         //开启后台服务
         new Thread(HealCheckAsync).Start();
         new Thread(InValidHealCheckAsync).Start();
-
-        // }
     }
 
     /// <summary>
@@ -80,7 +59,7 @@ internal static class ConnectionStateManage
     /// </summary>
     private static async void HealCheckAsync()
     {
-        //15s 检查一次
+        //30s 检查一次
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         while (await timer.WaitForNextTickAsync())
         {
@@ -98,7 +77,7 @@ internal static class ConnectionStateManage
     private static async void InValidHealCheckAsync()
     {
         //3分钟 检查一次 todo 配置化时间
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(2));
         while (await timer.WaitForNextTickAsync())
         {
             //检查失效的

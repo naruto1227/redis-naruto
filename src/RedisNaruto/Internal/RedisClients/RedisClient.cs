@@ -30,7 +30,7 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 连接id
     /// </summary>
-    public Guid ConnectionId { get; }
+    public Guid ConnectionId { get; private set; }
 
     /// <summary>
     /// 当前连接的主机信息
@@ -350,9 +350,9 @@ internal class RedisClient : IRedisClient
     {
         //设置连接状态无效
         ConnectionStateManage.SetInValid(ConnectionId);
-        //todo 更新ConnectionId
         //切换新的连接
         var hostInfo = ConnectionStateManage.Get();
+        ConnectionId = hostInfo.connectionId;
         IsAuth = false;
         //释放连接
         TcpClient?.Dispose();
