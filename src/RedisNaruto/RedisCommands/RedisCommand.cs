@@ -38,16 +38,16 @@ public partial class RedisCommand : IRedisCommand
     /// <returns></returns>
     private static async Task<TResult> DeserializeAsync<TResult>(byte[] redisValue) => await
         Serializer.DeserializeAsync<TResult>(redisValue);
-    
+
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    internal static ValueTask<RedisCommand> BuilderAsync(ConnectionBuilder config)
+    internal static async ValueTask<RedisCommand> BuilderAsync(ConnectionBuilder config)
     {
-        var redisCommand = new RedisCommand(new RedisClientPool(config));
+        var redisCommand = new RedisCommand(await RedisClientPool.BuildAsync(config));
         //连接配置
-        return new ValueTask<RedisCommand>(redisCommand);
+        return redisCommand;
     }
 
     public async ValueTask DisposeAsync()
@@ -56,12 +56,13 @@ public partial class RedisCommand : IRedisCommand
         GC.SuppressFinalize(this);
     }
 
-    protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
+    protected virtual ValueTask DisposeCoreAsync(bool isDispose)
     {
         // if (isDispose && RedisClient != default)
         // {
         //     await RedisClientPool.ReturnAsync(RedisClient);
         //     RedisClient = null;
         // }
+        return ValueTask.CompletedTask;
     }
 }

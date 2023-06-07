@@ -31,7 +31,7 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// <summary>
     /// 
     /// </summary>
-    private readonly IRedisClientFactory _redisClientFactory;
+    private IRedisClientFactory _redisClientFactory;
 
     /// <summary>
     /// 创建的总客户端总数
@@ -47,15 +47,23 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// <summary>
     /// 
     /// </summary>
-    public RedisClientPool(ConnectionBuilder connectionBuilder)
+    private RedisClientPool(ConnectionBuilder connectionBuilder)
     {
         _totalClientCount = 0;
         _minCount = connectionBuilder.PoolCount;
         _maxCount = connectionBuilder.MaxPoolCount;
         _idle = connectionBuilder.Idle;
-        _redisClientFactory = new RedisClientFactory(connectionBuilder);
-        new Thread(InitAsync).Start();
-        new Thread(TrimPoolAsync).Start();
+        // _redisClientFactory = new RedisClientFactory(connectionBuilder);
+    }
+
+    //构建
+    public static async Task<RedisClientPool> BuildAsync(ConnectionBuilder connectionBuilder)
+    {
+        var pool = new RedisClientPool(connectionBuilder);
+        pool._redisClientFactory = await RedisClientFactory.BuildAsync(connectionBuilder);
+        new Thread(pool.InitAsync).Start();
+        new Thread(pool.TrimPoolAsync).Start();
+        return pool;
     }
 
     /// <summary>
@@ -85,6 +93,7 @@ internal sealed class RedisClientPool : IRedisClientPool
                     cancellationToken);
             //还原
             Interlocked.Decrement(ref _totalClientCount);
+            //todo 自旋等待 还是抛出？
             //todo 这里的等待时间 通过配置
             //todo 是否要一直等待 还是等待指定
             await Task.Delay(500, cancellationToken);

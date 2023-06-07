@@ -1,83 +1,182 @@
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Net.Sockets;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Utils;
 
 namespace RedisNaruto.Internal;
 
 /// <summary>
+/// todo 移除
 /// 连接状态管理
 /// 所有的连接信息从此对像中获取
 /// </summary>
 internal static class ConnectionStateManage
 {
-    private static readonly ConcurrentDictionary<Guid, ConnectionState> _connectionStates = new();
+    private static readonly ConcurrentDictionary<Guid, ConnectionState> ConnectionStates = new();
 
-    /// <summary>
-    /// 锁
-    /// </summary>
-    private static object _lock = new();
+    private static readonly ConcurrentDictionary<Guid, TcpClient> TcpClients = new();
+
+    // /// <summary>
+    // /// 锁
+    // /// </summary>
+    // private static object _lock = new();
 
     /// <summary>
     /// 初始化
     /// </summary>
     /// <param name="connections"></param>
-    public static void Init(IEnumerable<string> connections)
+    public static async Task InitAsync(IEnumerable<string> connections)
     {
-        if (_connectionStates is {Count: > 0})
-        {
-            return;
-        }
+        // if (_connectionStates is {Count: > 0})
+        // {
+        //     return;
+        // }
+        //
+        // //todo 通过构造函数
+        // lock (_lock)
+        // {
+        //     if (_connectionStates is {Count: > 0})
+        //     {
+        //         return;
+        //     }
 
-        lock (_lock)
+        //
+        foreach (var item in connections)
         {
-            if (_connectionStates is {Count: > 0})
+            var hostString = item.Split(":");
+            if (!int.TryParse(hostString[1], out var port))
             {
-                return;
+                port = 6379;
             }
 
-            //
-            foreach (var item in connections)
-            {
-                var hostString = item.Split(":");
-                if (!int.TryParse(hostString[1], out var port))
-                {
-                    port = 6349;
-                }
-
-                _connectionStates.TryAdd(Guid.NewGuid(), new ConnectionState(hostString[0], port));
-            }
-
-            //开启后台服务
-            Task.Factory.StartNew(async () => await HealCheckAsync(), default, TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+            ConnectionStates.TryAdd(Guid.NewGuid(), new ConnectionState(hostString[0], port));
         }
+
+        //初始的时候 进行一次地址有效的判断
+        foreach (var connectionState in ConnectionStates)
+        {
+            await HealCheckCoreAsync(connectionState);
+        }
+
+        //开启后台服务
+        new Thread(HealCheckAsync).Start();
+        new Thread(InValidHealCheckAsync).Start();
+
+        // }
     }
+
+    /// <summary>
+    /// ping消息
+    /// </summary>
+    private static readonly byte[] Ping =
+        $"{RespMessage.ArrayString}1\r\n{RespMessage.BulkStrings}{4}\r\nPing\r\n".ToEncode();
 
     /// <summary>
     /// 健康检查
     /// </summary>
-    private static async Task HealCheckAsync()
+    private static async void HealCheckAsync()
     {
         //15s 检查一次
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         while (await timer.WaitForNextTickAsync())
         {
-            foreach (var connectionState in _connectionStates)
+            //遍历有效的
+            foreach (var connectionState in ConnectionStates.Where(a => a.Value.State == ConnectionStateEnum.Valid))
             {
-                try
+                await HealCheckCoreAsync(connectionState);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 失效连接检查
+    /// </summary>
+    private static async void InValidHealCheckAsync()
+    {
+        //3分钟 检查一次 todo 配置化时间
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        while (await timer.WaitForNextTickAsync())
+        {
+            //检查失效的
+            foreach (var connectionState in ConnectionStates.Where(a => a.Value.State == ConnectionStateEnum.InValid))
+            {
+                //存在连接没有释放的需要先释放  SetInValid 会造成需要此操作
+                if (TcpClients.TryRemove(connectionState.Key, out var tcp))
                 {
-                    //todo 优化
-                    using var tcp = new TcpClient();
-                    await tcp.ConnectAsync(connectionState.Value.Host, connectionState.Value.Port);
-                    connectionState.Value.SetVaild();
+                    //资源释放
+                    tcp.Dispose();
+                    tcp = null;
                 }
-                catch (Exception e)
+
+                await HealCheckCoreAsync(connectionState);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 检查连接是否有效
+    /// </summary>
+    /// <param name="connectionState"></param>
+    private static async Task HealCheckCoreAsync(KeyValuePair<Guid, ConnectionState> connectionState)
+    {
+        try
+        {
+            //获取tcp客户端
+            if (!TcpClients.TryGetValue(connectionState.Key, out var tcp))
+            {
+                //初始化
+                tcp = new TcpClient()
                 {
-                    Debug.WriteLine($"连接失败,host={connectionState.Value.Host},port={connectionState.Value.Port}");
-                    connectionState.Value.SetInVaild();
+                    NoDelay = true,
+                    ReceiveTimeout = 3000
+                };
+                await tcp.ConnectAsync(connectionState.Value.Host, connectionState.Value.Port);
+                TcpClients.TryAdd(connectionState.Key, tcp);
+            }
+
+            //模拟发送ping消息 如果有回复代表连接正常 没有断开
+            var stream = tcp.GetStream();
+            //写入消息
+            await stream.WriteAsync(Ping);
+            //读取回复
+            using (var memory = MemoryPool<byte>.Shared.Rent(512))
+            {
+                var es = await stream.ReadAsync(memory.Memory);
+                //没有任何消息代表失效
+                if (es == 0)
+                {
+                    connectionState.Value.SetInValid("es=0");
+                    return;
                 }
+            }
+
+            connectionState.Value.SetValid();
+        }
+        catch (SocketException socketError)
+        {
+            connectionState.Value.SetInValid(socketError.GetBaseException().Message);
+        }
+        catch (IOException ioException)
+        {
+            connectionState.Value.SetInValid(ioException.GetBaseException().Message);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine($"连接失败,host={connectionState.Value.Host},port={connectionState.Value.Port}");
+            connectionState.Value.SetInValid(e.GetBaseException().Message);
+        }
+        finally
+        {
+            //判断是否为失效
+            if (connectionState.Value.State == ConnectionStateEnum.InValid &&
+                TcpClients.TryRemove(connectionState.Key, out var tcp))
+            {
+                //资源释放
+                tcp.Dispose();
+                tcp = null;
             }
         }
     }
@@ -87,7 +186,7 @@ internal static class ConnectionStateManage
     /// </summary>
     public static (Guid connectionId, HostPort hostPort) Get()
     {
-        var info = _connectionStates.Where(a => a.Value.State == ConnectionStateEnum.Vaild)
+        var info = ConnectionStates.Where(a => a.Value.State == ConnectionStateEnum.Valid).OrderBy(a => Guid.NewGuid())
             .Select(a => new
             {
                 a.Key,
@@ -106,62 +205,9 @@ internal static class ConnectionStateManage
     /// 设置无效
     /// </summary>
     /// <param name="connectionId"></param>
-    public static void SetInVaild(Guid connectionId)
+    public static void SetInValid(Guid connectionId)
     {
-        if (_connectionStates.TryGetValue(connectionId, out var connectionState))
-        {
-            connectionState.SetInVaild();
-        }
+        if (!ConnectionStates.TryGetValue(connectionId, out var connectionState)) return;
+        connectionState.SetInValid("conn error");
     }
-}
-
-/// <summary>
-/// 连接状态
-/// </summary>
-internal struct ConnectionState
-{
-    public ConnectionState(string host, int port)
-    {
-        this.Host = host;
-        this.Port = port;
-        State = ConnectionStateEnum.Vaild;
-    }
-
-    public string Host { get; init; }
-
-    public int Port { get; init; }
-
-    /// <summary>
-    /// 状态
-    /// </summary>
-    public ConnectionStateEnum State { get; private set; }
-
-    /// <summary>
-    /// 设置有效
-    /// </summary>
-    public void SetVaild()
-    {
-        this.State = ConnectionStateEnum.Vaild;
-    }
-
-    /// <summary>
-    /// 设置无效
-    /// </summary>
-    public void SetInVaild()
-    {
-        this.State = ConnectionStateEnum.InVaild;
-    }
-}
-
-internal enum ConnectionStateEnum
-{
-    /// <summary>
-    /// 有效
-    /// </summary>
-    Vaild,
-
-    /// <summary>
-    /// 失效
-    /// </summary>
-    InVaild
 }

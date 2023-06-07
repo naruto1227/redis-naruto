@@ -378,7 +378,17 @@ internal class MessageTransport : IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private static char ReadFirstChar(Stream stream) => (char) stream.ReadByte();
+    private static char ReadFirstChar(Stream stream)
+    {
+        var es = stream.ReadByte();
+        //如果返回的-1 网络存在问题
+        if (es == -1)
+        {
+            throw new IOException();
+        }
+
+        return (char) es;
+    }
 
     /// <summary>
     /// 读取行数据

@@ -13,10 +13,16 @@ internal class RedisClientFactory : IRedisClientFactory
 {
     private readonly ConnectionBuilder _connectionBuilder;
 
-    public RedisClientFactory(ConnectionBuilder connectionBuilder)
+    private RedisClientFactory(ConnectionBuilder connectionBuilder)
     {
         _connectionBuilder = connectionBuilder;
-        ConnectionStateManage.Init(connectionBuilder.Connection);
+    }
+
+    public static async Task<RedisClientFactory> BuildAsync(ConnectionBuilder connectionBuilder)
+    {
+        var redisClientFactory = new RedisClientFactory(connectionBuilder);
+        await ConnectionStateManage.InitAsync(connectionBuilder.Connection);
+        return redisClientFactory;
     }
 
     /// <summary>
@@ -88,6 +94,7 @@ internal class RedisClientFactory : IRedisClientFactory
             ips = (await Dns.GetHostAddressesAsync(hostInfo.hostPort.Host, cancellationToken)).FirstOrDefault();
         }
 
+        //todo 增加连接拒绝的处理，拒绝后就直接 将当前主机信息填写进 失败数据中，然后后台服务检测 是否恢复
         await tcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
             cancellationToken);
 
