@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Net.Sockets;
+using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
 
@@ -49,7 +50,7 @@ internal static class ConnectionStateManage
             var hostString = item.Split(":");
             if (!int.TryParse(hostString[1], out var port))
             {
-                port = 6379;
+                throw new ArgumentException(nameof(port));
             }
 
             ConnectionStates.TryAdd(Guid.NewGuid(), new ConnectionState(hostString[0], port));
@@ -195,7 +196,7 @@ internal static class ConnectionStateManage
             }).FirstOrDefault();
         if (info == null)
         {
-            throw new InvalidOperationException("没有可用的连接");
+            throw new NotConnectionException();
         }
 
         return (info.Key, new HostPort(info.Host, info.Port));

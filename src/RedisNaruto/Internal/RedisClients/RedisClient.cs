@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
@@ -300,6 +301,7 @@ internal class RedisClient : IRedisClient
 
     /// <summary>
     /// 心跳检查
+    /// todo 加上了这个之后 增加了额外的传输 ，考虑是否需要增加，还是直接在执行命令的时候报错 来重置连接
     /// </summary>
     protected virtual async Task HeartbeatCheckAsync()
     {
@@ -320,22 +322,23 @@ internal class RedisClient : IRedisClient
             }
         }
 
-        //todo 增加循环 万一连接失败，再次读取 需要有次数限制
-        //设置连接状态无效
-        ConnectionStateManage.SetInValid(ConnectionId);
-        //切换新的连接 这里需要把此连接设置成无效状态 
-        var hostInfo = ConnectionStateManage.Get();
-        IsAuth = false;
-        //释放连接
-        TcpClient.Dispose();
-        TcpClient = null;
-        //重新打开一个新的连接
-        var localClient = new TcpClient();
-        await localClient.ConnectAsync(hostInfo.hostPort.Host, hostInfo.hostPort.Port);
-        TcpClient = localClient;
-        CurrentHost = hostInfo.hostPort.Host;
-        CurrentPort = hostInfo.hostPort.Port;
-        await InitClientIdAsync();
+        while (true)
+        {
+            try
+            {
+                await ResetSocketAsync();
+                return;
+            }
+            catch (Exception e)
+            {
+                //当没有连接的时候 抛出
+                if (e is NotConnectionException)
+                {
+                    throw;
+                }
+                //否则 继续查找新的连接
+            }
+        }
     }
 
 
@@ -345,11 +348,14 @@ internal class RedisClient : IRedisClient
     /// <param name="cancellationToken"></param>
     protected virtual async Task ResetSocketAsync(CancellationToken cancellationToken = default)
     {
+        //设置连接状态无效
+        ConnectionStateManage.SetInValid(ConnectionId);
+        //todo 更新ConnectionId
         //切换新的连接
         var hostInfo = ConnectionStateManage.Get();
         IsAuth = false;
         //释放连接
-        TcpClient.Dispose();
+        TcpClient?.Dispose();
         TcpClient = null;
         //重新打开一个新的连接
         var localClient = new TcpClient()
