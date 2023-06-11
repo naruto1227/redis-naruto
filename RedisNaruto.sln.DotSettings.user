@@ -1,16 +1,68 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=5e994772_002D8355_002D4e93_002D8510_002Dcafe79ef10cc/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Test_UnSub" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Project Location="/Users/zhanghaibo/Projects/我的/redis-naruto/test/TestProject1" Presentation="&amp;lt;test&amp;gt;\&amp;lt;TestProject1&amp;gt;" /&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=b2ff5717_002Dd589_002D4fe7_002D9ae8_002De97823414ed2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TranExec" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Or&gt;
+    &lt;TestAncestor&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest_Tran.TranExec&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest_Pipe.UsePipe&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_PubSub.Test_Sub&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.Test_StringGet_String&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_Client.testTcp&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_Client.Main2&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.TestRedisClient.Dis&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_Client.Test_RESP_Ping&lt;/TestId&gt;
+    &lt;/TestAncestor&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest1.String.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest_Hash.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest1.Stream.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest1.Script.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest.ZSet.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest.Set.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest.List.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest.HyperLogLog.cs&lt;/ProjectFile&gt;
+  &lt;/Or&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=cbfaa8bc_002D7c7a_002D42f8_002Db450_002D9bac1d0a8a76/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestBytes" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Or&gt;
+    &lt;TestAncestor&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.TestBytes&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.Test_StringSet&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_Stream.Test_XReadAsync&lt;/TestId&gt;
+    &lt;/TestAncestor&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest1.String.cs&lt;/ProjectFile&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest.Set.cs&lt;/ProjectFile&gt;
+  &lt;/Or&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d4fb1962_002Dc0ec_002D43c2_002D86fe_002D4b1d480f3e46/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestBytes #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Or&gt;
+    &lt;TestAncestor&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.TestBytes&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.Test_StringSet&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_Client.testTcp&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1_Stream.Test_XReadAsync&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.Test_StringGet_String&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest_Pipe.UsePipe&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest_Tran.TranExec&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.Test_StringSet_Large&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.UnitTest1.Test_StringSet_Null&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net7.0::TestProject1.TestRedisClient.Dis&lt;/TestId&gt;
+    &lt;/TestAncestor&gt;
+    &lt;ProjectFile&gt;1B7C58A6-CE45-4395-B14C-BC47548ED5E1/f:UnitTest1.String.cs&lt;/ProjectFile&gt;
+  &lt;/Or&gt;
+&lt;/SessionState&gt;</s:String>
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=135e9c3b_002De6b8_002D46d3_002D9da1_002D63ff9ae3a562/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Test_Sub #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net6.0::TestProject1.UnitTest1.Test_Sub&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ac7522c6_002Ddacd_002D4467_002Dad2c_002Df5397d4b0d0b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Session" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net6.0::TestProject1.UnitTest1.Test_StringGet_Class&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net6.0::TestProject1.UnitTest1.Test_StringSet&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net6.0::TestProject1.UnitTest1.Test_StringGet_String&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::1B7C58A6-CE45-4395-B14C-BC47548ED5E1::net6.0::TestProject1.UnitTest1.Test_Publish&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<s:String x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/HangingTestRunnerResponse/@EntryValue">KillProcess</s:String>
 	</wpf:ResourceDictionary>

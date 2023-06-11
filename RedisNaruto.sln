@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "test\TestPr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkTest", "test\BenchmarkTest\BenchmarkTest.csproj", "{454C8183-71E4-4FFD-8055-47B205D56340}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.aspnetcpre", "test\test.aspnetcpre\test.aspnetcpre.csproj", "{2AC2D68A-9E43-4952-8398-061EBB3E1BFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,7 @@ Global
 		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82} = {5AE4AC5C-B75B-4A3E-8543-F3980D59E9AC}
 		{1B7C58A6-CE45-4395-B14C-BC47548ED5E1} = {325A6DC5-2398-4DE7-9ABC-DA4FA0C958B4}
 		{454C8183-71E4-4FFD-8055-47B205D56340} = {325A6DC5-2398-4DE7-9ABC-DA4FA0C958B4}
+		{2AC2D68A-9E43-4952-8398-061EBB3E1BFB} = {325A6DC5-2398-4DE7-9ABC-DA4FA0C958B4}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C89EB8A0-5D19-4189-8343-92EEF5B5EE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -33,5 +36,9 @@ Global
 		{454C8183-71E4-4FFD-8055-47B205D56340}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{454C8183-71E4-4FFD-8055-47B205D56340}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{454C8183-71E4-4FFD-8055-47B205D56340}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AC2D68A-9E43-4952-8398-061EBB3E1BFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AC2D68A-9E43-4952-8398-061EBB3E1BFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AC2D68A-9E43-4952-8398-061EBB3E1BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AC2D68A-9E43-4952-8398-061EBB3E1BFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using RedisNaruto.Internal;
@@ -94,19 +95,19 @@ public class UnitTest1_Client : BaseUnit
         // var s = await messageTransport.ReceiveAsync(tcpClient2.GetStream());
         await PipeWrite(pipe.Writer, tcpClient2.GetStream());
         await PipeRead(pipe.Reader);
-        
-        
+
+
         await SendAsync(tcpClient2.GetStream(), new object[]
         {
             "Set"u8.ToArray(),
             "3"u8.ToArray(),
             "2"u8.ToArray()
         });
-         pipe = new Pipe();
+        pipe = new Pipe();
         await PipeWrite(pipe.Writer, tcpClient2.GetStream());
         await PipeRead(pipe.Reader);
-        
-        
+
+
         await SendAsync(tcpClient2.GetStream(), new object[]
         {
             "GEt"u8.ToArray(),
@@ -115,8 +116,8 @@ public class UnitTest1_Client : BaseUnit
         pipe = new Pipe();
         await PipeWrite(pipe.Writer, tcpClient2.GetStream());
         await PipeRead(pipe.Reader);
-        
-        
+
+
         await SendAsync(tcpClient2.GetStream(), new object[]
         {
             "XRead"u8.ToArray(),
@@ -127,7 +128,28 @@ public class UnitTest1_Client : BaseUnit
         pipe = new Pipe();
         await PipeWrite(pipe.Writer, tcpClient2.GetStream());
         await PipeRead(pipe.Reader);
-        
+    }
+
+    [Fact]
+    public async Task Test_RESP_Ping()
+    {
+        TcpClient tcpClient2 = new TcpClient
+        {
+            NoDelay = true //关闭Nagle算法
+        };
+        tcpClient2.Client.Blocking = false;
+        Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        socket.Blocking = false;
+
+        await tcpClient2.ConnectAsync("127.0.0.1", 55003);
+        await socket.ConnectAsync("127.0.0.1", 55003);
+        byte[] Ping = Encoding.UTF8.GetBytes(
+            $"1");
+        await tcpClient2.Client.SendAsync(Ping);
+        var memory = new byte[1024];
+        var len = await tcpClient2.Client.ReceiveAsync(memory);
+        var respon = Encoding.Default.GetString(memory.AsSpan()[..len].ToArray());
+        _testOutputHelper.WriteLine(respon);
     }
 
     /// <summary>

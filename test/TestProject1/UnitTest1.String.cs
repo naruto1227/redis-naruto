@@ -1,8 +1,13 @@
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using RedisNaruto.RedisCommands;
 using Xunit.Abstractions;
 
 namespace TestProject1;
@@ -160,6 +165,7 @@ public partial class UnitTest1 : BaseUnit
         var redisCommand = await GetRedisAsync();
         var res = await redisCommand.GetAsync("sr");
         var res2 = await redisCommand.GetAsync("sr");
+        var res3 = await redisCommand.GetAsync("sr");
         if (!res.IsEmpty())
         {
             _testOutputHelper.WriteLine(res);
@@ -327,10 +333,74 @@ public partial class UnitTest1 : BaseUnit
         }
 
         _testOutputHelper.WriteLine(Encoding.Default.GetBytes(stringBuilder.ToString()).Length.ToString());
-        Stopwatch stopwatch =  Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
         await redisCommand.SetAsync("setbig", stringBuilder.ToString());
         stopwatch.Stop();
         _testOutputHelper.WriteLine(stopwatch.ElapsedMilliseconds.ToString());
+    }
 
+    [Fact]
+    public void TestBit()
+    {
+        var s = Encoding.Default.GetBytes("1");
+
+        var rss = BitConverter.ToInt16(s);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public void TestSpan()
+    {
+        //定义下标
+        var index = 0;
+        using var memoryOwner =
+            MemoryPool<string>.Shared.Rent(2);
+        memoryOwner.Memory.Span[++index] = "1";
+        var s = Encoding.Default.GetBytes("123");
+
+        Span<byte> span = s;
+        span[0] = (byte) '5';
+        ReadOnlySpan<byte> readOnlySpan = span;
+        span[1] = (byte) '5';
+        TcpClient tcpClient = new TcpClient();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public async Task Testcr()
+    {
+        ConcurrentDictionary<IRedisCommand, long> dictionary = new();
+        var redisCommand1= await RedisConnection.CreateAsync(new ConnectionBuilder()
+        {
+            Connection = new string[]
+            {
+                "127.0.0.1:55000"
+            },
+            DataBase = 0,
+            UserName = "default",
+            Password = "redispw",
+            PoolCount = 1
+        });
+        dictionary.TryAdd(redisCommand1, 1);
+        var redisCommand2 = await RedisConnection.CreateAsync(new ConnectionBuilder()
+        {
+            Connection = new string[]
+            {
+                "127.0.0.1:55000"
+            },
+            DataBase = 0,
+            UserName = "default",
+            Password = "redispw",
+            PoolCount = 1
+        });
+        dictionary.TryAdd(redisCommand2, 2);
+        var s = dictionary.Where(a => a.Value == 2).FirstOrDefault();
+        _testOutputHelper.WriteLine(RuntimeHelpers.Equals(redisCommand2, s.Key).ToString());
+        _testOutputHelper.WriteLine(RuntimeHelpers.Equals(redisCommand1, s.Key).ToString());
+        // dictionary.Remove(s.Key, out var ss);
     }
 }

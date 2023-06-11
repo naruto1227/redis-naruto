@@ -27,6 +27,16 @@ public class StringSetTest : BaseTest
     /// 
     /// </summary>
     [Benchmark]
+    public async Task Test_Set_StackExchange()
+    {
+        for (int i = 0; i < N; i++)
+            await RedisConn.StringSetAsync("sr", TestMsg);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Benchmark]
     public async Task Test_Set_FreeRedis()
     {
         for (int i = 0; i < N; i++)
@@ -42,16 +52,6 @@ public class StringSetTest : BaseTest
         }
     }
 
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Benchmark]
-    public async Task Test_Set_StackExchange()
-    {
-        for (int i = 0; i < N; i++)
-            await RedisConn.StringSetAsync("sr", TestMsg);
-    }
 
 
     // //[Benchmark]
