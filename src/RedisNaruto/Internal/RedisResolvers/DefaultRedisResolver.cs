@@ -1,4 +1,6 @@
 using System.IO.Pipelines;
+using System.Net.Sockets;
+using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -28,7 +30,7 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            return await redisClient.ExecuteAsync<T>(command);
+            return await DoWhileAsync(async rc => await rc.ExecuteAsync<T>(command), redisClient);
         }
     }
 
@@ -39,7 +41,7 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            return await redisClient.ExecuteSampleAsync(command);
+            return await DoWhileAsync(async rc => await rc.ExecuteSampleAsync(command), redisClient);
         }
     }
 
@@ -55,6 +57,53 @@ internal class DefaultRedisResolver : IRedisResolver
         foreach (var item in resultList)
         {
             yield return item;
+        }
+    }
+
+    /// <summary>
+    /// 执行
+    /// </summary>
+    /// <param name="func"></param>
+    /// <param name="redisClient"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    protected virtual async Task<T> DoWhileAsync<T>(Func<IRedisClient, Task<T>> func,
+        IRedisClient redisClient)
+    {
+        while (true)
+        {
+            try
+            {
+                //执行命令
+                return await func(redisClient);
+            }
+            catch (Exception e)
+            {
+                //判断异常的类型 是否为网络相关的
+                if (e is not IOException or SocketException)
+                {
+                    throw;
+                }
+
+                //如果是网络问题的话 重置连接，循环判断，直到没有连接可用 抛出异常
+                while (true)
+                {
+                    //重置连接
+                    try
+                    {
+                        await redisClient.ResetSocketAsync();
+                        break;
+                    }
+                    catch (Exception exception)
+                    {
+                        //当没有连接的时候 抛出
+                        if (exception is NotConnectionException)
+                        {
+                            throw;
+                        }
+                    }
+                }
+            }
         }
     }
 }

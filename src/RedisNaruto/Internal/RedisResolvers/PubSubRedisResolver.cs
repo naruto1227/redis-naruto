@@ -21,6 +21,8 @@ internal class PubSubRedisResolver : DefaultRedisResolver
     public async Task InitClientAsync()
     {
         _redisClient = await _redisClientPool.RentAsync();
+        //ping
+        await DoWhileAsync(async rc => await rc.PingAsync(), _redisClient);
     }
 
     public override async Task<T> InvokeAsync<T>(Command command)

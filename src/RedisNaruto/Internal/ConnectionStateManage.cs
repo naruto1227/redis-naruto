@@ -10,7 +10,6 @@ using RedisNaruto.Utils;
 namespace RedisNaruto.Internal;
 
 /// <summary>
-/// todo 移除
 /// 连接状态管理
 /// 所有的连接信息从此对像中获取
 /// </summary>
@@ -113,18 +112,19 @@ internal static class ConnectionStateManage
                     NoDelay = true,
                     ReceiveTimeout = 3000
                 };
+                tcp.Client.Blocking = false;
                 await tcp.ConnectAsync(connectionState.Value.Host, connectionState.Value.Port);
                 TcpClients.TryAdd(connectionState.Key, tcp);
             }
 
             //模拟发送ping消息 如果有回复代表连接正常 没有断开
-            var stream = tcp.GetStream();
+            var scoket = tcp.Client;
             //写入消息
-            await stream.WriteAsync(Ping);
+            await scoket.SendAsync(Ping);
             //读取回复
             using (var memory = MemoryPool<byte>.Shared.Rent(512))
             {
-                var es = await stream.ReadAsync(memory.Memory);
+                var es = await scoket.ReceiveAsync(memory.Memory);
                 //没有任何消息代表失效
                 if (es == 0)
                 {

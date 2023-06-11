@@ -120,6 +120,13 @@ internal interface IRedisClient : IAsyncDisposable
     Task ResetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 重置socket
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task ResetSocketAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 关闭
     /// </summary>
     void Close();

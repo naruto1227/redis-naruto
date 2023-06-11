@@ -12,11 +12,6 @@ namespace RedisNaruto.Internal.RedisClients;
 
 internal class RedisClient : IRedisClient
 {
-    // /// <summary>
-    // /// 授权锁
-    // /// </summary>
-    // private readonly SemaphoreSlim _authLock = new(1);
-
     /// <summary>
     /// tcp 客户端
     /// </summary>
@@ -284,7 +279,6 @@ internal class RedisClient : IRedisClient
     public virtual async Task ResetAsync(CancellationToken cancellationToken = default)
     {
         await ClearMessageAsync(cancellationToken);
-        await HeartbeatCheckAsync();
     }
 
     /// <summary>
@@ -300,53 +294,10 @@ internal class RedisClient : IRedisClient
     }
 
     /// <summary>
-    /// 心跳检查
-    /// todo 加上了这个之后 增加了额外的传输 ，考虑是否需要增加，还是直接在执行命令的时候报错 来重置连接
-    /// </summary>
-    protected virtual async Task HeartbeatCheckAsync()
-    {
-        try
-        {
-            //检查连接是否有效
-            if (await this.PingAsync())
-            {
-                return;
-            }
-        }
-        catch (Exception e)
-        {
-            //判断异常的类型 是否为网络相关的
-            if (e is not IOException or SocketException)
-            {
-                throw;
-            }
-        }
-
-        while (true)
-        {
-            try
-            {
-                await ResetSocketAsync();
-                return;
-            }
-            catch (Exception e)
-            {
-                //当没有连接的时候 抛出
-                if (e is NotConnectionException)
-                {
-                    throw;
-                }
-                //否则 继续查找新的连接
-            }
-        }
-    }
-
-
-    /// <summary>
     /// 重置socket 
     /// </summary>
     /// <param name="cancellationToken"></param>
-    protected virtual async Task ResetSocketAsync(CancellationToken cancellationToken = default)
+    public virtual async Task ResetSocketAsync(CancellationToken cancellationToken = default)
     {
         //设置连接状态无效
         ConnectionStateManage.SetInValid(ConnectionId);
@@ -408,10 +359,9 @@ internal class RedisClient : IRedisClient
         }
 
         var tcp = TcpClient;
-        if (!tcp.Connected)
-        {
-            await ResetSocketAsync();
-        }
+        if (tcp.Connected) return tcp.GetStream();
+        await ResetSocketAsync();
+        tcp = TcpClient;
 
         return tcp.GetStream();
     }

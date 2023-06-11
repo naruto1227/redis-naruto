@@ -26,6 +26,8 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
     public async Task InitClientAsync()
     {
         _redisClient = await _redisClientPool.RentAsync();
+        //ping
+        await DoWhileAsync(async rc => await rc.PingAsync(), _redisClient);
     }
 
     /// <summary>
