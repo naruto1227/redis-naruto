@@ -240,4 +240,26 @@ public class UnitTest1_Client : BaseUnit
         buffer = buffer.Slice(offset + 2, buffer.Length - (offset + 2));
         return true;
     }
+
+    [Fact]
+    public async Task Test_SelectDb()
+    {
+        var redis = await GetRedisAsync();
+        await using (var command = await redis.SelectDbAsync(1))
+        {
+            await command.SetAsync("select_db1", "1");
+        }
+
+        await using (var command = await redis.SelectDbAsync(1))
+        {
+            await command.SetAsync("select_db2", "1");
+        }
+
+        await using (var command = await redis.SelectDbAsync(1))
+        {
+            await command.SetAsync("select_db3", "1");
+        }
+
+        await redis.SetAsync("db1", "1111");
+    }
 }

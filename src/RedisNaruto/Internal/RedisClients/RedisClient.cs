@@ -58,6 +58,11 @@ internal class RedisClient : IRedisClient
     public int CurrentDb { get; private set; }
 
     /// <summary>
+    /// 默认的db
+    /// </summary>
+    protected int DefaultDb { get; private set; }
+
+    /// <summary>
     /// 消息传输
     /// </summary>
     protected static readonly IMessageTransport MessageTransport = new MessageTransport();
@@ -80,6 +85,8 @@ internal class RedisClient : IRedisClient
         ConnectionBuilder = connectionBuilder;
         DisposeTask = disposeTask;
         ConnectionId = connectionId;
+        DefaultDb = connectionBuilder.DataBase;
+        CurrentDb = connectionBuilder.DataBase;
     }
 
     public async ValueTask DisposeAsync()
@@ -278,7 +285,10 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task ResetAsync(CancellationToken cancellationToken = default)
     {
+        //清除消息
         await ClearMessageAsync(cancellationToken);
+        //重置db
+        await ResetDbAsync(cancellationToken);
     }
 
     /// <summary>
@@ -343,6 +353,18 @@ internal class RedisClient : IRedisClient
             {
                 _ = await stream.ReadAsync(memoryOwner.Memory, cancellationToken);
             }
+        }
+    }
+
+    /// <summary>
+    ///  重置db
+    /// </summary>
+    protected virtual async Task ResetDbAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (DefaultDb != CurrentDb)
+        {
+            await SelectDb(DefaultDb);
         }
     }
 

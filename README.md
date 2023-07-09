@@ -28,8 +28,6 @@ c#版本的redis客户端（目前基于使用RESP2协议对接）
 - 为每个数据类型增加对应的模型返回 取消字典的返回（zset）
 - function
 - 客户端缓存
-- TaskCompletionSource 调整pipe
 - RESP3
-- 增加 简易版ioc实现，方便 使用者替换实现
-- 使用asynclocal来实现db的切换
+- 增加 简易版ioc实现，方便 使用者替换实现（暂时不考虑）
 - 配置中增加日志委托处理

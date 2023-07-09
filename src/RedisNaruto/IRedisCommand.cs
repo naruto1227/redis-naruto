@@ -1896,4 +1896,12 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<bool> PfMergeAsync(string[] keys, string destKey, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 切换db
+    /// </summary>
+    /// <param name="db"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ISelectDbRedisCommand> SelectDbAsync(int db, CancellationToken cancellationToken = default);
 }

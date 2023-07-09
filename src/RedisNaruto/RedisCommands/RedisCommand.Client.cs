@@ -1,5 +1,7 @@
+using System.Runtime.Intrinsics.Arm;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Internal.RedisResolvers;
 using RedisNaruto.Models;
 
 namespace RedisNaruto.RedisCommands;
@@ -30,5 +32,24 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Ping, null)) == "PONG";
+    }
+
+    /// <summary>
+    /// 切换db
+    /// </summary>
+    /// <param name="db"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<ISelectDbRedisCommand> SelectDbAsync(int db, CancellationToken cancellationToken = default)
+    {
+        if (db < 0)
+        {
+            throw new ArgumentException(nameof(db));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var selectDbRedisResolver = new SelectDbRedisResolver(_redisClientPool);
+        await selectDbRedisResolver.InitClientAsync(db);
+        return new SelectDbRedisCommand(selectDbRedisResolver, _redisClientPool);
     }
 }
