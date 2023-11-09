@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.ObjectPool;
+using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
@@ -62,15 +64,19 @@ internal static class SentinelConnection
                     cancellationToken);
             }
 
-            //执行获取主节点地址
-            await MessageTransport.SendAsync(sentinelTcpClient.GetStream(), new Command(RedisCommandName.Sentinel, new[]
+            var argv = new object[]
             {
                 "get-master-addr-by-name",
-                // "sentinels",
-                // "master",
                 masterName
-            }));
+            };
+            //执行获取主节点地址
+            await MessageTransport.SendAsync(sentinelTcpClient.GetStream(),
+                new Command(RedisCommandName.Sentinel, argv));
+            new SendSentinelMessageEventData(hostInfo.hostPort.Host, hostInfo.hostPort.Port, RedisCommandName.Sentinel,
+                argv).SendSentinel();
             var result = await MessageTransport.ReceiveMessageAsync(sentinelTcpClient.GetStream());
+            new ReceiveSentinelMessageEventData(hostInfo.hostPort.Host, hostInfo.hostPort.Port,
+                RedisCommandName.Sentinel, argv, result).ReceiveSentinel();
             if (result is List<object> list)
             {
                 return new HostPort(list[0].ToString(), list[1].ToString().ToInt());
@@ -78,6 +84,7 @@ internal static class SentinelConnection
         }
         catch (Exception e)
         {
+            new SentinelMessageErrorEventData(hostInfo.hostPort.Host,hostInfo.hostPort.Port,e).SentinelMessageError();
             Console.WriteLine(e);
             throw;
         }

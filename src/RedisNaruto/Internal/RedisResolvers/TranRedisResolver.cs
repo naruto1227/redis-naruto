@@ -1,4 +1,6 @@
 using System.IO.Pipelines;
+using RedisNaruto.EventDatas;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -32,11 +34,14 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
     public async Task BeginTranAsync()
     {
         await InvokeAsync<RedisValue>(new Command(RedisCommandName.Multi, null));
+        new BeginTranEventData(_redisClient.CurrentHost, _redisClient.CurrentPort).BeginTran();
     }
 
     public override async Task<T> InvokeAsync<T>(Command command)
     {
         _ = await _redisClient.ExecuteSampleAsync(command);
+        if (command.Cmd == RedisCommandName.DisCard)
+            new DiscardTranEventData(_redisClient.CurrentHost, _redisClient.CurrentPort).DiscardTran();
         return default;
     }
 
@@ -50,6 +55,11 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
     {
         //todo 使用迭代器
         var resultList = await _redisClient.ExecuteAsync<List<object>>(command);
+        if (command.Cmd == RedisCommandName.Exec)
+        {
+            new EndTranEventData(_redisClient.CurrentHost, _redisClient.CurrentPort, resultList).EndTran();
+        }
+
         if (resultList == null)
         {
             yield break;

@@ -1,7 +1,9 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
@@ -143,6 +145,7 @@ internal class RedisClient : IRedisClient
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageSendAsync(stream, command);
         var result = await MessageTransport.ReceiveMessageAsync(stream);
+        new WriteRedisNarutoMessageAfterEventData(command.Cmd,command.Args,result).WriteRedisNarutoAfter();
         if (result is T redisValue)
         {
             return redisValue;
@@ -162,7 +165,9 @@ internal class RedisClient : IRedisClient
         var stream =
             await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
         await MessageSendAsync(stream, command);
-        return await MessageTransport.ReceiveSimpleMessageAsync(stream);
+        var result= await MessageTransport.ReceiveSimpleMessageAsync(stream);
+        new WriteRedisNarutoMessageAfterEventData(command.Cmd,command.Args,result).WriteRedisNarutoAfter();
+        return result;
     }
 
     /// <summary>
@@ -298,6 +303,7 @@ internal class RedisClient : IRedisClient
     /// <param name="command"></param>
     private async Task MessageSendAsync(Stream stream, Command command)
     {
+        new WriteRedisNarutoMessageBeforeEventData(command.Cmd,command.Args).WriteRedisNarutoBefore();
         await MessageTransport.SendAsync(stream, command);
         //更新时间
         this.LastDataTime = TimeUtil.GetTimestamp();

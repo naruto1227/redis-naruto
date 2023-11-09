@@ -1,3 +1,5 @@
+using RedisNaruto.EventDatas;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -28,6 +30,7 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
         _redisClient = await _redisClientPool.RentAsync();
         //ping
         await DoWhileAsync(async rc => await rc.PingAsync(), _redisClient);
+        new BeginPipeEventData(_redisClient.CurrentHost,_redisClient.CurrentPort).BeginPipe();
     }
 
     /// <summary>
@@ -57,7 +60,7 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
         {
             result[i] = await _redisClient.ReadMessageAsync();
         }
-
+        new EndPipeEventData(_redisClient.CurrentHost,_redisClient.CurrentPort,result).EndPipe();
         return result;
     }
 

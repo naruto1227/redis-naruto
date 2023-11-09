@@ -48,6 +48,19 @@ public class RedisController : ControllerBase
         };
     }
 
+    [HttpPost("tran")]
+    public async Task<object> TestRedisNaruto_Tran([FromServices] IRedisCommand redisCommand)
+    {
+        await using var command = await redisCommand.MultiAsync();
+        string res = await command.GetAsync("weather");
+       var ss2=await command.ExecAsync();
+        return new SuccessModel
+        {
+            Code = 200,
+            Data = res
+        };
+    }
+
     [HttpPost("stack_exchange")]
     public async Task<object> TestStackExchangeRedis([FromServices] ConnectionMultiplexer connectionMultiplexer)
     {

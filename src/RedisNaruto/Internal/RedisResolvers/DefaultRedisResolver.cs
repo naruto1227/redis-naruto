@@ -1,6 +1,8 @@
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -79,6 +81,7 @@ internal class DefaultRedisResolver : IRedisResolver
             }
             catch (Exception e)
             {
+                new SelectRedisClientErrorEventData(redisClient.CurrentHost,redisClient.CurrentPort,e).SelectRedisClientError();
                 //判断异常的类型 是否为网络相关的
                 if (e is not IOException or SocketException)
                 {
@@ -96,6 +99,7 @@ internal class DefaultRedisResolver : IRedisResolver
                     }
                     catch (Exception exception)
                     {
+                        new SelectRedisClientErrorEventData(redisClient.CurrentHost,redisClient.CurrentPort,exception).SelectRedisClientError();
                         //当没有连接的时候 抛出
                         if (exception is NotConnectionException)
                         {

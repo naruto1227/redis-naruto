@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using RedisNaruto;
 using StackExchange.Redis;
+using test.aspnetcpre;
 
 ThreadPool.SetMaxThreads(200, 200);
 var builder = WebApplication.CreateBuilder(args);
@@ -13,9 +15,10 @@ builder.Services.AddSwaggerGen();
 
 //注册
 var redis = await RedisConnection.CreateAsync(
-    "127.0.0.1:55001,127.0.0.1:55000,servertype=2,username=default,database=5,password=redispw,poolcount=5");
+    "127.0.0.1:55002,127.0.0.1:55000,servertype=2,username=default,database=5,password=redispw,poolcount=5");
 
 builder.Services.AddSingleton(redis);
+DiagnosticListener.AllListeners.Subscribe(new RedisNarutoListenerAdapter_Case1());
 
 
 // ConfigurationOptions configurationOptions = ConfigurationOptions.Parse(

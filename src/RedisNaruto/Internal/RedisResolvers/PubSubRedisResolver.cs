@@ -1,3 +1,5 @@
+using RedisNaruto.EventDatas;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -44,6 +46,7 @@ internal class PubSubRedisResolver : DefaultRedisResolver
     {
         cancellationToken.ThrowIfCancellationRequested();
         var res = await _redisClient.ReadMessageAsync();
+        new ReceiveSubMessageEventData(res).ReceiveSub();
         if (res is T redisValue)
         {
             return redisValue;

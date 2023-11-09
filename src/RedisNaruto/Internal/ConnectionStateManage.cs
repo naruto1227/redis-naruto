@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Net.Sockets;
+using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Utils;
 
@@ -175,6 +177,7 @@ internal static class ConnectionStateManage
             }).FirstOrDefault();
         if (info == null)
         {
+            new SelectRedisClientErrorEventData("",0,null,nameof(NotConnectionException)).SelectRedisClientError();
             throw new NotConnectionException();
         }
 
