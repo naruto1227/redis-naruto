@@ -14,8 +14,4 @@
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="$(RecyclableMemoryStreamVersion)" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Internal\Attributes\" />
-    </ItemGroup>
-
 </Project>

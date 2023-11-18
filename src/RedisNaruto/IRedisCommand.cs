@@ -1,6 +1,8 @@
 using System.Net;
 using System.Runtime.CompilerServices;
 using RedisNaruto.Enums;
+using RedisNaruto.Internal.Attributes;
+using RedisNaruto.Internal.Enums;
 using RedisNaruto.Models;
 using RedisNaruto.RedisCommands;
 using RedisNaruto.RedisCommands.Pipe;
@@ -21,6 +23,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeSpan"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> SetAsync(string key, object value, TimeSpan timeSpan = default,
         CancellationToken cancellationToken = default);
 
@@ -30,6 +33,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="vals"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_1, TimeComplexityEnum.O1)]
     Task<bool> MSetAsync(Dictionary<string, string> vals,
         CancellationToken cancellationToken = default);
 
@@ -40,6 +44,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="value"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> SetNxAsync(string key, object value,
         CancellationToken cancellationToken = default);
 
@@ -49,6 +54,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<long> StrLenAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -60,6 +66,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_0, TimeComplexityEnum.O1)]
     Task<long> SetRangeAsync(string key, long offset, string value,
         CancellationToken cancellationToken = default);
 
@@ -69,6 +76,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<RedisValue> GetAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -77,6 +85,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<TResult> GetAsync<TResult>(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -85,6 +94,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> MGetAsync(string[] key, CancellationToken cancellationToken = default);
 
     ///  <summary>
@@ -94,6 +104,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="val">值</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task AppendAsync(string key, string val, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -103,6 +114,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="val">递减的值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<long> DecrByAsync(string key, long val = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -112,6 +124,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="val"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<long> IncrByAsync(string key, long val = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -120,6 +133,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<RedisValue> GetDelAsync(string key, CancellationToken cancellationToken = default);
 
     ///  <summary>
@@ -129,6 +143,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="expireTime">过期时间</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<RedisValue> GetExAsync(string key, TimeSpan expireTime,
         CancellationToken cancellationToken = default);
 
@@ -140,6 +155,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="cancellationToken"></param>
     ///  <param name="begin">字符串的开始下标</param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_4_0, TimeComplexityEnum.On)]
     Task<string> GetRangeAsync(string key, int begin, int end,
         CancellationToken cancellationToken = default);
 
@@ -150,6 +166,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key2"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.Onm)]
     Task<string> LcsWithStringAsync(string key1, string key2,
         CancellationToken cancellationToken = default);
 
@@ -160,6 +177,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key2"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.Onm)]
     Task<long> LcsWithLenAsync(string key1, string key2, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -169,6 +187,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>收到消息的客户端数量</returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On_m)]
     Task<int> PublishAsync(string topic, string message, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -177,6 +196,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="topics"></param>
     /// <param name="reciveMessage"></param>
     /// <param name="cancellationToken"></param>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task SubscribeAsync(string[] topics, Func<string, string, Task> reciveMessage,
         CancellationToken cancellationToken = default);
 
@@ -185,6 +205,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="topics"></param>
     /// <param name="cancellationToken"></param>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task UnSubscribeAsync(string[] topics,
         CancellationToken cancellationToken = default);
 
@@ -195,18 +216,21 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<long> ClientIdAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> PingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 返回选中数据库的key数量
     /// </summary>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<long> DbSizeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -214,18 +238,21 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="count">返回的条数</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_1_2, TimeComplexityEnum.On)]
     Task<SlowLogModel[]> SlowLogAsync(int count, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 慢日志的条数
     /// </summary>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_1_2, TimeComplexityEnum.O1)]
     Task<int> SlowLogLenAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 清除慢日志记录
     /// </summary>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_1_2, TimeComplexityEnum.On)]
     Task<bool> SlowLogResetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -236,6 +263,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="argvs"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.UnKnow)]
     Task<object> EvalAsync(string script, object[] keys, object[] argvs,
         CancellationToken cancellationToken = default);
 
@@ -247,6 +275,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="argvs"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.UnKnow)]
     Task<object> EvalShaAsync(string sha, object[] keys, object[] argvs,
         CancellationToken cancellationToken = default);
 
@@ -256,6 +285,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="script"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.On)]
     Task<string> ScriptLoadAsync(string script,
         CancellationToken cancellationToken = default);
 
@@ -265,6 +295,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="sha"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.On)]
     Task<List<bool>> ScriptExistsAsync(string[] sha,
         CancellationToken cancellationToken = default);
 
@@ -273,6 +304,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.O1)]
     Task<ITransactionRedisCommand> MultiAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -280,6 +312,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_0, TimeComplexityEnum.UnKnow)]
     Task UnWatchAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -289,6 +322,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_0, TimeComplexityEnum.UnKnow)]
     Task WatchAsync(string[] keys, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -296,6 +330,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.SinceAll, TimeComplexityEnum.UnKnow)]
     Task<IPipeRedisCommand> BeginPipeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -305,6 +340,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="fields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<long> HDelAsync(string key, string[] fields, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -314,6 +350,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="fields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task<long> HSetAsync(string key, Dictionary<string, object> fields,
         CancellationToken cancellationToken = default);
 
@@ -324,6 +361,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="field"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task<bool> HExistsAsync(string key, string field, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -333,6 +371,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="field"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task<string> HGetAsync(string key, string field, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -341,6 +380,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<Dictionary<string, RedisValue>> HGetAllAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -352,6 +392,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="increment">递增的值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task<double> HIncrByAsync(string key, string field, double increment = 1,
         CancellationToken cancellationToken = default);
 
@@ -361,6 +402,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> HKeysAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -370,6 +412,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task<long> HLenAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -380,6 +423,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="fields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> HMGetAsync(string key, string[] fields,
         CancellationToken cancellationToken = default);
 
@@ -390,6 +434,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<Dictionary<string, RedisValue>> HRandFieldWithValueAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -400,6 +445,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> HRandFieldAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -409,6 +455,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> HValsAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -419,6 +466,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="field"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since3_2_0, TimeComplexityEnum.O1)]
     Task<long> HStrLenAsync(string key, string field,
         CancellationToken cancellationToken = default);
 
@@ -430,6 +478,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="field"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.O1)]
     Task<bool> HSetNxAsync(string key, string field, object value,
         CancellationToken cancellationToken = default);
 
@@ -442,6 +491,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_0, TimeComplexityEnum.O1)]
     IAsyncEnumerable<Dictionary<string, RedisValue>> HScanAsync(string key,
         string matchPattern = "*", int count = 10,
         CancellationToken cancellationToken = default);
@@ -453,6 +503,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="value"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> SAddAsync(string key, object[] value,
         CancellationToken cancellationToken = default);
 
@@ -462,6 +513,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<long> SCardAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -472,6 +524,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SDiffAsync(string[] key,
         CancellationToken cancellationToken = default);
 
@@ -483,6 +536,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<int> SDiffStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -492,6 +546,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SInterAsync(string[] key,
         CancellationToken cancellationToken = default);
 
@@ -502,6 +557,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="limit">默认情况下，该命令计算所有给定集的交集的基数。当提供可选LIMIT参数（默认为 0，表示无限制）时，如果交集基数在计算中途达到 limit，则算法将退出并产生 limit 作为基数。这样的实现确保了限制低于实际交集基数的查询的显着加速。</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.Onm)]
     Task<long> SInterCardAsync(string[] key, int limit = 0,
         CancellationToken cancellationToken = default);
 
@@ -513,6 +569,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.Onm)]
     Task<int> SInterStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -523,6 +580,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="member"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> SisMemberAsync(string key, object member,
         CancellationToken cancellationToken = default);
 
@@ -532,6 +590,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SMembersAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -542,6 +601,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="members"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SmisMemberAsync(string key, object[] members,
         CancellationToken cancellationToken = default);
 
@@ -553,6 +613,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="member"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> SMoveAsync(string source, string destination, object member,
         CancellationToken cancellationToken = default);
 
@@ -563,6 +624,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -576,6 +638,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SRandMemberAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -586,6 +649,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="members">需要删除的成员</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<int> SRemAsync(string key, object[] members,
         CancellationToken cancellationToken = default);
 
@@ -595,6 +659,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> SUnionAsync(string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -605,6 +670,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="keys"></param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<int> SUnionStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -618,6 +684,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_0, TimeComplexityEnum.O1)]
     IAsyncEnumerable<List<RedisValue>> SScanAsync(string key,
         string matchPattern = "*", int count = 10,
         CancellationToken cancellationToken = default);
@@ -631,6 +698,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="isBefore">是否插入到目标元素前</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_0, TimeComplexityEnum.On)]
     Task<int> LInsertAsync(string key, object pivot, object element, bool isBefore,
         CancellationToken cancellationToken = default);
 
@@ -642,6 +710,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="element">具体插入的元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<bool> LSetAsync(string key, int index, object element,
         CancellationToken cancellationToken = default);
 
@@ -652,6 +721,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="element">具体插入的元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<int> RPushAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
 
@@ -662,6 +732,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="element">具体插入的元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_0, TimeComplexityEnum.O1)]
     Task<int> RPushxAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
 
@@ -672,6 +743,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="element">具体插入的元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<int> LPushAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
 
@@ -682,6 +754,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="element">具体插入的元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<int> LPushxAsync(string key, object[] element,
         CancellationToken cancellationToken = default);
 
@@ -693,6 +766,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="end">结束的下标 如果为负数的话，代表倒数第几</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<bool> LTrimAsync(string key, int start, int end,
         CancellationToken cancellationToken = default);
 
@@ -704,6 +778,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">返回的消息条数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     IAsyncEnumerable<RedisValue> RPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -715,6 +790,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">返回的消息条数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     IAsyncEnumerable<RedisValue> LPopAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -726,6 +802,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="element">元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On_m)]
     Task<int> LRemAsync(string key, int count, object element,
         CancellationToken cancellationToken = default);
 
@@ -737,6 +814,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="end"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On_m)]
     IAsyncEnumerable<RedisValue> LRangeAsync(string key, int start, int end,
         CancellationToken cancellationToken = default);
 
@@ -746,6 +824,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<int> LLenAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -756,6 +835,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="index">下标</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<RedisValue> LIndexAsync(string key, int index,
         CancellationToken cancellationToken = default);
 
@@ -769,6 +849,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="rank">RANK选项指定要返回的第一个元素的“排名”，以防有多个匹配项。等级 1 表示返回第一个匹配项，等级 2 表示返回第二个匹配项，依此类推</param>
     /// <param name="count">返回count 个 匹配成功的元素</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_0_6, TimeComplexityEnum.On)]
     Task<List<RedisValue>> LPosAsync(string key, object element, int rank = 1, int count = 1, int maxLen = 0,
         CancellationToken cancellationToken = default);
 
@@ -780,6 +861,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="isLeft">是从左还是右 弹出</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.On_m)]
     Task<Dictionary<string, List<RedisValue>>> LmPopAsync(string[] key, bool isLeft = true, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -793,6 +875,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="isLeft">是从左还是右 弹出</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.On_m)]
     Task<Dictionary<string, List<RedisValue>>> BlMPopAsync(string[] key, TimeSpan timeout, bool isLeft = true,
         int count = 1,
         CancellationToken cancellationToken = default);
@@ -806,6 +889,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="destinationKey">目标的key</param>
     /// <param name="isSourceLeft">指定sourceKey 是从左还是从右读取</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<RedisValue> LMoveAsync(string sourceKey, string destinationKey,
         bool isSourceLeft = true, bool isDestinationLeft = true,
         CancellationToken cancellationToken = default);
@@ -821,6 +905,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="isSourceLeft">指定sourceKey 是从左还是从右读取</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<RedisValue> BLMoveAsync(string sourceKey, string destinationKey, TimeSpan timeout,
         bool isSourceLeft = true, bool isDestinationLeft = true,
         CancellationToken cancellationToken = default);
@@ -833,6 +918,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<(string key, RedisValue value)> BRPopAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
 
@@ -845,6 +931,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.On)]
     Task<(string key, RedisValue value)> BLPopAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
 
@@ -859,6 +946,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="isCh">修改返回值，默认返回新添加的元素个数，修改为返回 总的变化的元素个数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.OlogN)]
     Task<int> ZAddAsync(string key, SortedSetAddModel[] values,
         SortedSetAddEnum type = SortedSetAddEnum.No, bool isIncr = false, bool isCh = false,
         CancellationToken cancellationToken = default);
@@ -872,6 +960,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="matchPattern">匹配条件</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_0, TimeComplexityEnum.O1)]
     IAsyncEnumerable<Dictionary<string, RedisValue>> ZScanAsync(string key,
         string matchPattern = "*", int count = 10,
         CancellationToken cancellationToken = default);
@@ -882,6 +971,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.O1)]
     Task<long> ZCardAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -893,6 +983,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="min"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.OlogN)]
     Task<long> ZCountAsync(string key, string min = "-inf", string max = "+inf",
         CancellationToken cancellationToken = default);
 
@@ -903,6 +994,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.OL_N_K_logN)]
     Task<List<RedisValue>> ZDiffAsync(string[] key,
         CancellationToken cancellationToken = default);
 
@@ -913,6 +1005,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.OL_N_K_logN)]
     Task<Dictionary<RedisValue, long>> ZDiffWithScoreAsync(string[] key,
         CancellationToken cancellationToken = default);
 
@@ -924,6 +1017,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.OL_N_K_logN)]
     Task<int> ZDiffStoreAsync(string destination, string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -935,6 +1029,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="member"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.OlogN)]
     Task<int> ZIncrByAsync(string key, object member, int increment = 1,
         CancellationToken cancellationToken = default);
 
@@ -951,6 +1046,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="aggregate">用于指定对于具有相同成员的元素，如何计算它们的分数。默认情况下使用 SUM 计算。其他可选项为 MIN 和 MAX。</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.ONK_O_M_logM)]
     Task<int> ZUnionStoreAsync(string dest, string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
@@ -963,6 +1059,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.ONK_O_M_logM)]
     Task<List<RedisValue>> ZInterAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
@@ -975,6 +1072,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.ONK_O_M_logM)]
     Task<Dictionary<RedisValue, long>> ZInterWithScoreAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
@@ -986,6 +1084,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="limit">默认情况下，该命令计算所有给定集的交集的基数。当提供可选LIMIT参数（默认为 0，表示无限制）时，如果交集基数在计算中途达到 limit，则算法将退出并产生 limit 作为基数。这样的实现确保了限制低于实际交集基数的查询的显着加速。</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.Onm)]
     Task<long> ZInterCardAsync(string[] key, int limit = 0,
         CancellationToken cancellationToken = default);
 
@@ -999,6 +1098,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.ONK_O_M_logM)]
     Task<int> ZInterStoreAsync(string destination, string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
@@ -1011,6 +1111,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.ON_O_M_logM)]
     Task<List<RedisValue>> ZUnionAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
@@ -1023,6 +1124,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="weights"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.ON_O_M_logM)]
     Task<Dictionary<RedisValue, long>> ZUnionWithScoreAsync(string[] keys, long[] weights = null,
         SortedSetAggregateEnum aggregate = SortedSetAggregateEnum.Sum,
         CancellationToken cancellationToken = default);
@@ -1034,6 +1136,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="member">元素</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.O1)]
     Task<long> ZScoreAsync(string key, object member,
         CancellationToken cancellationToken = default);
 
@@ -1045,6 +1148,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="max"></param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_9, TimeComplexityEnum.OlogN)]
     Task<long> ZLexCountAsync(string key, string min = "-", string max = "+",
         CancellationToken cancellationToken = default);
 
@@ -1056,6 +1160,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.ON_O_M_logM)]
     Task<(string key, Dictionary<RedisValue, long> data)> ZMpopAsync(string[] keys,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
@@ -1071,6 +1176,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="count">弹出的数量</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.ON_O_M_logM)]
     Task<(string key, Dictionary<RedisValue, long> data)> BZMpopAsync(string[] keys, TimeSpan timeout,
         SortedSetMinMaxEnum minMax = SortedSetMinMaxEnum.Min,
         long count = 1,
@@ -1084,6 +1190,7 @@ public interface IRedisCommand : IAsyncDisposable
     ///  <param name="members">元素</param>
     ///  <param name="cancellationToken"></param>
     ///  <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> ZMScoreAsync(string key, object[] members,
         CancellationToken cancellationToken = default);
 
@@ -1096,6 +1203,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="count"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.OlogNM)]
     Task<Dictionary<RedisValue, long>> ZPopMaxAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -1107,6 +1215,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="count"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.OlogNM)]
     Task<Dictionary<RedisValue, long>> ZPopMinAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -1119,6 +1228,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> ZRandMemberAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -1131,6 +1241,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<List<SortedSetModel>> ZRandMemberWithScoreAsync(string key, int count = 1,
         CancellationToken cancellationToken = default);
 
@@ -1157,6 +1268,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.OlogN_M)]
     Task<List<RedisValue>> ZRangeAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
@@ -1184,6 +1296,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_5_0, TimeComplexityEnum.OlogN_M)]
     Task<List<SortedSetModel>> ZRangeWithScoreAsync(string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
@@ -1207,6 +1320,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.OlogN_M)]
     Task<int> ZRangeStoreAsync(string dest, string key, string start = "0", string stop = "1",
         bool isLimit = false, int offset = 0, int count = 0,
         SortedSetScoreLexEnum scoreLex = SortedSetScoreLexEnum.Defaut, bool rev = false,
@@ -1219,6 +1333,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="member"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.OlogN)]
     Task<int> ZRankAsync(string key, object member,
         CancellationToken cancellationToken = default);
 
@@ -1229,6 +1344,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="member"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.OlogN)]
     Task<int> ZRevRankAsync(string key, object member,
         CancellationToken cancellationToken = default);
 
@@ -1240,6 +1356,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="member"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.OlogN_M)]
     Task<int> ZRemAsync(string key, object[] member,
         CancellationToken cancellationToken = default);
 
@@ -1251,6 +1368,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="max"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_9, TimeComplexityEnum.OlogN_M)]
     Task<int> ZRemRangeByLexAsync(string key, string min, string max,
         CancellationToken cancellationToken = default);
 
@@ -1262,6 +1380,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="stop"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_0_0, TimeComplexityEnum.OlogN_M)]
     Task<int> ZRemRangeByRankAsync(string key, int start, int stop,
         CancellationToken cancellationToken = default);
 
@@ -1273,6 +1392,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="max"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.OlogN_M)]
     Task<int> ZRemRangeByScoreAsync(string key, string min, string max,
         CancellationToken cancellationToken = default);
 
@@ -1284,6 +1404,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.OlogN)]
     Task<(string key, SortedSetModel data)> BzPopMinAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
 
@@ -1295,6 +1416,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.OlogN)]
     Task<(string key, SortedSetModel data)> BzPopMaxAsync(string[] key, TimeSpan timeout,
         CancellationToken cancellationToken = default);
 
@@ -1306,6 +1428,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="messageId">消息id</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<int> XAckAsync(string key, string group, string[] messageId,
         CancellationToken cancellationToken = default);
 
@@ -1321,6 +1444,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="limitCount"> 6.2.0新增</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<string> XAddAsync(string key, Dictionary<string, object> data, string messageId = "*",
         StreamMaxMinEnum maxMin = StreamMaxMinEnum.Default,
         string threshold = default, long? limitCount = null, bool isCreateStream = true,
@@ -1333,6 +1457,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="messageId">消息id</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<int> XDelAsync(string key, string[] messageId,
         CancellationToken cancellationToken = default);
 
@@ -1342,6 +1467,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<int> XLenAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1354,6 +1480,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="limitCount"> 6.2.0新增</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.On)]
     Task<string> XTrimAsync(string key,
         StreamMaxMinEnum maxMin = StreamMaxMinEnum.Default,
         string threshold = default, long? limitCount = null,
@@ -1369,6 +1496,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="createStream">当流不存在的时候 是否创建一个长度为0 的流</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<bool> XGroupCreateAsync(string key, string groupName, string id = "$",
         bool createStream = false,
         CancellationToken cancellationToken = default);
@@ -1381,6 +1509,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="consumer">消费者名称</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<bool> XGroupCreateConsumerAsync(string key, string groupName, string consumer,
         CancellationToken cancellationToken = default);
 
@@ -1393,6 +1522,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="consumer">消费者名称</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<int> XGroupDeleteConsumerAsync(string key, string groupName, string consumer,
         CancellationToken cancellationToken = default);
 
@@ -1403,6 +1533,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="groupName">指定的组</param>
     /// <param name="cancellationToken"></param>
     /// <returns>消费者在删除之前拥有的待处理消息数</returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.On)]
     Task<int> XGroupDestroyAsync(string key, string groupName,
         CancellationToken cancellationToken = default);
 
@@ -1414,6 +1545,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="id">重新读取 设置0，$为最新的</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<bool> XGroupSetIdAsync(string key, string groupName, string id,
         CancellationToken cancellationToken = default);
 
@@ -1423,6 +1555,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<List<XGroupInfoModel>> XGroupInfoAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1432,6 +1565,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<List<XConsumerInfoModel>> XConsumerInfoAsync(string key, string group,
         CancellationToken cancellationToken = default);
 
@@ -1441,6 +1575,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.O1)]
     Task<XStreamInfoModel> XStreamInfoAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1452,6 +1587,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="blockTime">阻塞时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.UnKnow)]
     Task<List<StreamModel>> XReadAsync(ReadStreamOffset[] streamOffset, int count,
         TimeSpan? blockTime = null,
         CancellationToken cancellationToken = default);
@@ -1465,6 +1601,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">返回的元素数据</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.On)]
     Task<List<StreamEntityModel>> XRangeAsync(string key, string start, string end, int count,
         CancellationToken cancellationToken = default);
 
@@ -1478,6 +1615,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="count">返回的元素数据</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.On)]
     Task<List<StreamEntityModel>> XRevRangeAsync(string key, string start, string end, int count,
         CancellationToken cancellationToken = default);
 
@@ -1492,6 +1630,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="noAck"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.UnKnow)]
     Task<List<StreamModel>> XReadGroupAsync(ReadGroupStreamOffset[] streamOffset, string groupName, string consumerName,
         int count, TimeSpan? blockTime = null, bool noAck = false,
         CancellationToken cancellationToken = default);
@@ -1508,6 +1647,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="idle">根据空闲时间来筛选。6.2.0</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.On)]
     Task<List<XPendingInfoModel>> XPendingAsync(string key, string groupName,
         int count, string consumerName = null, string start = null, string end = null, TimeSpan? idle = null,
         CancellationToken cancellationToken = default);
@@ -1526,6 +1666,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="time">这与 IDLE 相同，但不是相对的毫秒数，而是将空闲时间设置为特定的 Unix 时间（以毫秒为单位）。这对于重写 AOF 文件生成XCLAIM命令很有用。</param>
     /// <param name="retryCount">将重试计数器设置为指定值。每次再次传递消息时，此计数器都会递增。通常XCLAIM不会更改此计数器，它仅在调用 XPENDING 命令时提供给客户端：这样客户端可以检测异常情况，例如在大量传递尝试后由于某种原因从未处理过的消息</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.OlogN)]
     Task<List<StreamEntityModel>> XClaimAsync(string key, string groupName, string consumerName,
         string[] messageIds,
         TimeSpan minIdleTime,
@@ -1548,6 +1689,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="time">这与 IDLE 相同，但不是相对的毫秒数，而是将空闲时间设置为特定的 Unix 时间（以毫秒为单位）。这对于重写 AOF 文件生成XCLAIM命令很有用。</param>
     /// <param name="retryCount">将重试计数器设置为指定值。每次再次传递消息时，此计数器都会递增。通常XCLAIM不会更改此计数器，它仅在调用 XPENDING 命令时提供给客户端：这样客户端可以检测异常情况，例如在大量传递尝试后由于某种原因从未处理过的消息</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since5_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> XClaimWithIdAsync(string key, string groupName, string consumerName,
         string[] messageIds,
         TimeSpan minIdleTime,
@@ -1567,6 +1709,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="minIdleTime">最小的空闲时间</param>
     /// <param name="start">排查开始的id</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<XAutoClaimWithIdModel> XAutoClaimWithIdAsync(string key, string groupName, string consumerName,
         TimeSpan minIdleTime, string start, int count = 100,
         CancellationToken cancellationToken = default);
@@ -1582,6 +1725,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="minIdleTime">最小的空闲时间</param>
     /// <param name="start">排查开始的id</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.O1)]
     Task<XAutoClaimModel> XAutoClaimAsync(string key, string groupName, string consumerName,
         TimeSpan minIdleTime, string start, int count = 100,
         CancellationToken cancellationToken = default);
@@ -1595,6 +1739,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="isReplace">如果true 代表如果目标key存在就先删除key</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since6_2_0, TimeComplexityEnum.On)]
     Task<bool> CopyAsync(string source, string dest, int? db = null, bool isReplace = false,
         CancellationToken cancellationToken = default);
 
@@ -1604,6 +1749,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys">需要删除的key</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<int> DelAsync(string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -1613,6 +1759,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.Onm)]
     Task<RedisValue> DumpAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1625,6 +1772,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <param name="serializedValue">序列化值</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.Onm)]
     Task<bool> ReStoreAsync(string key, object serializedValue, TimeSpan? expire = null,
         bool isReplace = false,
         CancellationToken cancellationToken = default);
@@ -1635,6 +1783,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<int> ExistsAsync(string[] keys,
         CancellationToken cancellationToken = default);
 
@@ -1646,6 +1795,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="expireEnum"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<int> ExpireAsync(string key, TimeSpan expire, ExpireEnum expireEnum = ExpireEnum.No,
         CancellationToken cancellationToken = default);
 
@@ -1657,6 +1807,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="expireEnum"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_2_0, TimeComplexityEnum.O1)]
     Task<int> ExpireAtAsync(string key, long unixTimeSeconds, ExpireEnum expireEnum = ExpireEnum.No,
         CancellationToken cancellationToken = default);
 
@@ -1666,6 +1817,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.O1)]
     Task<long> ExpireTimeAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1674,6 +1826,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="pattern"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.On)]
     Task<List<RedisValue>> KeysAsync(string pattern, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1690,6 +1843,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="authEnum">授权类型</param>
     /// <param name="password">密码</param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.UnKnow)]
     Task<bool> MiGrateAsync(string[] keys, IPEndPoint remoteHost, int todatabase, TimeSpan timeout,
         bool isCopy = false, bool isReplace = false, AuthEnum? authEnum = null, string password = null,
         string userName = null,
@@ -1702,6 +1856,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="db"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> MoveAsync(string key, int db,
         CancellationToken cancellationToken = default);
 
@@ -1712,6 +1867,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_3, TimeComplexityEnum.O1)]
     Task<string> ObjectEncodingAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1721,6 +1877,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since4_0_0, TimeComplexityEnum.O1)]
     Task<int> ObjectFreqAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1730,6 +1887,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_3, TimeComplexityEnum.O1)]
     Task<int> ObjectIdleTimeAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1739,6 +1897,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_3, TimeComplexityEnum.O1)]
     Task<int> ObjectRefCountAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1748,6 +1907,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_2_0, TimeComplexityEnum.O1)]
     Task<bool> PersistAsync(string key,
         CancellationToken cancellationToken = default);
 
@@ -1759,6 +1919,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="expireEnum"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.O1)]
     Task<int> PExpireAsync(string key, TimeSpan expire, ExpireEnum expireEnum = ExpireEnum.No,
         CancellationToken cancellationToken = default);
 
@@ -1770,6 +1931,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="expireEnum"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.O1)]
     Task<int> PExpireAtAsync(string key, long unixTimeMillSeconds,
         ExpireEnum expireEnum = ExpireEnum.No,
         CancellationToken cancellationToken = default);
@@ -1780,6 +1942,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_0_0, TimeComplexityEnum.O1)]
     Task<long> PExpireTimeAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1788,6 +1951,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_6_0, TimeComplexityEnum.O1)]
     Task<long> PTtlAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1796,6 +1960,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<long> TtlAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1803,6 +1968,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<string> RandomKeyAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1812,6 +1978,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="newName">新名称</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> ReNameAsync(string key, string newName, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1821,6 +1988,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="newName">新名称</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<bool> ReNameNxAsync(string key, string newName, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1829,6 +1997,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="key"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<string> TypeAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1837,6 +2006,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since4_0_0, TimeComplexityEnum.O1)]
     Task<int> UnLinkAsync(string[] keys, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1847,6 +2017,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since3_0_0, TimeComplexityEnum.O1)]
     Task<int> WaitAsync(int numreplicas, TimeSpan? timeout = null,
         CancellationToken cancellationToken = default);
 
@@ -1859,6 +2030,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="timeout">超时时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since7_2_0, TimeComplexityEnum.O1)]
     Task<int> WaitAofAsync(int numlocal, int numreplicas, TimeSpan? timeout = null,
         CancellationToken cancellationToken = default);
 
@@ -1868,6 +2040,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since3_2_0, TimeComplexityEnum.On)]
     Task<int> TouchAsync(string[] keys, CancellationToken cancellationToken = default);
 
 
@@ -1878,6 +2051,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="elements">元素</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_9, TimeComplexityEnum.O1)]
     Task<int> PfAddAsync(string key, object[] elements, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1886,6 +2060,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="keys"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_9, TimeComplexityEnum.O1)]
     Task<long> PfCountAsync(string[] keys, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1895,6 +2070,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="destKey">存储的目标key</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since2_8_9, TimeComplexityEnum.On)]
     Task<bool> PfMergeAsync(string[] keys, string destKey, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -1903,5 +2079,6 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="db"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<ISelectDbRedisCommand> SelectDbAsync(int db, CancellationToken cancellationToken = default);
 }
