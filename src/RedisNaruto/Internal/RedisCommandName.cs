@@ -68,10 +68,10 @@ internal static class RedisCommandName
     /// </summary>
     public const string MSet = "MSET";
 
-    /// <summary>
-    /// 如果key不存在才添加
-    /// </summary>
-    public const string SetNx = "SETNX";
+    // /// <summary>
+    // /// 如果key不存在才添加
+    // /// </summary>
+    // public const string SetNx = "SETNX";
 
     /// <summary>
     /// 字符串的长度

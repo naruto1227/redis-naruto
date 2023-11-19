@@ -132,10 +132,10 @@ public partial class UnitTest1 : BaseUnit
     public async Task Test_StringSetNx()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.SetNxAsync("testnx2", "testnx"
+        var res = await redisCommand.SetNxAsync("testnx2", "testnx",TimeSpan.FromMinutes(1)
         );
         _testOutputHelper.WriteLine(res.ToString());
-        res = await redisCommand.SetNxAsync("testnx", "testnx"
+        res = await redisCommand.SetNxAsync("testnx2", "testnx"
         );
         _testOutputHelper.WriteLine(res.ToString());
     }

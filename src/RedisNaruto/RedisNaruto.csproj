@@ -14,4 +14,11 @@
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="$(RecyclableMemoryStreamVersion)" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Internal\Luas\ExtendedLockTime.lua" />
+      <EmbeddedResource Include="Internal\Luas\ExtendedLockTime.lua" />
+      <None Remove="Internal\Luas\UnLock.lua" />
+      <EmbeddedResource Include="Internal\Luas\UnLock.lua" />
+    </ItemGroup>
+
 </Project>

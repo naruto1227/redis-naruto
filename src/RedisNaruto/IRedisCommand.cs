@@ -5,6 +5,7 @@ using RedisNaruto.Internal.Attributes;
 using RedisNaruto.Internal.Enums;
 using RedisNaruto.Models;
 using RedisNaruto.RedisCommands;
+using RedisNaruto.RedisCommands.DistributedLocks;
 using RedisNaruto.RedisCommands.Pipe;
 using RedisNaruto.RedisCommands.Transaction;
 
@@ -46,7 +47,7 @@ public interface IRedisCommand : IAsyncDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
-    Task<bool> SetNxAsync(string key, object value,TimeSpan timeSpan = default,
+    Task<bool> SetNxAsync(string key, object value, TimeSpan timeSpan = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -2082,4 +2083,15 @@ public interface IRedisCommand : IAsyncDisposable
     /// <returns></returns>
     [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
     Task<ISelectDbRedisCommand> SelectDbAsync(int db, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 上锁
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="expireTime"></param>
+    /// <param name="waitTime"></param>
+    /// <param name="delayTime"></param>
+    /// <returns></returns>
+    Task<IDistributedLock> CreateLockAsync(string key, TimeSpan expireTime, TimeSpan waitTime,
+        TimeSpan delayTime);
 }

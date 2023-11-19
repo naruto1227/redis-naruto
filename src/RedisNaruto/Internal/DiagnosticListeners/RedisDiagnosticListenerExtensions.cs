@@ -28,6 +28,9 @@ public static class RedisDiagnosticListenerExtensions
     public const string SendSentinelMessage = Prefix + nameof(SendSentinel);
     public const string ReceiveSentinelMessage = Prefix + nameof(ReceiveSentinel);
     public const string SentinelError= Prefix + nameof(SentinelMessageError);
+    public const string LockCreateSuccessMessage= Prefix + nameof(LockCreateSuccess);
+    public const string LockCreateFailMessage= Prefix + nameof(LockCreateFail);
+    public const string LockCreateExceptionMessage= Prefix + nameof(LockCreateException);
     
     /// <summary>
     /// 写入缓存前
@@ -152,5 +155,34 @@ public static class RedisDiagnosticListenerExtensions
         if (!DiagnosticListener.IsEnabled(SentinelError)) return;
         DiagnosticListener.Write(SentinelError, eventData);
     }
-    
+    /// <summary>
+    ///创建锁成功
+    /// </summary>
+    /// <param name="eventData"></param>
+    /// <returns></returns>
+    internal static void LockCreateSuccess(this LockCreateSuccessEventData eventData)
+    {
+        if (!DiagnosticListener.IsEnabled(LockCreateSuccessMessage)) return;
+        DiagnosticListener.Write(LockCreateSuccessMessage, eventData);
+    }
+    /// <summary>
+    ///获取锁失败
+    /// </summary>
+    /// <param name="eventData"></param>
+    /// <returns></returns>
+    internal static void LockCreateFail(this LockCreateFailEventData eventData)
+    {
+        if (!DiagnosticListener.IsEnabled(LockCreateFailMessage)) return;
+        DiagnosticListener.Write(LockCreateFailMessage, eventData);
+    }
+    /// <summary>
+    ///锁报错
+    /// </summary>
+    /// <param name="eventData"></param>
+    /// <returns></returns>
+    internal static void LockCreateException(this LockCreateExceptionEventData eventData)
+    {
+        if (!DiagnosticListener.IsEnabled(LockCreateExceptionMessage)) return;
+        DiagnosticListener.Write(LockCreateExceptionMessage, eventData);
+    }
 }
