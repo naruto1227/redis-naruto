@@ -39,23 +39,33 @@ public partial class RedisCommand : IRedisCommand
             await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Set, argv));
         return result == "OK";
     }
+
     /// <summary>
     /// 如果key不存在 才添加值
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
+    /// <param name="timeSpan">过期时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<bool> SetNxAsync(string key, object value,
+    public async Task<bool> SetNxAsync(string key, object value, TimeSpan timeSpan = default,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        //
         var result =
-            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.SetNx, new[]
-            {
-                key, value
-            }));
-        return result == "1";
+            await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Set, timeSpan == default
+                ? new[]
+                {
+                    key, value, "NX"
+                }
+                : new[]
+                {
+                    key, value, "NX",
+                    "PX",
+                    timeSpan == default ? 0 : timeSpan.TotalMilliseconds
+                }));
+        return result == "OK";
     }
 
     /// <summary>

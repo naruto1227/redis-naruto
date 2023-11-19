@@ -42,10 +42,11 @@ public interface IRedisCommand : IAsyncDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
+    /// <param name="timeSpan">过期时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [RedisIdentification(RedisVersionSupportEnum.Since1_0_0, TimeComplexityEnum.O1)]
-    Task<bool> SetNxAsync(string key, object value,
+    Task<bool> SetNxAsync(string key, object value,TimeSpan timeSpan = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
