@@ -182,8 +182,8 @@ public class DistributedLock : IDistributedLock
                 return;
             }
             Status = LockStatusEnum.UnLock;
-            //取消锁
-            await ReleaseAsync().ConfigureAwait(false);
+            // //取消锁
+            // await ReleaseAsync().ConfigureAwait(false);
 
             await Task.Delay(TimeSpan.FromMilliseconds(50)).ConfigureAwait(false);
         }
