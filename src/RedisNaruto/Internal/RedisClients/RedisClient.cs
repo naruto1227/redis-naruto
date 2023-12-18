@@ -272,7 +272,8 @@ internal class RedisClient : IRedisClient
             return (await InvokeAsync(
                        new Command(RedisCommandName.Auth, new object[] {userName, password}))) ==
                    "OK";
-        return (await InvokeAsync(new Command(RedisCommandName.Auth, default))) == "OK";
+        //没有密码的模式就不需要执行AUTH命令
+        return true;
     }
 
     /// <summary>
