@@ -83,6 +83,10 @@ public sealed class ConnectionBuilder
     public int Idle { get; set; }
 
     /// <summary>
+    /// 是否启用RESP3
+    /// </summary>
+    public bool RESP3 { get; set; }
+    /// <summary>
     /// 拆分的分隔符
     /// </summary>
     private const char SplitChar = ',';
@@ -141,6 +145,9 @@ public sealed class ConnectionBuilder
                         break;
                     case "idle":
                         this.Idle = ele[1].ToInt();
+                        break;
+                    case "resp3":
+                        this.RESP3 = ele[1].ToBool();
                         break;
                 }
             }

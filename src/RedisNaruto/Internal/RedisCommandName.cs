@@ -134,6 +134,13 @@ internal static class RedisCommandName
     /// </summary>
     public const string Ping = "PING";
 
+
+    /// <summary>
+    /// HELLO
+    /// 客户端发送 HELLO 命令来选择协议版本。   同时可以进行登录
+    /// </summary>
+    public const string Hello = "HELLO";
+
     #endregion
 
     #region server

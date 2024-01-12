@@ -22,7 +22,16 @@ internal static class StringUtil
         int.TryParse(source, out var res);
         return res;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    public static bool ToBool(this string source)
+    {
+        bool.TryParse(source, out var res);
+        return res;
+    }
     /// <summary>
     /// 
     /// </summary>
