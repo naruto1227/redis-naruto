@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Numerics;
 using System.Text;
 using RedisNaruto.Internal.Enums;
 using RedisNaruto.Utils;
@@ -95,23 +96,7 @@ public readonly struct RedisValue
             return _memory.Length;
         }
     }
-
-    /// <summary>
-    /// 转换RESP3的 maps
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public Dictionary<string, object> ToMaps()
-    {
-        //判断消息类型是否为maps
-        if (MessageType != RespMessageTypeEnum.Maps)
-        {
-            throw new InvalidOperationException("当前消息类型不是Maps");
-        }
-
-        return (Dictionary<string, object>) _objectValue;
-    }
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -159,6 +144,56 @@ public readonly struct RedisValue
     }
 
 
+    #region RESP3 
+
+    //todo 使用同一套api 进行调用  内部进行判断是RESP2 还是RESP3 ，对于调用感无感
+    /// <summary>
+    /// 转换RESP3的 maps
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public Dictionary<string, object> Resp3ToMaps()
+    {
+        //
+        if (MessageType != RespMessageTypeEnum.Maps)
+        {
+            throw new InvalidOperationException($"当前消息类型不是{nameof(RespMessageTypeEnum.Maps)}");
+        }
+
+        return (Dictionary<string, object>) _objectValue;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public double Resp3ToDouble()
+    {
+        //
+        if (MessageType != RespMessageTypeEnum.Double)
+        {
+            throw new InvalidOperationException($"当前消息类型不是{nameof(RespMessageTypeEnum.Double)}");
+        }
+
+        return (double) _objectValue;
+    }
+
+    /// <summary>
+    /// 获取大数
+    /// </summary>
+    /// <returns></returns>
+    public BigInteger Resp3ToBigInteger()
+    {
+        //
+        if (MessageType != RespMessageTypeEnum.BigNumber)
+        {
+            throw new InvalidOperationException($"当前消息类型不是{nameof(RespMessageTypeEnum.BigNumber)}");
+        }
+
+        return (BigInteger) _objectValue;
+    }
+    #endregion
     /// <summary>
     /// 
     /// </summary>

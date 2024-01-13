@@ -8,6 +8,7 @@ using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
 using System;
+using System.Numerics;
 using RedisNaruto.Internal.Enums;
 
 namespace RedisNaruto.Internal.Message;
@@ -213,6 +214,20 @@ internal class MessageTransport : IMessageTransport
                 var maps = await ReadMapsAsync(stream);
                 return new RedisValue(maps, RespMessageTypeEnum.Maps);
             }
+            case RespMessage.Nulls:
+            {
+                return new RedisValue(null, RespMessageTypeEnum.Nulls);
+            }
+            case RespMessage.Double:
+            {
+                var dd= ReadDouble(stream);
+                return new RedisValue(dd,RespMessageTypeEnum.Double);
+            }
+            case RespMessage.BigNumber:
+            {
+                var dd= ReadBigNumber(stream);
+                return new RedisValue(dd,RespMessageTypeEnum.BigNumber);
+            }
             default:
             {
                 //错误
@@ -268,10 +283,20 @@ internal class MessageTransport : IMessageTransport
                 var maps = await ReadMapsAsync(stream);
                 return new RedisValue(maps, RespMessageTypeEnum.Maps);
             }
-            // case RespMessage.ArrayString:
-            // {
-            //     
-            // }
+            case RespMessage.Nulls:
+            {
+                return new RedisValue(null, RespMessageTypeEnum.Nulls);
+            }
+            case RespMessage.Double:
+            {
+                var dd= ReadDouble(stream);
+                return new RedisValue(dd,RespMessageTypeEnum.Double);
+            }
+            case RespMessage.BigNumber:
+            {
+                var dd= ReadBigNumber(stream);
+                return new RedisValue(dd,RespMessageTypeEnum.BigNumber);
+            }
             default:
             {
                 //错误
@@ -332,6 +357,7 @@ internal class MessageTransport : IMessageTransport
                     resultList.Add(result);
                     break;
                 }
+                //todo 对接RESP3
                 case RespMessage.Error:
                 {
                     //todo 错误消息
@@ -366,6 +392,47 @@ internal class MessageTransport : IMessageTransport
         return maps;
     }
 
+    /// <summary>
+    /// 读取双精度
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private double ReadDouble(Stream stream)
+    {
+        string dd = ReadLine(stream,RespMessageTypeEnum.Double);
+        switch (dd)
+        {
+            case "inf":
+                //正无穷
+                return double.PositiveInfinity;
+            case "-inf":
+                //负无穷
+                return double.NegativeInfinity;
+        }
+
+        if (double.TryParse(dd,out var dr))
+        {
+            return dr;
+        }
+
+        throw new InvalidCastException($"无法将【{dd}】转换成双精度double");
+    }
+    /// <summary>
+    /// 读取大数
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private BigInteger ReadBigNumber(Stream stream)
+    {
+        string dd = ReadLine(stream,RespMessageTypeEnum.BigNumber);
+      
+        if (BigInteger.TryParse(dd,out var dr))
+        {
+            return dr;
+        }
+
+        throw new InvalidCastException($"无法将【{dd}】转换成BigInteger");
+    }
     #endregion
 
     /// <summary>
