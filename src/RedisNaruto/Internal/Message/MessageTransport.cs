@@ -8,6 +8,7 @@ using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
 using System;
+using RedisNaruto.Internal.Enums;
 
 namespace RedisNaruto.Internal.Message;
 
@@ -186,17 +187,17 @@ internal class MessageTransport : IMessageTransport
             case RespMessage.SimpleString:
             case RespMessage.Number:
             {
-                return ReadLine(stream);
+                return ReadLine(stream,RespMessageTypeEnum.Number);
             }
             //数组
             case RespMessage.ArrayString:
             {
-                var result = await ReadMLineAsync(stream, ReadLine(stream));
+                var result = await ReadMLineAsync(stream, ReadLine(stream,RespMessageTypeEnum.ArrayString));
                 return result;
             }
             case RespMessage.BulkStrings:
             {
-                int offset = ReadLine(stream);
+                int offset = ReadLine(stream,RespMessageTypeEnum.Number);
                 //如果为null
                 if (offset == -1)
                 {
@@ -205,12 +206,17 @@ internal class MessageTransport : IMessageTransport
 
                 var result = await ReadBlobLineAsync(stream, offset);
 
-                return new RedisValue(result);
+                return new RedisValue(result,RespMessageTypeEnum.BulkStrings);
+            }
+            case RespMessage.Maps:
+            {
+                var maps = await ReadMapsAsync(stream);
+                return new RedisValue(maps, RespMessageTypeEnum.Maps);
             }
             default:
             {
                 //错误
-                throw new RedisExecException(ReadLine(stream).ToString());
+                throw new RedisExecException(ReadLine(stream,RespMessageTypeEnum.Error).ToString());
             }
         }
     }
@@ -231,13 +237,13 @@ internal class MessageTransport : IMessageTransport
             case RespMessage.SimpleString:
             case RespMessage.Number:
             {
-                return ReadLine(stream);
+                return ReadLine(stream,RespMessageTypeEnum.Number);
             }
             //数组
             case RespMessage.ArrayString:
             {
-                var length = ReadLine(stream);
-                if (length == -1)
+                var length = ReadLine(stream,RespMessageTypeEnum.Number);
+                if (length <=0)
                 {
                     return RedisValue.Null();
                 }
@@ -246,7 +252,7 @@ internal class MessageTransport : IMessageTransport
             }
             case RespMessage.BulkStrings:
             {
-                int offset = ReadLine(stream);
+                int offset = ReadLine(stream,RespMessageTypeEnum.Number);
                 //如果为null
                 if (offset == -1)
                 {
@@ -255,12 +261,21 @@ internal class MessageTransport : IMessageTransport
 
                 var result = await ReadBlobLineAsync(stream, offset);
 
-                return new RedisValue(result);
+                return new RedisValue(result,RespMessageTypeEnum.BulkStrings);
             }
+            case RespMessage.Maps:
+            {
+                var maps = await ReadMapsAsync(stream);
+                return new RedisValue(maps, RespMessageTypeEnum.Maps);
+            }
+            // case RespMessage.ArrayString:
+            // {
+            //     
+            // }
             default:
             {
                 //错误
-                throw new RedisExecException(ReadLine(stream).ToString());
+                throw new RedisExecException(ReadLine(stream,RespMessageTypeEnum.Error).ToString());
             }
         }
     }
@@ -290,13 +305,13 @@ internal class MessageTransport : IMessageTransport
                 case RespMessage.Number:
                 {
                     //读取剩下的消息
-                    resultList.Add(ReadLine(stream));
+                    resultList.Add(ReadLine(stream,RespMessageTypeEnum.Number));
                     break;
                 }
                 case RespMessage.BulkStrings:
                 {
                     //获取字符串的长度
-                    int offset = ReadLine(stream);
+                    int offset = ReadLine(stream,RespMessageTypeEnum.Number);
                     //如果为null
                     if (offset == -1)
                     {
@@ -306,21 +321,21 @@ internal class MessageTransport : IMessageTransport
 
                     //读取结果
                     var result = await ReadBlobLineAsync(stream, offset);
-                    resultList.Add(new RedisValue(result));
+                    resultList.Add(new RedisValue(result,RespMessageTypeEnum.BulkStrings));
                     break;
                 }
                 //数组
                 case RespMessage.ArrayString:
                 {
                     //读取剩下的消息
-                    var result = await ReadMLineAsync(stream, ReadLine(stream));
+                    var result = await ReadMLineAsync(stream, ReadLine(stream,RespMessageTypeEnum.ArrayString));
                     resultList.Add(result);
                     break;
                 }
                 case RespMessage.Error:
                 {
                     //todo 错误消息
-                    resultList.Add(ReadLine(stream));
+                    resultList.Add(ReadLine(stream,RespMessageTypeEnum.Error));
                     break;
                 }
             }
@@ -328,6 +343,30 @@ internal class MessageTransport : IMessageTransport
 
         return resultList;
     }
+
+    #region RESP3
+
+    /// <summary>
+    /// 读取key value 键值对结构
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private async Task<Dictionary<string,object>> ReadMapsAsync(Stream stream)
+    {
+        //读取长度
+        var length = ReadLine(stream,RespMessageTypeEnum.Number);
+        var maps = new Dictionary<string, object>(length);
+        for (var i = 0; i < length; i++)
+        {
+            var key =await ReceiveSimpleMessageAsync(stream);
+            var value=await ReceiveMessageAsync(stream);
+            maps.Add(key,value);
+        }
+
+        return maps;
+    }
+
+    #endregion
 
     /// <summary>
     /// 读取指定长度数据
@@ -395,7 +434,7 @@ internal class MessageTransport : IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private static RedisValue ReadLine(Stream stream)
+    private static RedisValue ReadLine(Stream stream,RespMessageTypeEnum respMessageType)
     {
         //从内存池中租借
         using var ms = MemoryStreamManager.GetStream();
@@ -417,6 +456,6 @@ internal class MessageTransport : IMessageTransport
                 ms.WriteByte((byte) msg);
         }
 
-        return new RedisValue(ms.ToArray());
+        return new RedisValue(ms.ToArray(),respMessageType);
     }
 }

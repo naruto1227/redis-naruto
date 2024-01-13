@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Text;
+using RedisNaruto.Internal.Enums;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto.Models;
@@ -10,15 +11,38 @@ namespace RedisNaruto.Models;
 public readonly struct RedisValue
 {
     /// <summary>
+    /// 消息类型
+    /// </summary>
+    public RespMessageTypeEnum MessageType { get; }
+
+    /// <summary>
     /// 回复的值
     /// </summary>
     private readonly ReadOnlyMemory<byte> _memory;
 
-    public RedisValue(ReadOnlyMemory<byte> memory) : this(memory, false)
+    /// <summary>
+    /// 
+    /// </summary>
+    private readonly object _objectValue;
+
+    #region ctor
+
+    internal RedisValue(ReadOnlyMemory<byte> memory, RespMessageTypeEnum respMessageType) : this(memory)
     {
+        this.MessageType = respMessageType;
+    }
+    /// <summary>
+    /// RESP3 使用的
+    /// </summary>
+    /// <param name="objectValue"></param>
+    /// <param name="respMessageType"></param>
+    internal RedisValue(object objectValue, RespMessageTypeEnum respMessageType)
+    {
+        this._objectValue = objectValue;
+        this.MessageType = respMessageType;
     }
 
-    public RedisValue(byte[] bytes)
+    private RedisValue(byte[] bytes)
     {
         _memory = new ReadOnlyMemory<byte>(bytes);
     }
@@ -27,12 +51,13 @@ public readonly struct RedisValue
     /// 
     /// </summary>
     /// <param name="memory"></param>
-    /// <param name="isError"></param>
-    private RedisValue(ReadOnlyMemory<byte> memory, bool isError)
+    private RedisValue(ReadOnlyMemory<byte> memory)
     {
         _memory = memory;
-        IsError = isError;
     }
+
+    #endregion
+
 
     internal static RedisValue Null() => new();
 
@@ -41,18 +66,18 @@ public readonly struct RedisValue
     /// </summary>
     /// <param name="memory"></param>
     /// <returns></returns>
-    internal static RedisValue Error(ReadOnlyMemory<byte> memory) => new RedisValue(memory, true);
+    internal static RedisValue Error(ReadOnlyMemory<byte> memory) => new(memory, RespMessageTypeEnum.Error);
 
     /// <summary>
     /// 判断返回值是否为空
     /// </summary>
     /// <returns></returns>
-    public bool IsEmpty() => _memory.IsEmpty;
+    public bool IsEmpty() => MessageType == RespMessageTypeEnum.Default;
 
     /// <summary>
     /// 是否错误
     /// </summary>
-    public bool IsError { get; }
+    public bool IsError => MessageType == RespMessageTypeEnum.Error;
 
     /// <summary>
     /// 数据长度
@@ -61,6 +86,7 @@ public readonly struct RedisValue
     {
         get
         {
+            //todo 判断没有写入的时候 _memory 是否为空
             if (_memory.IsEmpty)
             {
                 return 0;
@@ -68,6 +94,22 @@ public readonly struct RedisValue
 
             return _memory.Length;
         }
+    }
+
+    /// <summary>
+    /// 转换RESP3的 maps
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public Dictionary<string, object> ToMaps()
+    {
+        //判断消息类型是否为maps
+        if (MessageType != RespMessageTypeEnum.Maps)
+        {
+            throw new InvalidOperationException("当前消息类型不是Maps");
+        }
+
+        return (Dictionary<string, object>) _objectValue;
     }
 
     /// <summary>
@@ -146,9 +188,9 @@ public readonly struct RedisValue
     public static implicit operator string(RedisValue value) => value.ToString();
 
     // public static explicit operator RedisValue(string value) => new RedisValue(Encoding.Default.GetBytes(value));
-    public static implicit operator RedisValue(string value) => new RedisValue(value.ToEncode());
+    public static implicit operator RedisValue(string value) => new(value.ToEncode());
 
-    public static implicit operator RedisValue(byte[] value) => new RedisValue(value);
+    public static implicit operator RedisValue(byte[] value) => new(value);
 
     public static implicit operator RedisValue(int value) =>
         new RedisValue(value.ToEncode());

@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.DiagnosticListeners;
+using RedisNaruto.Internal.Enums;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
@@ -163,7 +164,7 @@ internal class RedisClient : IRedisClient
     public virtual async Task<RedisValue> ExecuteSampleAsync(Command command)
     {
         var stream =
-            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
+            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
         await MessageSendAsync(stream, command);
         var result= await MessageTransport.ReceiveSimpleMessageAsync(stream);
         new WriteRedisNarutoMessageAfterEventData(command.Cmd,command.Args,result).WriteRedisNarutoAfter();
@@ -265,6 +266,9 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task<bool> AuthAsync(string userName, string password)
     {
+        //  判断是否启用RESp3
+        if (ConnectionBuilder.RESP3)
+            return await SwitchRESP3(userName, password);
         if (userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
             return (await InvokeAsync(new Command(RedisCommandName.Auth, new object[] {password}))) ==
                    "OK";
@@ -274,6 +278,39 @@ internal class RedisClient : IRedisClient
                    "OK";
         //没有密码的模式就不需要执行AUTH命令
         return true;
+    }
+
+    /// <summary>
+    /// 切换到RESP3
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    private async Task<bool> SwitchRESP3(string userName, string password)
+    {
+        //无密码模式
+        if (userName.IsNullOrWhiteSpace() &&  password.IsNullOrWhiteSpace())
+        {
+            return true;
+        }
+        RedisValue redisValue = default;
+        if (userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
+            redisValue =(await InvokeAsync(new Command(RedisCommandName.Hello, new object[]
+                   {
+                       3,
+                       RedisCommandName.Auth,
+                       password
+                   })));
+        if (!userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
+            redisValue =(await InvokeAsync(
+                       new Command(RedisCommandName.Hello, new object[]
+                       {
+                           3,
+                           RedisCommandName.Auth,
+                           userName, 
+                           password
+                       })));
+        return redisValue!=default && redisValue.MessageType==RespMessageTypeEnum.Maps;
     }
 
     /// <summary>
