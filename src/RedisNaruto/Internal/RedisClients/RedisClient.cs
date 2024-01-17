@@ -1,10 +1,7 @@
 using System.Buffers;
-using System.IO.Pipelines;
 using System.Net.Sockets;
 using RedisNaruto.EventDatas;
-using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.DiagnosticListeners;
-using RedisNaruto.Internal.Enums;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Message;
 using RedisNaruto.Internal.Models;
@@ -143,10 +140,11 @@ internal class RedisClient : IRedisClient
     public virtual async Task<T> ExecuteAsync<T>(Command command)
     {
         var stream =
-            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
+            await GetStreamAsync(
+                command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
         await MessageSendAsync(stream, command);
         var result = await MessageTransport.ReceiveMessageAsync(stream);
-        new WriteRedisNarutoMessageAfterEventData(command.Cmd,command.Args,result).WriteRedisNarutoAfter();
+        new WriteRedisNarutoMessageAfterEventData(command.Cmd, command.Args, result).WriteRedisNarutoAfter();
         if (result is T redisValue)
         {
             return redisValue;
@@ -164,10 +162,11 @@ internal class RedisClient : IRedisClient
     public virtual async Task<RedisValue> ExecuteSampleAsync(Command command)
     {
         var stream =
-            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
+            await GetStreamAsync(
+                command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
         await MessageSendAsync(stream, command);
-        var result= await MessageTransport.ReceiveSimpleMessageAsync(stream);
-        new WriteRedisNarutoMessageAfterEventData(command.Cmd,command.Args,result).WriteRedisNarutoAfter();
+        var result = await MessageTransport.ReceiveSimpleMessageAsync(stream);
+        new WriteRedisNarutoMessageAfterEventData(command.Cmd, command.Args, result).WriteRedisNarutoAfter();
         return result;
     }
 
@@ -180,7 +179,8 @@ internal class RedisClient : IRedisClient
     public virtual async Task ExecuteNoResultAsync(Command command)
     {
         var stream =
-            await GetStreamAsync(command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit);
+            await GetStreamAsync(
+                command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
         await MessageSendAsync(stream, command);
     }
 
@@ -242,10 +242,6 @@ internal class RedisClient : IRedisClient
     {
         if (!IsAuth)
         {
-            // using (await _authLock.LockAsync())
-            // {
-            //     if (!IsAuth)
-            //     {
             IsAuth = await AuthAsync(ConnectionBuilder.UserName, ConnectionBuilder.Password);
             if (!IsAuth)
             {
@@ -253,8 +249,6 @@ internal class RedisClient : IRedisClient
             }
 
             await SelectDb(ConnectionBuilder.DataBase);
-            // }
-            // }
         }
     }
 
@@ -289,28 +283,31 @@ internal class RedisClient : IRedisClient
     private async Task<bool> SwitchRESP3(string userName, string password)
     {
         //无密码模式
-        if (userName.IsNullOrWhiteSpace() &&  password.IsNullOrWhiteSpace())
+        if (userName.IsNullOrWhiteSpace() && password.IsNullOrWhiteSpace())
         {
             return true;
         }
-        RedisValue redisValue = default;
+
+        Dictionary<string, object> redisValue = default;
         if (userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
-            redisValue =(await InvokeAsync(new Command(RedisCommandName.Hello, new object[]
-                   {
-                       3,
-                       RedisCommandName.Auth,
-                       password
-                   })));
+            redisValue = (await ExecuteAsync<Dictionary<string, object>>(new Command(RedisCommandName.Hello,
+                new object[]
+                {
+                    3,
+                    RedisCommandName.Auth,
+                    password
+                })));
         if (!userName.IsNullOrWhiteSpace() && !password.IsNullOrWhiteSpace())
-            redisValue =(await InvokeAsync(
-                       new Command(RedisCommandName.Hello, new object[]
-                       {
-                           3,
-                           RedisCommandName.Auth,
-                           userName, 
-                           password
-                       })));
-        return redisValue!=default && redisValue.MessageType==RespMessageTypeEnum.Maps;
+            redisValue = (await ExecuteAsync<Dictionary<string, object>>(
+                new Command(RedisCommandName.Hello, new object[]
+                {
+                    3,
+                    RedisCommandName.Auth,
+                    userName,
+                    password
+                })));
+        //todo 记录服务器的信息
+        return redisValue != default && redisValue.Count > 0;
     }
 
     /// <summary>
@@ -341,7 +338,7 @@ internal class RedisClient : IRedisClient
     /// <param name="command"></param>
     private async Task MessageSendAsync(Stream stream, Command command)
     {
-        new WriteRedisNarutoMessageBeforeEventData(command.Cmd,command.Args).WriteRedisNarutoBefore();
+        new WriteRedisNarutoMessageBeforeEventData(command.Cmd, command.Args).WriteRedisNarutoBefore();
         await MessageTransport.SendAsync(stream, command);
         //更新时间
         this.LastDataTime = TimeUtil.GetTimestamp();

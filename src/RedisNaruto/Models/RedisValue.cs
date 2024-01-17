@@ -21,25 +21,10 @@ public readonly struct RedisValue
     /// </summary>
     private readonly ReadOnlyMemory<byte> _memory;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly object _objectValue;
-
     #region ctor
 
     internal RedisValue(ReadOnlyMemory<byte> memory, RespMessageTypeEnum respMessageType) : this(memory)
     {
-        this.MessageType = respMessageType;
-    }
-    /// <summary>
-    /// RESP3 使用的
-    /// </summary>
-    /// <param name="objectValue"></param>
-    /// <param name="respMessageType"></param>
-    internal RedisValue(object objectValue, RespMessageTypeEnum respMessageType)
-    {
-        this._objectValue = objectValue;
         this.MessageType = respMessageType;
     }
 
@@ -63,22 +48,15 @@ public readonly struct RedisValue
     internal static RedisValue Null() => new();
 
     /// <summary>
-    /// 错误消息
-    /// </summary>
-    /// <param name="memory"></param>
-    /// <returns></returns>
-    internal static RedisValue Error(ReadOnlyMemory<byte> memory) => new(memory, RespMessageTypeEnum.Error);
-
-    /// <summary>
     /// 判断返回值是否为空
     /// </summary>
     /// <returns></returns>
-    public bool IsEmpty() => MessageType == RespMessageTypeEnum.Default;
+    public bool IsEmpty() => Length <= 0;
 
     /// <summary>
     /// 是否错误
     /// </summary>
-    public bool IsError => MessageType == RespMessageTypeEnum.Error;
+    public bool IsError => MessageType is RespMessageTypeEnum.Error or RespMessageTypeEnum.BuckError;
 
     /// <summary>
     /// 数据长度
@@ -87,7 +65,6 @@ public readonly struct RedisValue
     {
         get
         {
-            //todo 判断没有写入的时候 _memory 是否为空
             if (_memory.IsEmpty)
             {
                 return 0;
@@ -96,7 +73,7 @@ public readonly struct RedisValue
             return _memory.Length;
         }
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -113,15 +90,6 @@ public readonly struct RedisValue
     /// </summary>
     public ReadOnlyMemory<byte> ToReadOnlyMemory => _memory;
 
-    public int ToInt()
-    {
-        return IsEmpty() ? 0 : ToString().ToInt();
-    }
-
-    public long ToLong()
-    {
-        return IsEmpty() ? 0L : ToString().ToLong();
-    }
 
     public static bool operator ==(RedisValue x, string y)
     {
@@ -143,24 +111,14 @@ public readonly struct RedisValue
         return x.ToString() != y;
     }
 
-
-    #region RESP3 
-
-    //todo 使用同一套api 进行调用  内部进行判断是RESP2 还是RESP3 ，对于调用感无感
-    /// <summary>
-    /// 转换RESP3的 maps
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public Dictionary<string, object> Resp3ToMaps()
+    public int ToInt()
     {
-        //
-        if (MessageType != RespMessageTypeEnum.Maps)
-        {
-            throw new InvalidOperationException($"当前消息类型不是{nameof(RespMessageTypeEnum.Maps)}");
-        }
+        return IsEmpty() ? 0 : ToString().ToInt();
+    }
 
-        return (Dictionary<string, object>) _objectValue;
+    public long ToLong()
+    {
+        return IsEmpty() ? 0L : ToString().ToLong();
     }
 
     /// <summary>
@@ -168,32 +126,79 @@ public readonly struct RedisValue
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public double Resp3ToDouble()
+    public double ToDouble()
     {
-        //
-        if (MessageType != RespMessageTypeEnum.Double)
+        if (IsEmpty())
         {
-            throw new InvalidOperationException($"当前消息类型不是{nameof(RespMessageTypeEnum.Double)}");
+            return 0;
         }
 
-        return (double) _objectValue;
+        var dd = ToString();
+        //判断是否为resp3中返回的
+        return dd switch
+        {
+            "inf" =>
+                //正无穷
+                double.PositiveInfinity,
+            "-inf" =>
+                //负无穷
+                double.NegativeInfinity,
+            _ => dd.Todouble()
+        };
     }
 
     /// <summary>
     /// 获取大数
     /// </summary>
     /// <returns></returns>
-    public BigInteger Resp3ToBigInteger()
+    public BigInteger ToBigInteger()
     {
-        //
-        if (MessageType != RespMessageTypeEnum.BigNumber)
+        return IsEmpty() ? 0 : ToString().ToBigInteger();
+    }
+
+    /// <summary>
+    /// 读取bool
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    public bool ToBool()
+    {
+        if (IsEmpty())
         {
-            throw new InvalidOperationException($"当前消息类型不是{nameof(RespMessageTypeEnum.BigNumber)}");
+            return default;
         }
 
-        return (BigInteger) _objectValue;
+        string dd = ToString();
+
+        return dd switch
+        {
+            "t" => true,
+            "f" => false,
+            _ => dd.ToBool()
+        };
     }
-    #endregion
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator BigInteger(RedisValue value) => value.ToBigInteger();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator bool(RedisValue value) => value.ToBool();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static implicit operator double(RedisValue value) => value.ToDouble();
+
     /// <summary>
     /// 
     /// </summary>
@@ -228,8 +233,8 @@ public readonly struct RedisValue
     public static implicit operator RedisValue(byte[] value) => new(value);
 
     public static implicit operator RedisValue(int value) =>
-        new RedisValue(value.ToEncode());
+        new(value.ToEncode());
 
     public static implicit operator RedisValue(long value) =>
-        new RedisValue(value.ToEncode());
+        new(value.ToEncode());
 }

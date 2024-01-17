@@ -1,14 +1,10 @@
 using System.Buffers;
-using System.IO.Pipelines;
-using System.Text;
 using Microsoft.IO;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.Serialization;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
-using System;
-using System.Numerics;
 using RedisNaruto.Internal.Enums;
 
 namespace RedisNaruto.Internal.Message;
@@ -185,7 +181,7 @@ internal class MessageTransport : IMessageTransport
     /// <returns></returns>
     public async Task<object> ReceiveMessageAsync(Stream stream)
     {
-        return await ReceiveMessageCoreAsync(stream,true);
+        return await ReceiveMessageCoreAsync(stream, true);
     }
 
     /// <summary>
@@ -212,9 +208,13 @@ internal class MessageTransport : IMessageTransport
             RespMessage.Bool => ReadBool(stream),
             RespMessage.Sets => await ReadMLineAsync(stream, ReadLine(stream, RespMessageTypeEnum.Sets)),
             RespMessage.Pushs => await ReadMLineAsync(stream, ReadLine(stream, RespMessageTypeEnum.Pushs)),
-            RespMessage.BuckError =>isThrowException? throw new RedisExecException(await ReadBulkErrorAsync(stream)):await ReadBulkErrorAsync(stream),
+            RespMessage.BuckError => isThrowException
+                ? throw new RedisExecException(await ReadBulkErrorAsync(stream))
+                : await ReadBulkErrorAsync(stream),
             //错误
-            _ =>isThrowException? throw new RedisExecException(ReadLine(stream, RespMessageTypeEnum.Error).ToString()):ReadLine(stream, RespMessageTypeEnum.Error)
+            _ => isThrowException
+                ? throw new RedisExecException(ReadLine(stream, RespMessageTypeEnum.Error).ToString())
+                : ReadLine(stream, RespMessageTypeEnum.Error)
         };
     }
 
@@ -278,7 +278,7 @@ internal class MessageTransport : IMessageTransport
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    private async Task<RedisValue> ReadMapsAsync(Stream stream)
+    private async Task<Dictionary<string, object>> ReadMapsAsync(Stream stream)
     {
         //读取长度
         var length = ReadLine(stream, RespMessageTypeEnum.Number);
@@ -290,7 +290,7 @@ internal class MessageTransport : IMessageTransport
             maps.Add(key, value);
         }
 
-        return new RedisValue(maps, RespMessageTypeEnum.Maps);
+        return maps;
     }
 
     /// <summary>
@@ -300,23 +300,7 @@ internal class MessageTransport : IMessageTransport
     /// <returns></returns>
     private RedisValue ReadDouble(Stream stream)
     {
-        string dd = ReadLine(stream, RespMessageTypeEnum.Double);
-        switch (dd)
-        {
-            case "inf":
-                //正无穷
-                return new RedisValue(double.PositiveInfinity, RespMessageTypeEnum.Double);
-            case "-inf":
-                //负无穷
-                return new RedisValue(double.NegativeInfinity, RespMessageTypeEnum.Double);
-        }
-
-        if (double.TryParse(dd, out var dr))
-        {
-            return new RedisValue(dr, RespMessageTypeEnum.Double);
-        }
-
-        throw new InvalidCastException($"无法将【{dd}】转换成双精度double");
+        return ReadLine(stream, RespMessageTypeEnum.Double);
     }
 
     /// <summary>
@@ -326,14 +310,7 @@ internal class MessageTransport : IMessageTransport
     /// <returns></returns>
     private RedisValue ReadBigNumber(Stream stream)
     {
-        string dd = ReadLine(stream, RespMessageTypeEnum.BigNumber);
-
-        if (BigInteger.TryParse(dd, out var dr))
-        {
-            return new RedisValue(dr, RespMessageTypeEnum.BigNumber);
-        }
-
-        throw new InvalidCastException($"无法将【{dd}】转换成BigInteger");
+        return ReadLine(stream, RespMessageTypeEnum.BigNumber);
     }
 
     /// <summary>
@@ -343,16 +320,9 @@ internal class MessageTransport : IMessageTransport
     /// <returns></returns>
     private RedisValue ReadBool(Stream stream)
     {
-        string dd = ReadLine(stream, RespMessageTypeEnum.Bool);
-        bool res = false;
-        res = dd switch
-        {
-            "t" => true,
-            "f" => false,
-            _ => throw new InvalidCastException($"无法将【{dd}】转换成bool")
-        };
-        return new RedisValue(res, RespMessageTypeEnum.Bool);
+        return ReadLine(stream, RespMessageTypeEnum.Bool);
     }
+
     /// <summary>
     /// 读取空
     /// </summary>
@@ -360,9 +330,10 @@ internal class MessageTransport : IMessageTransport
     /// <returns></returns>
     private RedisValue ReadNulls(Stream stream)
     {
-        _ =ReadLine(stream, RespMessageTypeEnum.Nulls);
+        _ = ReadLine(stream, RespMessageTypeEnum.Nulls);
         return new RedisValue(null, RespMessageTypeEnum.Nulls);
     }
+
     /// <summary>
     /// 读取错误
     /// </summary>
