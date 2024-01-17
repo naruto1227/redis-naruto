@@ -44,7 +44,7 @@ internal class MessageTransport : IMessageTransport
     protected static readonly ISerializer Serializer = new Serializer();
 
     #region 发送消息
-    
+
     /// <summary>
     /// 发送消息
     ///使用MemoryStream 进行消息的缓冲再发送优点，一 是为了当数据过大进行分块处理，二 利于扩展，如果进行二次修改的话
@@ -175,7 +175,7 @@ internal class MessageTransport : IMessageTransport
             }
         }
     }
-    
+
     #endregion
 
     /// <summary>
@@ -184,6 +184,17 @@ internal class MessageTransport : IMessageTransport
     /// <param name="stream"></param>
     /// <returns></returns>
     public async Task<object> ReceiveMessageAsync(Stream stream)
+    {
+        return await ReceiveMessageCoreAsync(stream,true);
+    }
+
+    /// <summary>
+    /// 转换消息
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="isThrowException">是否抛出错误</param>
+    /// <returns></returns>
+    private async Task<object> ReceiveMessageCoreAsync(Stream stream, bool isThrowException)
     {
         //获取首位的 符号 判断消息回复类型
         var head = ReadFirstChar(stream);
@@ -195,15 +206,15 @@ internal class MessageTransport : IMessageTransport
             RespMessage.ArrayString => await ReadMLineAsync(stream, ReadLine(stream, RespMessageTypeEnum.ArrayString)),
             RespMessage.BulkStrings => await ReadBulkStringsAsync(stream),
             RespMessage.Maps => await ReadMapsAsync(stream),
-            RespMessage.Nulls => new RedisValue(null, RespMessageTypeEnum.Nulls),
+            RespMessage.Nulls => ReadNulls(stream),
             RespMessage.Double => ReadDouble(stream),
             RespMessage.BigNumber => ReadBigNumber(stream),
             RespMessage.Bool => ReadBool(stream),
             RespMessage.Sets => await ReadMLineAsync(stream, ReadLine(stream, RespMessageTypeEnum.Sets)),
             RespMessage.Pushs => await ReadMLineAsync(stream, ReadLine(stream, RespMessageTypeEnum.Pushs)),
-            RespMessage.BuckError => throw new RedisExecException(await ReadBulkErrorAsync(stream)),
+            RespMessage.BuckError =>isThrowException? throw new RedisExecException(await ReadBulkErrorAsync(stream)):await ReadBulkErrorAsync(stream),
             //错误
-            _ => throw new RedisExecException(ReadLine(stream, RespMessageTypeEnum.Error).ToString())
+            _ =>isThrowException? throw new RedisExecException(ReadLine(stream, RespMessageTypeEnum.Error).ToString()):ReadLine(stream, RespMessageTypeEnum.Error)
         };
     }
 
@@ -217,65 +228,6 @@ internal class MessageTransport : IMessageTransport
     public async Task<RedisValue> ReceiveSimpleMessageAsync(Stream stream)
     {
         return (RedisValue) await ReceiveMessageAsync(stream);
-        // //获取首位的 符号 判断消息回复类型
-        // var head = ReadFirstChar(stream);
-        // switch (head)
-        // {
-        //     case RespMessage.SimpleString:
-        //     case RespMessage.Number:
-        //     {
-        //         return ReadLine(stream, RespMessageTypeEnum.Number);
-        //     }
-        //     //数组
-        //     case RespMessage.ArrayString:
-        //     {
-        //         var length = ReadLine(stream, RespMessageTypeEnum.Number);
-        //         if (length <= 0)
-        //         {
-        //             return RedisValue.Null();
-        //         }
-        //
-        //         throw new NotSupportedException(nameof(RespMessage.ArrayString));
-        //     }
-        //     case RespMessage.BulkStrings:
-        //     {
-        //         int offset = ReadLine(stream, RespMessageTypeEnum.Number);
-        //         //如果为null
-        //         if (offset == -1)
-        //         {
-        //             return RedisValue.Null();
-        //         }
-        //
-        //         var result = await ReadBlobLineAsync(stream, offset);
-        //
-        //         return new RedisValue(result, RespMessageTypeEnum.BulkStrings);
-        //     }
-        //     case RespMessage.Maps:
-        //     {
-        //         return await ReadMapsAsync(stream);
-        //     }
-        //     case RespMessage.Nulls:
-        //     {
-        //         return new RedisValue(null, RespMessageTypeEnum.Nulls);
-        //     }
-        //     case RespMessage.Double:
-        //     {
-        //         return ReadDouble(stream);
-        //     }
-        //     case RespMessage.BigNumber:
-        //     {
-        //         return ReadBigNumber(stream);
-        //     }
-        //     case RespMessage.BuckError:
-        //     {
-        //         return ReadBigNumber(stream);
-        //     }
-        //     default:
-        //     {
-        //         //错误
-        //         throw new RedisExecException(ReadLine(stream, RespMessageTypeEnum.Error).ToString());
-        //     }
-        // }
     }
 
     /// <summary>
@@ -284,7 +236,7 @@ internal class MessageTransport : IMessageTransport
     /// <param name="stream"></param>
     /// <param name="length"></param>
     /// <returns></returns>
-    private static async Task<List<object>> ReadMLineAsync(Stream stream, int length)
+    private async Task<List<object>> ReadMLineAsync(Stream stream, int length)
     {
         //读取数组的长度
         if (length == -1)
@@ -295,49 +247,7 @@ internal class MessageTransport : IMessageTransport
         List<object> resultList = new();
         for (var i = 0; i < length; i++)
         {
-            //获取 符号 判断消息类型 是字符串还是 数字 
-            var head = ReadFirstChar(stream);
-            switch (head)
-            {
-                case RespMessage.SimpleString:
-                case RespMessage.Number:
-                {
-                    //读取剩下的消息
-                    resultList.Add(ReadLine(stream, RespMessageTypeEnum.Number));
-                    break;
-                }
-                case RespMessage.BulkStrings:
-                {
-                    //获取字符串的长度
-                    int offset = ReadLine(stream, RespMessageTypeEnum.Number);
-                    //如果为null
-                    if (offset == -1)
-                    {
-                        resultList.Add(RedisValue.Null());
-                        break;
-                    }
-
-                    //读取结果
-                    var result = await ReadBlobLineAsync(stream, offset);
-                    resultList.Add(new RedisValue(result, RespMessageTypeEnum.BulkStrings));
-                    break;
-                }
-                //数组
-                case RespMessage.ArrayString:
-                {
-                    //读取剩下的消息
-                    var result = await ReadMLineAsync(stream, ReadLine(stream, RespMessageTypeEnum.ArrayString));
-                    resultList.Add(result);
-                    break;
-                }
-                //todo 对接RESP3
-                case RespMessage.Error:
-                {
-                    //todo 错误消息
-                    resultList.Add(ReadLine(stream, RespMessageTypeEnum.Error));
-                    break;
-                }
-            }
+            resultList.Add(await ReceiveMessageCoreAsync(stream, false));
         }
 
         return resultList;
@@ -443,7 +353,16 @@ internal class MessageTransport : IMessageTransport
         };
         return new RedisValue(res, RespMessageTypeEnum.Bool);
     }
-
+    /// <summary>
+    /// 读取空
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private RedisValue ReadNulls(Stream stream)
+    {
+        _ =ReadLine(stream, RespMessageTypeEnum.Nulls);
+        return new RedisValue(null, RespMessageTypeEnum.Nulls);
+    }
     /// <summary>
     /// 读取错误
     /// </summary>
