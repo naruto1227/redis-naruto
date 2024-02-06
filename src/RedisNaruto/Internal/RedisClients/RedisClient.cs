@@ -124,11 +124,16 @@ internal class RedisClient : IRedisClient
     /// <returns></returns>
     public virtual async Task InitClientIdAsync()
     {
-        //todo 待处理
-        // ClientId = await InvokeAsync(new Command(RedisCommandName.Client, new[]
-        // {
-        //     "ID"
-        // }));
+        //判断登录 这样如果是resp3 协议的话，后面就不需要多走一份代码
+        await AuthAsync();
+        if (string.IsNullOrWhiteSpace(ClientId) || ClientId.Length<=0)
+        {
+            //todo 待处理 需要根据是否要开启 客户端缓存来判断
+            ClientId = await InvokeAsync(new Command(RedisCommandName.Client, new[]
+            {
+                "ID"
+            }));
+        }
     }
 
     /// <summary>
@@ -307,7 +312,13 @@ internal class RedisClient : IRedisClient
                     password
                 })));
         //todo 记录服务器的信息
-        return redisValue != default && redisValue.Count > 0;
+        var res= redisValue != default && redisValue.Count > 0;
+        //resp3 协议中有返回clientid信息，这里直接获取赋值
+        if (res && redisValue.TryGetValue("id",out var clientId))
+        {
+            ClientId = clientId.ToString();
+        }
+        return res;
     }
 
     /// <summary>
