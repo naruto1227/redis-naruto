@@ -13,11 +13,9 @@ namespace TestProject1;
 /// </summary>
 public class UnitTest_Sentinel : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_Sentinel(ITestOutputHelper testOutputHelper)
+    public UnitTest_Sentinel(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

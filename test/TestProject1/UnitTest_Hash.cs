@@ -4,11 +4,9 @@ namespace TestProject1;
 
 public class UnitTest_Hash : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_Hash(ITestOutputHelper testOutputHelper)
+    public UnitTest_Hash(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

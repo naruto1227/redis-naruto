@@ -6,11 +6,9 @@ namespace TestProject1;
 
 public class UnitTest_Generic : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
-
-    public UnitTest_Generic(ITestOutputHelper testOutputHelper)
+  
+    public UnitTest_Generic(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

@@ -6,11 +6,9 @@ namespace TestProject1;
 
 public class UnitTest_Pipe : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_Pipe(ITestOutputHelper testOutputHelper)
+    public UnitTest_Pipe(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
 
