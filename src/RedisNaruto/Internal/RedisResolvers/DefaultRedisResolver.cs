@@ -145,6 +145,7 @@ internal class DefaultRedisResolver : IRedisResolver
                 //判断异常的类型 是否为网络相关的
                 if (e is not IOException or SocketException)
                 {
+                    new SelectRedisClientErrorEventData(redisClient.CurrentHost,redisClient.CurrentPort,e).SelectRedisClientError();
                     throw;
                 }
 
