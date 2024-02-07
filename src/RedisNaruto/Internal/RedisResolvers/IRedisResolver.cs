@@ -1,3 +1,4 @@
+using RedisNaruto.EventDatas;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 
@@ -22,4 +23,21 @@ internal interface IRedisResolver
     /// 执行
     /// </summary>
     IAsyncEnumerable<object> InvokeMoreResultAsync(Command command);
+
+    /// <summary>
+    /// 注册拦截器
+    /// </summary>
+    public void RegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler);
+    /// <summary>
+    /// 注册拦截器
+    /// </summary>
+    public void RegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler);
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    public void UnRegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler);
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    public void UnRegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler);
 }

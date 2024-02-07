@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using RedisNaruto.Enums;
 using RedisNaruto.Internal.Cluster;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Sentinels;

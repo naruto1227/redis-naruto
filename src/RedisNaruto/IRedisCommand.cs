@@ -1,6 +1,7 @@
 using System.Net;
 using System.Runtime.CompilerServices;
 using RedisNaruto.Enums;
+using RedisNaruto.EventDatas;
 using RedisNaruto.Internal.Attributes;
 using RedisNaruto.Internal.Enums;
 using RedisNaruto.Models;
@@ -16,6 +17,31 @@ namespace RedisNaruto;
 /// </summary>
 public interface IRedisCommand : IAsyncDisposable
 {
+    #region Interceptor
+
+    /// <summary>
+    /// 注册命令拦截
+    /// </summary>
+    /// <param name="eventHandler"></param>
+    void RegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler);
+    /// <summary>
+    /// 注册命令拦截
+    /// </summary>
+    /// <param name="eventHandler"></param>
+    void RegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler);
+
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    void UnRegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler);
+
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    void UnRegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler);
+
+    #endregion
+
     /// <summary>
     /// 存储字符串
     /// </summary>

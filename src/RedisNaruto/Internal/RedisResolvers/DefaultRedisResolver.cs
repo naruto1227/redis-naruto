@@ -15,6 +15,15 @@ namespace RedisNaruto.Internal.RedisResolvers;
 internal class DefaultRedisResolver : IRedisResolver
 {
     /// <summary>
+    /// 
+    /// </summary>
+    public event EventHandler<InterceptorCommandBeforeEventArgs> CommandBefore;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public event EventHandler<InterceptorCommandAfterEventArgs> CommandAfter;
+    /// <summary>
     /// 连接
     /// </summary>
     protected readonly IRedisClientPool _redisClientPool;
@@ -32,7 +41,18 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            return await DoWhileAsync(async rc => await rc.ExecuteAsync<T>(command), redisClient);
+            CommandBefore?.Invoke(null,new InterceptorCommandBeforeEventArgs(command));
+            try
+            {
+                var res= await DoWhileAsync(async rc => await rc.ExecuteAsync<T>(command), redisClient);
+                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,res));
+                return res;
+            }
+            catch (Exception e)
+            {
+                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,null,e));
+                throw;
+            }
         }
     }
 
@@ -43,7 +63,18 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            return await DoWhileAsync(async rc => await rc.ExecuteSampleAsync(command), redisClient);
+            CommandBefore?.Invoke(null,new InterceptorCommandBeforeEventArgs(command));
+            try
+            {
+                var res= await DoWhileAsync(async rc => await rc.ExecuteSampleAsync(command), redisClient);
+                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,res));
+                return res;
+            }
+            catch (Exception e)
+            {
+                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,null,e));
+                throw;
+            }
         }
     }
 
@@ -61,6 +92,35 @@ internal class DefaultRedisResolver : IRedisResolver
             yield return item;
         }
     }
+
+
+    #region Interceptor
+
+    public void RegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler)
+    {
+        CommandBefore += eventHandler;
+    }
+    public void RegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler)
+    {
+        CommandAfter += eventHandler;
+    }
+
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    public void UnRegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler)
+    {
+        CommandBefore -= eventHandler;
+    }
+
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    public void UnRegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler)
+    {
+        CommandAfter -= eventHandler;
+    }
+    #endregion
 
     /// <summary>
     /// 执行
