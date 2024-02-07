@@ -17,7 +17,10 @@ internal class MessageTransport : IMessageTransport
     /// <summary>
     /// 池
     /// </summary>
-    protected static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+    protected static readonly RecyclableMemoryStreamManager MemoryStreamManager = new(new RecyclableMemoryStreamManager.Options()
+    {
+        BlockSize = 1024*10
+    });
 
     /// <summary>
     /// 换行
