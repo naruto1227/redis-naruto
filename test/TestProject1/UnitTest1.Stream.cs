@@ -14,7 +14,7 @@ public class UnitTest1_Stream : BaseUnit
         _testOutputHelper = testOutputHelper;
     }
 
-    [Fact]
+    [Fact,TestPriority(2)]
     public async Task Test_XAddAsync()
     {
         var redisCommand = await GetRedisAsync();
@@ -29,14 +29,19 @@ public class UnitTest1_Stream : BaseUnit
         }
     }
 
-    [Fact]
+    [Fact,TestPriority(0)]
     public async Task Test_XGroupCreateAsync()
     {
         var redisCommand = await GetRedisAsync();
-        var res = await redisCommand.XGroupCreateAsync("stream", "testgroup2");
+       var groupList=await redisCommand.XGroupInfoAsync("stream");
+        if (groupList is  {Count:>0} && groupList.Any(a=>a.Name=="testgroup"))
+        {
+            return;
+        }
+        var res = await redisCommand.XGroupCreateAsync("stream", "testgroup");
     }
 
-    [Fact]
+    [Fact,TestPriority(1)]
     public async Task Test_XGroupCreateConsumerAsync()
     {
         var redisCommand = await GetRedisAsync();

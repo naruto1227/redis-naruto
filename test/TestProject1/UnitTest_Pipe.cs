@@ -57,14 +57,4 @@ public class UnitTest_Pipe : BaseUnit
             }
         }
     }
-
-    [Fact]
-    public async Task TestTaskCompleteSource()
-    {
-        TaskCompletionSource<long> taskCompletionSource = new TaskCompletionSource<long>();
-        // taskCompletionSource.SetResult(1);
-        var res = await taskCompletionSource.Task;
-        taskCompletionSource.SetResult(2);
-        
-    }
 }

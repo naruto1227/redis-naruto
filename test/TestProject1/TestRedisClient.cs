@@ -6,6 +6,7 @@ using FreeRedis;
 using Microsoft.Extensions.ObjectPool;
 using StackExchange.Redis;
 using Xunit.Abstractions;
+using RedisProtocol = FreeRedis.RedisProtocol;
 
 namespace TestProject1;
 

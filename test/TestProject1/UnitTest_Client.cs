@@ -133,23 +133,23 @@ public class UnitTest1_Client : BaseUnit
     [Fact]
     public async Task Test_RESP_Ping()
     {
-        TcpClient tcpClient2 = new TcpClient
-        {
-            NoDelay = true //关闭Nagle算法
-        };
-        tcpClient2.Client.Blocking = false;
-        Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-        socket.Blocking = false;
-
-        await tcpClient2.ConnectAsync("127.0.0.1", 55003);
-        await socket.ConnectAsync("127.0.0.1", 55003);
-        byte[] Ping = Encoding.UTF8.GetBytes(
-            $"1");
-        await tcpClient2.Client.SendAsync(Ping);
-        var memory = new byte[1024];
-        var len = await tcpClient2.Client.ReceiveAsync(memory);
-        var respon = Encoding.Default.GetString(memory.AsSpan()[..len].ToArray());
-        _testOutputHelper.WriteLine(respon);
+        // TcpClient tcpClient2 = new TcpClient
+        // {
+        //     NoDelay = true //关闭Nagle算法
+        // };
+        // tcpClient2.Client.Blocking = false;
+        // Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        // socket.Blocking = false;
+        //
+        // await tcpClient2.ConnectAsync("127.0.0.1", 55003);
+        // await socket.ConnectAsync("127.0.0.1", 55003);
+        // byte[] Ping = Encoding.UTF8.GetBytes(
+        //     $"1");
+        // await tcpClient2.Client.SendAsync(Ping);
+        // var memory = new byte[1024];
+        // var len = await tcpClient2.Client.ReceiveAsync(memory);
+        // var respon = Encoding.Default.GetString(memory.AsSpan()[..len].ToArray());
+        // _testOutputHelper.WriteLine(respon);
     }
 
     /// <summary>

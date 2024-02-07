@@ -20,18 +20,19 @@ public class UnitTest_Tran : BaseUnit
     public async Task TranExec()
     {
         var redisCommand = await GetRedisAsync();
+        await redisCommand.SetAsync("transtr11", "1");
         await using var tran = await redisCommand.MultiAsync();
         var res1 = await tran.SetAsync("transtr11", "1");
         var res2 = await tran.SetAsync("transtr21", 2);
         var res3 = await tran.GetAsync("transtr");
         var res4 = await tran.MGetAsync(new[]
         {
-            "transtr", "transtr2"
+            "transtr11", "transtr21"
         });
         var res = await tran.ExecAsync();
         foreach (var item in res)
         {
-            _testOutputHelper.WriteLine(JsonSerializer.Serialize(item));
+            _testOutputHelper.WriteLine(item.ToString());
         }
     }
 

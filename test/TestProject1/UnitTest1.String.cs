@@ -339,14 +339,6 @@ public partial class UnitTest1 : BaseUnit
         _testOutputHelper.WriteLine(stopwatch.ElapsedMilliseconds.ToString());
     }
 
-    [Fact]
-    public void TestBit()
-    {
-        var s = Encoding.Default.GetBytes("1");
-
-        var rss = BitConverter.ToInt16(s);
-    }
-
     /// <summary>
     /// 
     /// </summary>

@@ -40,7 +40,8 @@ public class BaseTest
             UserName = "default",
             DataBase = 4,
             Password = "redispw",
-            PoolCount = 10
+            PoolCount = 10,
+            RESP3 = true
         }).GetAwaiter().GetResult();
 
         ConfigurationOptions configurationOptions = ConfigurationOptions.Parse(
@@ -59,7 +60,7 @@ public class BaseTest
         FullRedis = new FullRedis("127.0.0.1:55000", "redispw", 3);
 
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 1000; i++)
         {
             stringBuilder.Append("测试");
         }

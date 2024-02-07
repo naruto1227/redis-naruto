@@ -1,3 +1,4 @@
+using System.Numerics;
 using Xunit.Abstractions;
 
 namespace TestProject1;
@@ -28,7 +29,7 @@ public class UnitTest_Lock : BaseUnit
                 _testOutputHelper.WriteLine("失败");
             }
         }
-        await using (var lockRes = await redisCommand.CreateLockAsync("lock_test", TimeSpan.FromMinutes(1),
+        await using (var lockRes = await redisCommand.CreateLockAsync("{lock}_test", TimeSpan.FromMinutes(1),
                          TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(3)))
         {
             if (lockRes.IsAcquired)
