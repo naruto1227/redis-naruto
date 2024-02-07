@@ -109,12 +109,19 @@ internal sealed class RedisClientPool : IRedisClientPool
     {
         for (var i = 0; i < _minCount; i++)
         {
-            var redisClient = await _redisClientFactory.GetAsync(async (client) => { await this.ReturnAsync(client); });
-            //递增
-            Interlocked.Increment(ref _totalClientCount);
-            //递增
-            Interlocked.Increment(ref _freeCount);
-            _freeClients.Enqueue(redisClient);
+            try
+            {
+                var redisClient = await _redisClientFactory.GetAsync(async (client) => { await this.ReturnAsync(client); });
+                //递增
+                Interlocked.Increment(ref _totalClientCount);
+                //递增
+                Interlocked.Increment(ref _freeCount);
+                _freeClients.Enqueue(redisClient);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
     }
 

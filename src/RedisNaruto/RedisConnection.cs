@@ -25,6 +25,6 @@ public static class RedisConnection
     /// <returns></returns>
     public static async Task<IRedisCommand> CreateAsync(string config)
     {
-        return await CreateAsync(new ConnectionBuilder().Parse(config));
+        return await CreateAsync(ConnectionBuilder.Parse(config));
     }
 }

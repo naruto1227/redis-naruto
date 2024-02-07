@@ -100,7 +100,7 @@ public sealed class ConnectionBuilder
     /// 配置
     /// </summary>
     /// <param name="config"></param>
-    internal ConnectionBuilder Parse(string config)
+    internal static ConnectionBuilder Parse(string config)
     {
         var configs = config.Split(SplitChar);
         if (configs is not {Length: > 0})
@@ -108,6 +108,7 @@ public sealed class ConnectionBuilder
             throw new ArgumentNullException(nameof(config));
         }
 
+        var connectionBuilder = new ConnectionBuilder();
         //连接地址
         var connection = new HashSet<string>();
         //遍历
@@ -120,34 +121,34 @@ public sealed class ConnectionBuilder
                 switch (ele[0])
                 {
                     case "username":
-                        this.UserName = ele[1];
+                        connectionBuilder.UserName = ele[1];
                         break;
                     case "password":
-                        this.Password = ele[1];
+                        connectionBuilder.Password = ele[1];
                         break;
                     case "servertype":
-                        this.ServerType = (ServerType) ele[1].ToInt();
+                        connectionBuilder.ServerType = (ServerType) ele[1].ToInt();
                         break;
                     case "mastername":
-                        this.MasterName = ele[1];
+                        connectionBuilder.MasterName = ele[1];
                         break;
                     case "database":
-                        this.DataBase = ele[1].ToInt();
+                        connectionBuilder.DataBase = ele[1].ToInt();
                         break;
                     case "poolcount":
-                        this.PoolCount = ele[1].ToInt();
+                        connectionBuilder.PoolCount = ele[1].ToInt();
                         break;
                     case "maxpoolcount":
-                        this.MaxPoolCount = ele[1].ToInt();
+                        connectionBuilder.MaxPoolCount = ele[1].ToInt();
                         break;
                     case "timeout":
-                        this.TimeOut = ele[1].ToInt();
+                        connectionBuilder.TimeOut = ele[1].ToInt();
                         break;
                     case "idle":
-                        this.Idle = ele[1].ToInt();
+                        connectionBuilder.Idle = ele[1].ToInt();
                         break;
                     case "resp3":
-                        this.RESP3 = ele[1].ToBool();
+                        connectionBuilder.RESP3 = ele[1].ToBool();
                         break;
                 }
             }
@@ -157,7 +158,7 @@ public sealed class ConnectionBuilder
             }
         }
 
-        this.Connection = connection.ToArray();
-        return this;
+        connectionBuilder.Connection = connection.ToArray();
+        return connectionBuilder;
     }
 }
