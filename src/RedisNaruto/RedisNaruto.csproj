@@ -1,24 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Version>$(NugetVersion)</Version>
         <Authors>naruto</Authors>
         <Description>redis客户端库</Description>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
-
+    <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.1"/>
+    </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="System.IO.Pipelines" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
-        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="$(RecyclableMemoryStreamVersion)" />
+        <PackageReference Include="System.IO.Pipelines" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Internal\Luas\ExtendedLockTime.lua" />
-      <EmbeddedResource Include="Internal\Luas\ExtendedLockTime.lua" />
-      <None Remove="Internal\Luas\UnLock.lua" />
-      <EmbeddedResource Include="Internal\Luas\UnLock.lua" />
+        <None Remove="Internal\Luas\ExtendedLockTime.lua"/>
+        <EmbeddedResource Include="Internal\Luas\ExtendedLockTime.lua"/>
+        <None Remove="Internal\Luas\UnLock.lua"/>
+        <EmbeddedResource Include="Internal\Luas\UnLock.lua"/>
     </ItemGroup>
-
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <DefineConstants>Net8</DefineConstants>
+    </PropertyGroup>
 </Project>

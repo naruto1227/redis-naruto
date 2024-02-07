@@ -6,6 +6,10 @@ namespace RedisNaruto.Internal.Enums;
 public enum RespMessageTypeEnum
 {
     /// <summary>
+    /// 
+    /// </summary>
+    Default,
+    /// <summary>
     /// 简单的字符串返回
     /// </summary>
     SimpleString,

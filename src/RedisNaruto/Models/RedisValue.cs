@@ -31,6 +31,7 @@ public readonly struct RedisValue
     private RedisValue(byte[] bytes)
     {
         _memory = new ReadOnlyMemory<byte>(bytes);
+        MessageType = RespMessageTypeEnum.Default;
     }
 
     /// <summary>
@@ -40,6 +41,7 @@ public readonly struct RedisValue
     private RedisValue(ReadOnlyMemory<byte> memory)
     {
         _memory = memory;
+        MessageType = RespMessageTypeEnum.Default;
     }
 
     #endregion

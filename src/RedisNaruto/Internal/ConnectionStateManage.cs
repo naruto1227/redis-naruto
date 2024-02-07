@@ -121,18 +121,28 @@ internal static class ConnectionStateManage
 
             //模拟发送ping消息 如果有回复代表连接正常 没有断开
             var scoket = tcp.Client;
-            //写入消息
+#if Net8
+             //写入消息
             await scoket.SendAsync(Ping);
+#elif NET6_0
+            await scoket.SendAsync(Ping,SocketFlags.None);
+#endif 
+          
             //读取回复
             using (var memory = MemoryPool<byte>.Shared.Rent(512))
             {
-                var es = await scoket.ReceiveAsync(memory.Memory);
+#if Net8
+               var es = await scoket.ReceiveAsync(memory.Memory);
+#elif NET6_0
+                var es = await scoket.ReceiveAsync(memory.Memory,SocketFlags.None);
+#endif 
+              
                 //没有任何消息代表失效
-                if (es == 0)
-                {
-                    connectionState.Value.SetInValid("es=0");
-                    return;
-                }
+                 if (es == 0)
+                 {
+                     connectionState.Value.SetInValid("es=0");
+                     return;
+                 }
             }
 
             connectionState.Value.SetValid();
