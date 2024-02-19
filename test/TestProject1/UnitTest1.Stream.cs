@@ -7,11 +7,9 @@ namespace TestProject1;
 
 public class UnitTest1_Stream : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest1_Stream(ITestOutputHelper testOutputHelper)
+    public UnitTest1_Stream(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact,TestPriority(2)]

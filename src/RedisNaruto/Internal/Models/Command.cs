@@ -5,7 +5,7 @@ namespace RedisNaruto.Internal.Models;
 /// <summary>
 /// 命令
 /// </summary>
-internal sealed class Command
+public sealed class Command
 {
     private Command()
     {

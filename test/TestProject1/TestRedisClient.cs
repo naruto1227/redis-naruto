@@ -12,8 +12,10 @@ namespace TestProject1;
 
 public class TestRedisClient : BaseUnit
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
+    public TestRedisClient(ITestOutputHelper testOutputHelper):base(testOutputHelper)
+    {
+        
+    }
     /// <summary>
     /// 
     /// </summary>
@@ -48,11 +50,7 @@ public class TestRedisClient : BaseUnit
 
     //singleton
     private static ConnectionMultiplexer redisConn;
-
-    public TestRedisClient(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
+    
 
     //singleton
     public static ConnectionMultiplexer getRedisConn()

@@ -1,4 +1,4 @@
-namespace RedisNaruto;
+namespace RedisNaruto.Enums;
 
 /// <summary>
 /// redis服务的类型

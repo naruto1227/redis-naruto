@@ -12,11 +12,9 @@ namespace TestProject1;
 
 public class UnitTest1_Client : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest1_Client(ITestOutputHelper testOutputHelper)
+    public UnitTest1_Client(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

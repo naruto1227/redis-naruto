@@ -6,11 +6,9 @@ namespace TestProject1;
 
 public class UnitTest_ZSet : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_ZSet(ITestOutputHelper testOutputHelper)
+    public UnitTest_ZSet(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using RedisNaruto.Enums;
 using RedisNaruto.Utils;
 
 namespace RedisNaruto;

@@ -14,11 +14,9 @@ namespace TestProject1;
 
 public partial class UnitTest1 : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest1(ITestOutputHelper testOutputHelper)
+    public UnitTest1(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

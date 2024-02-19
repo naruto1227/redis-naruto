@@ -4,11 +4,9 @@ namespace TestProject1;
 
 public class UnitTest1_PubSub : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest1_PubSub(ITestOutputHelper testOutputHelper)
+    public UnitTest1_PubSub(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
     [Fact]
     public async Task Test_Publish()

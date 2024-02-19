@@ -5,11 +5,9 @@ namespace TestProject1;
 
 public class UnitTest_Lock : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_Lock(ITestOutputHelper testOutputHelper)
+    public UnitTest_Lock(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
 

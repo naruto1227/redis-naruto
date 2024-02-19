@@ -4,11 +4,9 @@ namespace TestProject1;
 
 public class UnitTest_List : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_List(ITestOutputHelper testOutputHelper)
+    public UnitTest_List(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using RedisNaruto.EventDatas;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.RedisClients;
@@ -49,6 +50,22 @@ public partial class RedisCommand : IRedisCommand
         //连接配置
         return redisCommand;
     }
+
+    
+    #region Interceptor
+
+    public void RegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler)=>this.RedisResolver.RegisterInterceptorCommandBefore(eventHandler);
+    public void RegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler)=>this.RedisResolver.RegisterInterceptorCommandAfter(eventHandler);
+
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    public void UnRegisterInterceptorCommandBefore(EventHandler<InterceptorCommandBeforeEventArgs> eventHandler)=>this.RedisResolver.UnRegisterInterceptorCommandBefore(eventHandler);
+    /// <summary>
+    /// 取消注册拦截器
+    /// </summary>
+    public void UnRegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler)=>this.RedisResolver.UnRegisterInterceptorCommandAfter(eventHandler);
+    #endregion
 
     public async ValueTask DisposeAsync()
     {

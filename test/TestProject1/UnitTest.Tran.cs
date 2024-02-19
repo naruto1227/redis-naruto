@@ -6,11 +6,9 @@ namespace TestProject1;
 
 public class UnitTest_Tran : BaseUnit
 {
-    private ITestOutputHelper _testOutputHelper;
 
-    public UnitTest_Tran(ITestOutputHelper testOutputHelper)
+    public UnitTest_Tran(ITestOutputHelper testOutputHelper):base(testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
     }
 
     /// <summary>
