@@ -23,6 +23,7 @@ internal class DefaultRedisResolver : IRedisResolver
     /// 
     /// </summary>
     public event EventHandler<InterceptorCommandAfterEventArgs> CommandAfter;
+
     /// <summary>
     /// 连接
     /// </summary>
@@ -41,16 +42,23 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            CommandBefore?.Invoke(null,new InterceptorCommandBeforeEventArgs(command));
+            var eventArgs = new InterceptorCommandBeforeEventArgs(command);
+            CommandBefore?.Invoke(null, eventArgs);
+            //判断是否为缓存
+            if (eventArgs.IsCache && eventArgs.Value is T result)
+            {
+                return result;
+            }
+
             try
             {
-                var res= await DoWhileAsync(async rc => await rc.ExecuteAsync<T>(command), redisClient);
-                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,res));
+                var res = await DoWhileAsync(async rc => await rc.ExecuteAsync<T>(command), redisClient);
+                CommandAfter?.Invoke(null, new InterceptorCommandAfterEventArgs(command, res));
                 return res;
             }
             catch (Exception e)
             {
-                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,null,e));
+                CommandAfter?.Invoke(null, new InterceptorCommandAfterEventArgs(command, null, e));
                 throw;
             }
         }
@@ -63,16 +71,23 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         await using (var redisClient = await _redisClientPool.RentAsync())
         {
-            CommandBefore?.Invoke(null,new InterceptorCommandBeforeEventArgs(command));
+            var eventArgs = new InterceptorCommandBeforeEventArgs(command);
+            CommandBefore?.Invoke(null, eventArgs);
+            //判断是否为缓存
+            if (eventArgs.IsCache && eventArgs.Value is RedisValue result)// todo 校验转换
+            {
+                return result;
+            }
+
             try
             {
-                var res= await DoWhileAsync(async rc => await rc.ExecuteSampleAsync(command), redisClient);
-                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,res));
+                var res = await DoWhileAsync(async rc => await rc.ExecuteSampleAsync(command), redisClient);
+                CommandAfter?.Invoke(null, new InterceptorCommandAfterEventArgs(command, res));
                 return res;
             }
             catch (Exception e)
             {
-                CommandAfter?.Invoke(null,new InterceptorCommandAfterEventArgs(command,null,e));
+                CommandAfter?.Invoke(null, new InterceptorCommandAfterEventArgs(command, null, e));
                 throw;
             }
         }
@@ -100,6 +115,7 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         CommandBefore += eventHandler;
     }
+
     public void RegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler)
     {
         CommandAfter += eventHandler;
@@ -120,6 +136,7 @@ internal class DefaultRedisResolver : IRedisResolver
     {
         CommandAfter -= eventHandler;
     }
+
     #endregion
 
     /// <summary>
@@ -141,11 +158,13 @@ internal class DefaultRedisResolver : IRedisResolver
             }
             catch (Exception e)
             {
-                new SelectRedisClientErrorEventData(redisClient.CurrentHost,redisClient.CurrentPort,e).SelectRedisClientError();
+                new SelectRedisClientErrorEventData(redisClient.CurrentHost, redisClient.CurrentPort, e)
+                    .SelectRedisClientError();
                 //判断异常的类型 是否为网络相关的
                 if (e is not IOException or SocketException)
                 {
-                    new SelectRedisClientErrorEventData(redisClient.CurrentHost,redisClient.CurrentPort,e).SelectRedisClientError();
+                    new SelectRedisClientErrorEventData(redisClient.CurrentHost, redisClient.CurrentPort, e)
+                        .SelectRedisClientError();
                     throw;
                 }
 
@@ -160,7 +179,8 @@ internal class DefaultRedisResolver : IRedisResolver
                     }
                     catch (Exception exception)
                     {
-                        new SelectRedisClientErrorEventData(redisClient.CurrentHost,redisClient.CurrentPort,exception).SelectRedisClientError();
+                        new SelectRedisClientErrorEventData(redisClient.CurrentHost, redisClient.CurrentPort, exception)
+                            .SelectRedisClientError();
                         //当没有连接的时候 抛出
                         if (exception is NotConnectionException)
                         {

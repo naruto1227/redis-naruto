@@ -16,4 +16,14 @@ public class InterceptorCommandBeforeEventArgs: EventArgs
     /// 
     /// </summary>
     public Command Command { get; init; }
+
+    /// <summary>
+    /// 是否缓存
+    /// </summary>
+    public bool IsCache { get; set; }
+    
+    /// <summary>
+    /// 返回值
+    /// </summary>
+    public object Value { get; init; }
 }
