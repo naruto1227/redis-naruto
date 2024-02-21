@@ -20,10 +20,20 @@ public class InterceptorCommandBeforeEventArgs: EventArgs
     /// <summary>
     /// 是否缓存
     /// </summary>
-    public bool IsCache { get; set; }
+    public bool IsCache { get; private set; }
     
     /// <summary>
     /// 返回值
     /// </summary>
-    public object Value { get; init; }
+    public object Value { get; private set; }
+
+    /// <summary>
+    /// 设置返回值
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetRetValue(object value)
+    {
+        this.Value = value;
+        this.IsCache = true;
+    }
 }
