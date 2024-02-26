@@ -42,6 +42,14 @@ public interface IRedisCommand : IAsyncDisposable
 
     #endregion
 
+    #region ClientSideCaching
+
+    /// <summary>
+    /// 启用客户端缓存
+    /// </summary>
+    void UseClientSideCaching(ClientSideCachingOption option);
+
+    #endregion
     /// <summary>
     /// 存储字符串
     /// </summary>
