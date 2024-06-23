@@ -10,7 +10,7 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// <summary>
 /// 事务
 /// </summary>
-internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
+internal class TranRedisResolver : DefaultRedisResolver, IDisposable
 {
     private IRedisClient _redisClient;
 
@@ -71,9 +71,9 @@ internal class TranRedisResolver : DefaultRedisResolver, IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await _redisClient.DisposeAsync();
+         _redisClient.Dispose();
         _redisClient = null;
     }
 }

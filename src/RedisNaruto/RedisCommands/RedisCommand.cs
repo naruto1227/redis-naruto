@@ -39,12 +39,12 @@ public partial class RedisCommand : IRedisCommand
     /// <returns></returns>
     private static async Task<TResult> DeserializeAsync<TResult>(byte[] redisValue) => await
         Serializer.DeserializeAsync<TResult>(redisValue);
-
+    
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    internal static async ValueTask<RedisCommand> BuilderAsync(ConnectionBuilder config)
+    internal static async Task<RedisCommand> BuilderAsync(ConnectionBuilder config)
     {
         var redisCommand = new RedisCommand(await RedisClientPool.BuildAsync(config));
         //连接配置
@@ -67,19 +67,18 @@ public partial class RedisCommand : IRedisCommand
     public void UnRegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler)=>this.RedisResolver.UnRegisterInterceptorCommandAfter(eventHandler);
     #endregion
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await DisposeCoreAsync(true);
+        DisposeCore(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual ValueTask DisposeCoreAsync(bool isDispose)
+    protected virtual void DisposeCore(bool isDispose)
     {
         // if (isDispose && RedisClient != default)
         // {
         //     await RedisClientPool.ReturnAsync(RedisClient);
         //     RedisClient = null;
         // }
-        return ValueTask.CompletedTask;
     }
 }

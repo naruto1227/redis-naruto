@@ -57,7 +57,7 @@ internal class PubSubRedisResolver : DefaultRedisResolver
 
     public async Task ReturnAsync()
     {
-        await _redisClient.DisposeAsync();
+         _redisClient.Dispose();
         _redisClient = null;
     }
 }

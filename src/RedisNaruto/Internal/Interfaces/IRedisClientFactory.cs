@@ -12,5 +12,13 @@ internal interface IRedisClientFactory
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IRedisClient> GetAsync(
-        Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default);
+        Action<IRedisClient> disposeTask, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 获取
+    /// </summary>
+    /// <param name="disposeTask"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IRedisClient> GetClientSideCacheAsync(
+        Action<IRedisClient> disposeTask, CancellationToken cancellationToken = default);
 }

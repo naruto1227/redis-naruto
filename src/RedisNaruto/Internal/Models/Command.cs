@@ -11,10 +11,11 @@ public sealed class Command
     {
     }
 
-    public Command(string cmd, object[] args)
+    public Command(string cmd, object[] args,string key=default)
     {
         Cmd = cmd;
         Args = args;
+        Key = key;
         Length = ((Args?.Length) ?? 0) + 1;
     }
 
@@ -23,6 +24,10 @@ public sealed class Command
     /// </summary>
     public string Cmd { get; }
 
+    /// <summary>
+    /// 操作的key
+    /// </summary>
+    public string Key { get; }
     /// <summary>
     /// 参数
     /// </summary>

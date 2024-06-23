@@ -7,7 +7,7 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// <summary>
 /// 切换数据库
 /// </summary>
-internal class SelectDbRedisResolver : DefaultRedisResolver, IAsyncDisposable
+internal class SelectDbRedisResolver : DefaultRedisResolver, IDisposable
 {
     private IRedisClient _redisClient;
 
@@ -35,9 +35,9 @@ internal class SelectDbRedisResolver : DefaultRedisResolver, IAsyncDisposable
         return await _redisClient.ExecuteSampleAsync(command);
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await _redisClient.DisposeAsync();
+         _redisClient.Dispose();
         _redisClient = null;
     }
 }

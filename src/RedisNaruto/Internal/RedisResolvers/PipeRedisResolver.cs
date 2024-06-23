@@ -9,7 +9,7 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// <summary>
 /// 流水线
 /// </summary>
-internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
+internal class PipeRedisResolver : DefaultRedisResolver, IDisposable
 {
     /// <summary>
     /// 流水线命令数
@@ -71,9 +71,9 @@ internal class PipeRedisResolver : DefaultRedisResolver, IAsyncDisposable
         return RedisValue.Null();
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await _redisClient.DisposeAsync();
+         _redisClient.Dispose();
         _redisClient = null;
     }
 }

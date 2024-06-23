@@ -42,8 +42,7 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// 闲置时间 闲置多久进行释放 ，当池中的数量低于 最小不做处理
     /// </summary>
     private readonly int _idle;
-
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -55,12 +54,18 @@ internal sealed class RedisClientPool : IRedisClientPool
         _idle = connectionBuilder.Idle;
         // _redisClientFactory = new RedisClientFactory(connectionBuilder);
     }
-
+    
     //构建
     public static async Task<RedisClientPool> BuildAsync(ConnectionBuilder connectionBuilder)
     {
         var pool = new RedisClientPool(connectionBuilder);
         pool._redisClientFactory = await RedisClientFactory.BuildAsync(connectionBuilder);
+        //判断是否开启了客户端缓存
+        if (connectionBuilder.IsOpenClientSideCaching && connectionBuilder.ClientSideCachingOption!=null)
+        {
+            //首先开启客户端缓存的连接
+            _= await pool._redisClientFactory.GetClientSideCacheAsync((client) => { });
+        }
         new Thread(pool.InitAsync).Start();
         new Thread(pool.TrimPoolAsync).Start();
         return pool;
@@ -89,7 +94,7 @@ internal sealed class RedisClientPool : IRedisClientPool
             //判断 是否达到最大的池数量 达到了最大的话 就等待
             if (Interlocked.Increment(ref _totalClientCount) <= _maxCount)
                 return await _redisClientFactory.GetAsync(
-                    async (client) => { await this.ReturnAsync(client); },
+                     this.Return,
                     cancellationToken);
             //还原
             Interlocked.Decrement(ref _totalClientCount);
@@ -111,7 +116,7 @@ internal sealed class RedisClientPool : IRedisClientPool
         {
             try
             {
-                var redisClient = await _redisClientFactory.GetAsync(async (client) => { await this.ReturnAsync(client); });
+                var redisClient = await _redisClientFactory.GetAsync( this.Return);
                 //递增
                 Interlocked.Increment(ref _totalClientCount);
                 //递增
@@ -130,12 +135,11 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// </summary>
     /// <param name="redisClient"></param>
     /// <returns></returns>
-    private ValueTask ReturnAsync([NotNull] IRedisClient redisClient)
+    private void Return([NotNull] IRedisClient redisClient)
     {
         Interlocked.Increment(ref _freeCount);
         //入队
         _freeClients.Enqueue(redisClient);
-        return ValueTask.CompletedTask;
     }
 
 

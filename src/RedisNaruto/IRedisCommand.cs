@@ -15,7 +15,7 @@ namespace RedisNaruto;
 /// <summary>
 /// 对外暴露的redis命令接口
 /// </summary>
-public interface IRedisCommand : IAsyncDisposable
+public interface IRedisCommand : IDisposable
 {
     #region Interceptor
 
@@ -41,15 +41,7 @@ public interface IRedisCommand : IAsyncDisposable
     void UnRegisterInterceptorCommandAfter(EventHandler<InterceptorCommandAfterEventArgs> eventHandler);
 
     #endregion
-
-    #region ClientSideCaching
-
-    /// <summary>
-    /// 启用客户端缓存
-    /// </summary>
-    void UseClientSideCaching(ClientSideCachingOption option);
-
-    #endregion
+    
     /// <summary>
     /// 存储字符串
     /// </summary>

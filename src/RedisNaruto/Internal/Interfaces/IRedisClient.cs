@@ -7,7 +7,7 @@ namespace RedisNaruto.Internal.Interfaces;
 /// <summary>
 /// redis 客户端接口
 /// </summary>
-internal interface IRedisClient : IAsyncDisposable
+internal interface IRedisClient : IDisposable
 {
     /// <summary>
     /// 连接信息
@@ -44,6 +44,16 @@ internal interface IRedisClient : IAsyncDisposable
     /// </summary>
     long LastDataTime { get; }
 
+    /// <summary>
+    /// 标识当前连接是否为客户端缓存专用的连接
+    /// </summary>
+    bool IsOpenTrackIng { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    Task UseClientSideCachingAsync();
     /// <summary>
     /// 初始化客户端id
     /// </summary>
@@ -126,6 +136,7 @@ internal interface IRedisClient : IAsyncDisposable
     /// <returns></returns>
     Task ResetSocketAsync(CancellationToken cancellationToken = default);
 
+    Task BCastAsync(string clientId);
     /// <summary>
     /// 关闭
     /// </summary>

@@ -13,6 +13,7 @@ namespace RedisNaruto.Internal.RedisClients;
 internal class RedisClientFactory : IRedisClientFactory
 {
     private readonly ConnectionBuilder _connectionBuilder;
+    
 
     private RedisClientFactory(ConnectionBuilder connectionBuilder)
     {
@@ -27,13 +28,37 @@ internal class RedisClientFactory : IRedisClientFactory
     }
 
     /// <summary>
+    /// redis客户端缓存连接
+    /// todo 后续考虑存放的方式
+    /// </summary>
+    private IRedisClient _redisClientSideCache;
+
+    /// <summary>
+    /// 获取
+    /// </summary>
+    /// <param name="disposeTask"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<IRedisClient> GetClientSideCacheAsync(
+        Action<IRedisClient> disposeTask, CancellationToken cancellationToken = default)
+    {
+        //todo 因为是在启动的时候初始化的 所以目前不需要考虑并发问题
+        if (_redisClientSideCache!=null)
+        {
+            return _redisClientSideCache;
+        }
+        _redisClientSideCache = await GetAsync(disposeTask, cancellationToken);
+        await _redisClientSideCache.UseClientSideCachingAsync();
+        return _redisClientSideCache;
+    }
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="disposeTask"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task<IRedisClient> GetAsync(
-        Func<IRedisClient, Task> disposeTask, CancellationToken cancellationToken = default)
+        Action<IRedisClient> disposeTask, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var client = _connectionBuilder.ServerType switch
@@ -42,7 +67,7 @@ internal class RedisClientFactory : IRedisClientFactory
             ServerType.Cluster => await CreateClusterClient(disposeTask, cancellationToken),
             _ => await CreateSimpleClient(disposeTask, cancellationToken)
         };
-        await client.InitClientIdAsync();
+        // await client.InitClientIdAsync();
         return client;
     }
 
@@ -50,7 +75,7 @@ internal class RedisClientFactory : IRedisClientFactory
     /// 创建普通客户端
     /// </summary>
     /// <returns></returns>
-    private async Task<IRedisClient> CreateSimpleClient(Func<IRedisClient, Task> disposeTask,
+    private async Task<IRedisClient> CreateSimpleClient(Action<IRedisClient> disposeTask,
         CancellationToken cancellationToken)
     {
         var connectionInfo = await GetConnectionInfo(cancellationToken);
@@ -64,7 +89,7 @@ internal class RedisClientFactory : IRedisClientFactory
     /// 创建集群客户端
     /// </summary>
     /// <returns></returns>
-    private async Task<IRedisClient> CreateClusterClient(Func<IRedisClient, Task> disposeTask,
+    private async Task<IRedisClient> CreateClusterClient(Action<IRedisClient> disposeTask,
         CancellationToken cancellationToken)
     {
         var connectionInfo = await GetConnectionInfo(cancellationToken);
@@ -106,7 +131,7 @@ internal class RedisClientFactory : IRedisClientFactory
     /// 创建哨兵客户端
     /// </summary>
     /// <returns></returns>
-    private async Task<IRedisClient> CreateSentinelClient(Func<IRedisClient, Task> disposeTask,
+    private async Task<IRedisClient> CreateSentinelClient(Action<IRedisClient> disposeTask,
         CancellationToken cancellationToken)
     {
         var hostPort = await SentinelConnection.GetMaserAddressAsync(_connectionBuilder.MasterName, cancellationToken);

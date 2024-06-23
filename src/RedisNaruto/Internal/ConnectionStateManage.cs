@@ -45,8 +45,12 @@ internal static class ConnectionStateManage
         }
 
         //开启后台服务
-        new Thread(HealCheckAsync).Start();
-        new Thread(InValidHealCheckAsync).Start();
+        var t1=new Thread(HealCheckAsync);
+        var t2=new Thread(InValidHealCheckAsync);
+        t1.IsBackground = true;
+        t2.IsBackground = true;
+        t1.Start();
+        t2.Start();
     }
 
     /// <summary>

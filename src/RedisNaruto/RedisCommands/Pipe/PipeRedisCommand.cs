@@ -20,8 +20,8 @@ public class PipeRedisCommand : RedisCommand, IPipeRedisCommand
         return await _pipeRedisResolver.PipeReadAsync(cancellationToken);
     }
 
-    protected override async ValueTask DisposeCoreAsync(bool isDispose)
+    protected override void DisposeCore(bool isDispose)
     {
-        await _pipeRedisResolver.DisposeAsync();
+         _pipeRedisResolver.Dispose();
     }
 }

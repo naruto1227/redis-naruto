@@ -40,7 +40,7 @@ internal class DefaultRedisResolver : IRedisResolver
     /// </summary>
     public virtual async Task<T> InvokeAsync<T>(Command command)
     {
-        await using (var redisClient = await _redisClientPool.RentAsync())
+        using (var redisClient = await _redisClientPool.RentAsync())
         {
             var eventArgs = new InterceptorCommandBeforeEventArgs(command);
             CommandBefore?.Invoke(null, eventArgs);
@@ -69,7 +69,7 @@ internal class DefaultRedisResolver : IRedisResolver
     /// </summary>
     public virtual async Task<RedisValue> InvokeSimpleAsync(Command command)
     {
-        await using (var redisClient = await _redisClientPool.RentAsync())
+        using (var redisClient = await _redisClientPool.RentAsync())
         {
             var eventArgs = new InterceptorCommandBeforeEventArgs(command);
             CommandBefore?.Invoke(null, eventArgs);

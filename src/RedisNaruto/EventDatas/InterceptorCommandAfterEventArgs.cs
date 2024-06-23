@@ -1,4 +1,5 @@
 using RedisNaruto.Internal.Models;
+using RedisNaruto.Models;
 
 namespace RedisNaruto.EventDatas;
 
@@ -26,10 +27,10 @@ public class InterceptorCommandAfterEventArgs:EventArgs
     public Command Command { get; init; }
 
     /// <summary>
-    /// 返回值
+    /// 值
     /// </summary>
-    public object Value { get; init; }
-
+    public object Value { get; set; }
+    
     /// <summary>
     /// 错误信息
     /// </summary>

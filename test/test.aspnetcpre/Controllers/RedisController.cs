@@ -50,8 +50,8 @@ public class RedisController : ControllerBase
 
     [HttpPost("tran")]
     public async Task<object> TestRedisNaruto_Tran([FromServices] IRedisCommand redisCommand)
-    {
-        await using var command = await redisCommand.MultiAsync();
+    { 
+        using var command = await redisCommand.MultiAsync();
         string res = await command.GetAsync("weather");
        var ss2=await command.ExecAsync();
         return new SuccessModel
@@ -70,6 +70,29 @@ public class RedisController : ControllerBase
         {
             Code = 200,
             Data = res.ToString()
+        };
+    }
+    
+    [HttpGet("clientCache")]
+    public async Task<object> clientCache([FromServices] IRedisCommand redisCommand)
+    {
+       
+        string res =  await redisCommand.GetAsync("test");
+        return new SuccessModel
+        {
+            Code = 200,
+            Data = res
+        };
+    }
+
+    [HttpGet("clientCacheSet")]
+    public async Task<object> clientCacheSet([FromServices] IRedisCommand redisCommand)
+    {
+        await redisCommand.SetAsync("test", "123123");
+        return new SuccessModel
+        {
+            Code = 200,
+            Data = 1
         };
     }
 }

@@ -141,7 +141,7 @@ public partial class RedisCommand : IRedisCommand
     {
         cancellationToken.ThrowIfCancellationRequested();
         return await RedisResolver.InvokeSimpleAsync(new Command(RedisCommandName.Get,
-            new object[] {key}));
+            new object[] {key},key));
     }
 
     /// <summary>
@@ -155,7 +155,7 @@ public partial class RedisCommand : IRedisCommand
         cancellationToken.ThrowIfCancellationRequested();
         return await DeserializeAsync<TResult>(await RedisResolver.InvokeSimpleAsync(new Command(
             RedisCommandName.Get,
-            new object[] {key})));
+            new object[] {key},key)));
     }
 
     /// <summary>

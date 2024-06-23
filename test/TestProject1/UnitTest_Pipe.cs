@@ -40,7 +40,7 @@ public class UnitTest_Pipe : BaseUnit
         for (int i = 0; i < 100; i++)
         {
             //开启管道
-            await using var pipe = await redisCommand.BeginPipeAsync();
+             using var pipe = await redisCommand.BeginPipeAsync();
 //发送命令 其中结果res1 res2 res3 res4 都是空值，因为结果需要使用EndPipeAsync读取
             var res1 = await pipe.IncrByAsync("x");
             var res2 = await pipe.IncrByAsync("x");

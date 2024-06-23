@@ -15,7 +15,7 @@ internal class ClusterRedisClient : RedisClient
     public ClusterRedisClient(Guid connectionId, TcpClient tcpClient, ConnectionBuilder connectionBuilder,
         string currentHost,
         int currentPort,
-        Func<IRedisClient, Task> disposeTask) : base(connectionId, tcpClient, connectionBuilder, currentHost, currentPort,
+        Action<IRedisClient> disposeTask) : base(connectionId, tcpClient, connectionBuilder, currentHost, currentPort,
         disposeTask)
     {
     }

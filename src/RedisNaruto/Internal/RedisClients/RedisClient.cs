@@ -1,4 +1,6 @@
 using System.Buffers;
+using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Net.Sockets;
 using RedisNaruto.EventDatas;
 using RedisNaruto.Internal.DiagnosticListeners;
@@ -63,6 +65,11 @@ internal class RedisClient : IRedisClient
     protected int DefaultDb { get; private set; }
 
     /// <summary>
+    /// 标识 是否当前 连接是否开启了 客户端缓存指令
+    /// </summary>
+    public bool IsOpenTrackIng { get; private set; }
+
+    /// <summary>
     /// 消息传输
     /// </summary>
     protected static readonly IMessageTransport MessageTransport = new MessageTransport();
@@ -70,14 +77,14 @@ internal class RedisClient : IRedisClient
     /// <summary>
     /// 
     /// </summary>
-    protected Func<IRedisClient, Task> DisposeTask;
+    protected Action<IRedisClient> DisposeTask;
 
     /// <summary>
     /// 
     /// </summary>
     public RedisClient(Guid connectionId, TcpClient tcpClient, ConnectionBuilder connectionBuilder, string currentHost,
         int currentPort,
-        Func<IRedisClient, Task> disposeTask)
+        Action<IRedisClient> disposeTask)
     {
         TcpClient = tcpClient;
         CurrentHost = currentHost;
@@ -89,21 +96,27 @@ internal class RedisClient : IRedisClient
         CurrentDb = connectionBuilder.DataBase;
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await this.DisposeCoreAsync(true);
+        this.DisposeCore(true);
     }
 
     /// <summary>
-    /// todo 增加 是否释放的处理，为了在兮构函数判断
+    /// 
     /// </summary>
     private bool _isDispose;
 
-    protected virtual async ValueTask DisposeCoreAsync(bool isDispose)
+    // //todo 待校验
+    // ~RedisClient()
+    // {
+    //     this.DisposeCore(false);
+    // }
+
+    protected void DisposeCore(bool isDispose)
     {
         if (isDispose)
         {
-            await DisposeTask.Invoke(this);
+            DisposeTask.Invoke(this);
         }
     }
 
@@ -119,6 +132,58 @@ internal class RedisClient : IRedisClient
     }
 
     /// <summary>
+    /// 开启客户端缓存
+    /// </summary>
+    /// <returns></returns>
+    public async Task UseClientSideCachingAsync()
+    {
+        if (!IsOpenTrackIng)
+        {
+            this.IsOpenTrackIng = true;
+            //获取连接id
+            await InitClientIdAsync();
+            await BCastAsync(this.ClientId);
+            //开启新线程 开启订阅模式
+            new Thread(StartClientSideCaching).Start();
+        }
+    }
+
+    /// <summary>
+    /// 启用客户端缓存后台订阅服务
+    /// </summary>
+    private async void StartClientSideCaching()
+    {
+        //开启订阅
+        //todo 记录返回的日志
+        var res = await ExecuteAsync<object>(new Command(RedisCommandName.Sub, new object[] {"__redis__:invalidate"}));
+        while (true)
+        {
+            try
+            {
+                //接收消息
+                var message = await ReadMessageAsync();
+                if (message is List<object> result && result.Count == 3)
+                {
+                    if (result[2] is List<object> cacheKeys)
+                    {
+                        foreach (var item in cacheKeys)
+                        {
+                            var cacheKey = (RedisValue) item;
+                            //清除缓存key
+                            ClientSideCachingDic.Remove(cacheKey);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                //todo 增加事件推送
+                Console.WriteLine(e);
+            }
+        }
+    }
+
+    /// <summary>
     /// 初始化客户端id
     /// </summary>
     /// <returns></returns>
@@ -126,13 +191,13 @@ internal class RedisClient : IRedisClient
     {
         //判断登录 这样如果是resp3 协议的话，后面就不需要多走一份代码
         await AuthAsync();
-        if (string.IsNullOrWhiteSpace(ClientId) || ClientId.Length<=0)
+        if (string.IsNullOrWhiteSpace(ClientId) || ClientId.Length <= 0)
         {
-            //todo 待处理 需要根据是否要开启 客户端缓存来判断
             ClientId = await InvokeAsync(new Command(RedisCommandName.Client, new[]
             {
                 "ID"
             }));
+            Debug.WriteLine($"记录客户端id={ClientId}");
         }
     }
 
@@ -312,12 +377,13 @@ internal class RedisClient : IRedisClient
                     password
                 })));
         //todo 记录服务器的信息
-        var res= redisValue != default && redisValue.Count > 0;
+        var res = redisValue != default && redisValue.Count > 0;
         //resp3 协议中有返回clientid信息，这里直接获取赋值
-        if (res && redisValue.TryGetValue("id",out var clientId))
+        if (res && redisValue.TryGetValue("id", out var clientId))
         {
             ClientId = clientId.ToString();
         }
+
         return res;
     }
 
@@ -383,7 +449,7 @@ internal class RedisClient : IRedisClient
         CurrentDb = ConnectionBuilder.DataBase;
         //登陆
         await AuthAsync();
-        await InitClientIdAsync();
+        // await InitClientIdAsync();
     }
 
     /// <summary>
@@ -439,4 +505,40 @@ internal class RedisClient : IRedisClient
 
         return tcp.GetStream();
     }
+
+    #region 客户端缓存命令
+
+    public virtual async Task BCastAsync(string clientId)
+    {
+        //判断是否开启了客户端缓存
+        if (!this.ConnectionBuilder.IsOpenClientSideCaching)
+        {
+            return;
+        }
+
+        if (this.ConnectionBuilder.ClientSideCachingOption.KeyPrefix?.Length <= 0)
+        {
+            return;
+        }
+
+        //
+        List<object> argv = new() //todo 临时写法
+        {
+            "TRACKING",
+            "on",
+            "REDIRECT",
+            clientId,
+            "BCAST",
+        };
+
+        foreach (var se in this.ConnectionBuilder!.ClientSideCachingOption!.KeyPrefix!)
+        {
+            argv.Add("PREFIX");
+            argv.Add(se);
+        }
+
+        _ = await InvokeAsync(new Command(RedisCommandName.Client, argv.ToArray()));
+    }
+
+    #endregion
 }

@@ -42,8 +42,8 @@ public class TransactionRedisCommand : RedisCommand, ITransactionRedisCommand
         _ = await RedisResolver.InvokeAsync<RedisValue>(new Command(RedisCommandName.DisCard, default));
     }
 
-    protected override async ValueTask DisposeCoreAsync(bool isDispose)
+    protected override void DisposeCore(bool isDispose)
     {
-        await _tranRedisResolver.DisposeAsync();
+         _tranRedisResolver.Dispose();
     }
 }

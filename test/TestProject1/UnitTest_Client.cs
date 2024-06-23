@@ -243,17 +243,17 @@ public class UnitTest1_Client : BaseUnit
     public async Task Test_SelectDb()
     {
         var redis = await GetRedisAsync();
-        await using (var command = await redis.SelectDbAsync(1))
+         using (var command = await redis.SelectDbAsync(1))
         {
             await command.SetAsync("select_db1", "1");
         }
 
-        await using (var command = await redis.SelectDbAsync(1))
+         using (var command = await redis.SelectDbAsync(1))
         {
             await command.SetAsync("select_db2", "1");
         }
 
-        await using (var command = await redis.SelectDbAsync(1))
+         using (var command = await redis.SelectDbAsync(1))
         {
             await command.SetAsync("select_db3", "1");
         }

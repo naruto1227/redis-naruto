@@ -26,8 +26,8 @@ public class SelectDbRedisCommand : RedisCommand, ISelectDbRedisCommand
         throw new NotImplementedException();
     }
 
-    protected override async ValueTask DisposeCoreAsync(bool isDispose)
+    protected override void DisposeCore(bool isDispose)
     {
-        await _redisResolver.DisposeAsync();
+         _redisResolver.Dispose();
     }
 }
