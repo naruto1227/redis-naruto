@@ -63,12 +63,7 @@ internal class RedisClient : IRedisClient
     /// 默认的db
     /// </summary>
     protected int DefaultDb { get; private set; }
-
-    /// <summary>
-    /// 标识 是否当前 连接是否开启了 客户端缓存指令
-    /// </summary>
-    public bool IsOpenTrackIng { get; private set; }
-
+    
     /// <summary>
     /// 消息传输
     /// </summary>
@@ -130,59 +125,6 @@ internal class RedisClient : IRedisClient
         DisposeTask = null;
         GC.SuppressFinalize(this);
     }
-
-    /// <summary>
-    /// 开启客户端缓存
-    /// </summary>
-    /// <returns></returns>
-    public async Task UseClientSideCachingAsync()
-    {
-        if (!IsOpenTrackIng)
-        {
-            this.IsOpenTrackIng = true;
-            //获取连接id
-            await InitClientIdAsync();
-            await BCastAsync(this.ClientId);
-            //开启新线程 开启订阅模式
-            new Thread(StartClientSideCaching).Start();
-        }
-    }
-
-    /// <summary>
-    /// 启用客户端缓存后台订阅服务
-    /// </summary>
-    private async void StartClientSideCaching()
-    {
-        //开启订阅
-        //todo 记录返回的日志
-        var res = await ExecuteAsync<object>(new Command(RedisCommandName.Sub, new object[] {"__redis__:invalidate"}));
-        while (true)
-        {
-            try
-            {
-                //接收消息
-                var message = await ReadMessageAsync();
-                if (message is List<object> result && result.Count == 3)
-                {
-                    if (result[2] is List<object> cacheKeys)
-                    {
-                        foreach (var item in cacheKeys)
-                        {
-                            var cacheKey = (RedisValue) item;
-                            //清除缓存key
-                            ClientSideCachingDic.Remove(cacheKey);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                //todo 增加事件推送
-                Console.WriteLine(e);
-            }
-        }
-    }
-
     /// <summary>
     /// 初始化客户端id
     /// </summary>
@@ -505,40 +447,4 @@ internal class RedisClient : IRedisClient
 
         return tcp.GetStream();
     }
-
-    #region 客户端缓存命令
-
-    public virtual async Task BCastAsync(string clientId)
-    {
-        //判断是否开启了客户端缓存
-        if (!this.ConnectionBuilder.IsOpenClientSideCaching)
-        {
-            return;
-        }
-
-        if (this.ConnectionBuilder.ClientSideCachingOption.KeyPrefix?.Length <= 0)
-        {
-            return;
-        }
-
-        //
-        List<object> argv = new() //todo 临时写法
-        {
-            "TRACKING",
-            "on",
-            "REDIRECT",
-            clientId,
-            "BCAST",
-        };
-
-        foreach (var se in this.ConnectionBuilder!.ClientSideCachingOption!.KeyPrefix!)
-        {
-            argv.Add("PREFIX");
-            argv.Add(se);
-        }
-
-        _ = await InvokeAsync(new Command(RedisCommandName.Client, argv.ToArray()));
-    }
-
-    #endregion
 }

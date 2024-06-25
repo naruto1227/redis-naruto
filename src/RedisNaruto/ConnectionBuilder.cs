@@ -163,26 +163,4 @@ public sealed class ConnectionBuilder
         connectionBuilder.Connection = connection.ToArray();
         return connectionBuilder;
     }
-
-    /// <summary>
-    ///  客户端缓存配置
-    /// </summary>
-    internal ClientSideCachingOption ClientSideCachingOption { get; set; }
-
-    /// <summary>
-    /// 是否开启
-    /// </summary>
-    internal bool IsOpenClientSideCaching { get; private set; }
-
-    /// <summary>
-    /// 启用客户端缓存
-    /// 当前方法需要在构建的时候就调用，因为需要在处理化连接池的时候redirect client id
-    /// </summary>
-    /// <exception cref="NotImplementedException"></exception>
-    public void UseClientSideCaching(ClientSideCachingOption option)
-    {
-        //todo 是否要校验某些参数
-        IsOpenClientSideCaching = true;
-        ClientSideCachingOption = option;
-    }
 }

@@ -29,19 +29,18 @@ var build = new ConnectionBuilder
     },
     DataBase = 0,
 };
-build.UseClientSideCaching(new ClientSideCachingOption
+var redis = await RedisConnection.CreateAsync(build);
+await redis.UseClientSideCachingAsync(new ClientSideCachingOption
 {
     Mode = ClientSideCachingModeEnum.TRACKING,
     KeyPrefix = new string[]
-    {
-        "test",
-        "hello"
-    },
+     {
+         "test",
+         "hello"
+     },
     TimeOut = default,
     Capacity = 0
 });
-var redis = await RedisConnection.CreateAsync(build);
-
 
 builder.Services.AddSingleton(redis);
 DiagnosticListener.AllListeners.Subscribe(new RedisNarutoListenerAdapter_Case1());

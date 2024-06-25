@@ -18,13 +18,6 @@ public static class RedisConnection
             throw new ArgumentException($"{nameof(config.MaxPoolCount)}不能小于最小池数量");
         }
         var redisCommand= await RedisCommands.RedisCommand.BuilderAsync(config);
-        //注册缓存拦截器
-        if (config.IsOpenClientSideCaching)
-        {
-            var clientSideCachingInterceptor = new ClientSideCachingInterceptor(config.ClientSideCachingOption);
-            redisCommand.RegisterInterceptorCommandBefore(clientSideCachingInterceptor.CommandBefore);
-            redisCommand.RegisterInterceptorCommandAfter(clientSideCachingInterceptor.CommandAfter);
-        }
         return redisCommand;
     }
 

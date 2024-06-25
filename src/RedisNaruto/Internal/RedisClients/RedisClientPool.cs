@@ -60,12 +60,6 @@ internal sealed class RedisClientPool : IRedisClientPool
     {
         var pool = new RedisClientPool(connectionBuilder);
         pool._redisClientFactory = await RedisClientFactory.BuildAsync(connectionBuilder);
-        //判断是否开启了客户端缓存
-        if (connectionBuilder.IsOpenClientSideCaching && connectionBuilder.ClientSideCachingOption!=null)
-        {
-            //首先开启客户端缓存的连接
-            _= await pool._redisClientFactory.GetClientSideCacheAsync((client) => { });
-        }
         new Thread(pool.InitAsync).Start();
         new Thread(pool.TrimPoolAsync).Start();
         return pool;

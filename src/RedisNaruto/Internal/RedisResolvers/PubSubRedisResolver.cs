@@ -9,9 +9,9 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// <summary>
 /// 发布订阅
 /// </summary>
-internal class PubSubRedisResolver : DefaultRedisResolver
+internal class PubSubRedisResolver : DefaultRedisResolver, IDisposable
 {
-    private IRedisClient _redisClient;
+    protected IRedisClient RedisClient;
 
     public PubSubRedisResolver(IRedisClientPool redisClientPool) : base(redisClientPool)
     {
@@ -20,21 +20,21 @@ internal class PubSubRedisResolver : DefaultRedisResolver
     /// <summary>
     /// 初始化客户端
     /// </summary>
-    public async Task InitClientAsync()
+    public virtual async Task InitClientAsync()
     {
-        _redisClient = await _redisClientPool.RentAsync();
+        RedisClient = await _redisClientPool.RentAsync();
         //ping
-        await DoWhileAsync(async rc => await rc.PingAsync(), _redisClient);
+        await DoWhileAsync(async rc => await rc.PingAsync(), RedisClient);
     }
 
     public override async Task<T> InvokeAsync<T>(Command command)
     {
-        return await _redisClient.ExecuteAsync<T>(command);
+        return await RedisClient.ExecuteAsync<T>(command);
     }
 
     public override async Task<RedisValue> InvokeSimpleAsync(Command command)
     {
-        return await _redisClient.ExecuteSampleAsync(command);
+        return await RedisClient.ExecuteSampleAsync(command);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ internal class PubSubRedisResolver : DefaultRedisResolver
     public async Task<T> ReadMessageAsync<T>(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var res = await _redisClient.ReadMessageAsync();
+        var res = await RedisClient.ReadMessageAsync();
         new ReceiveSubMessageEventData(res).ReceiveSub();
         if (res is T redisValue)
         {
@@ -55,9 +55,18 @@ internal class PubSubRedisResolver : DefaultRedisResolver
         return default(T);
     }
 
-    public async Task ReturnAsync()
+    protected virtual void Dispose(bool disposing)
     {
-         _redisClient.Dispose();
-        _redisClient = null;
+        if (disposing)
+        {
+            RedisClient?.Dispose();
+            RedisClient = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -2120,4 +2120,10 @@ public interface IRedisCommand : IDisposable
     /// <returns></returns>
     Task<IDistributedLock> CreateLockAsync(string key, TimeSpan expireTime, TimeSpan waitTime,
         TimeSpan delayTime);
+
+    /// <summary>
+    /// 启用客户端缓存
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    Task UseClientSideCachingAsync(ClientSideCachingOption option);
 }

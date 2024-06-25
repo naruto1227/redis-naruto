@@ -43,17 +43,6 @@ internal interface IRedisClient : IDisposable
     /// 最近一次包更新时间
     /// </summary>
     long LastDataTime { get; }
-
-    /// <summary>
-    /// 标识当前连接是否为客户端缓存专用的连接
-    /// </summary>
-    bool IsOpenTrackIng { get; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    Task UseClientSideCachingAsync();
     /// <summary>
     /// 初始化客户端id
     /// </summary>
@@ -135,8 +124,7 @@ internal interface IRedisClient : IDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task ResetSocketAsync(CancellationToken cancellationToken = default);
-
-    Task BCastAsync(string clientId);
+    
     /// <summary>
     /// 关闭
     /// </summary>

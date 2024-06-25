@@ -48,24 +48,25 @@ public partial class RedisCommand : IRedisCommand
         //订阅消息
         _ = await _pubSubRedisResolver.InvokeMoreResultAsync(new Command(RedisCommandName.Sub, topics))
             .ToRedisValueListAsync();
-        await using var dispose = new AsyncDisposeAction(async () => await _pubSubRedisResolver.ReturnAsync());
-
-        while (!cancellationToken.IsCancellationRequested)
+        using (_pubSubRedisResolver)
         {
-            //读取消息
-            var message = await _pubSubRedisResolver.ReadMessageAsync<List<object>>(cancellationToken);
-            if (message is {Count: 3} && message[0] is RedisValue rv && rv == "message")
+            while (!cancellationToken.IsCancellationRequested)
             {
-                var topic = message[1];
-                var body = message[2];
-                await reciveMessage(topic.ToString(), body.ToString());
-            }
-            //第一次开始订阅 消息会按照普通字符串的形式回复
-            else if (message[0] is RedisValue redisValue && redisValue == "message")
-            {
-                var topic = await _pubSubRedisResolver.ReadMessageAsync<RedisValue>(cancellationToken);
-                var body = await _pubSubRedisResolver.ReadMessageAsync<RedisValue>(cancellationToken);
-                await reciveMessage(topic, body);
+                //读取消息
+                var message = await _pubSubRedisResolver.ReadMessageAsync<List<object>>(cancellationToken);
+                if (message is {Count: 3} && message[0] is RedisValue rv && rv == "message")
+                {
+                    var topic = message[1];
+                    var body = message[2];
+                    await reciveMessage(topic.ToString(), body.ToString());
+                }
+                //第一次开始订阅 消息会按照普通字符串的形式回复
+                else if (message[0] is RedisValue redisValue && redisValue == "message")
+                {
+                    var topic = await _pubSubRedisResolver.ReadMessageAsync<RedisValue>(cancellationToken);
+                    var body = await _pubSubRedisResolver.ReadMessageAsync<RedisValue>(cancellationToken);
+                    await reciveMessage(topic, body);
+                }
             }
         }
     }
