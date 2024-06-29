@@ -53,6 +53,15 @@ public class RedisNarutoListenerAdapter_Case1 : IObserver<DiagnosticListener>,IO
                 Console.WriteLine($"取消事务 Host={(eventData6.Host)},Port={eventData6.Port}，EventName={eventData6.EventName}");
             }
         }
+        
+        if (value is {Key: "RedisNaruto:ClientSideCachingRemove", Value: ClientSideCachingRemoveEventData eventData31})
+        {
+            Console.WriteLine($"客户端缓存移除 key={eventData31.Key}");
+        }
+        if (value is {Key: "RedisNaruto:ClientSideCachingUpdate", Value: ClientSideCachingUpdateEventData eventData32})
+        {
+            Console.WriteLine($"客户端缓存更新  key={eventData32.Key},value={eventData32.Value}");
+        }
     }
 
     public void OnNext(DiagnosticListener value)

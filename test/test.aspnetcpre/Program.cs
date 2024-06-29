@@ -2,6 +2,7 @@ using System.Diagnostics;
 using RedisNaruto;
 using RedisNaruto.Enums;
 using RedisNaruto.Models;
+using Scalar.AspNetCore;
 using StackExchange.Redis;
 using test.aspnetcpre;
 using ServerType = RedisNaruto.Enums.ServerType;
@@ -13,8 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 // //注册
 // var redis = await RedisConnection.CreateAsync(
@@ -28,11 +30,12 @@ var build = new ConnectionBuilder
         "127.0.0.1:56379"
     },
     DataBase = 0,
+    RESP3 = true
 };
 var redis = await RedisConnection.CreateAsync(build);
 await redis.UseClientSideCachingAsync(new ClientSideCachingOption
 {
-    Mode = ClientSideCachingModeEnum.TRACKING,
+    // Mode = ClientSideCachingModeEnum.TRACKING,
     KeyPrefix = new string[]
      {
          "test",
@@ -56,8 +59,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    // app.UseSwagger();
+    // app.UseSwaggerUI();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();

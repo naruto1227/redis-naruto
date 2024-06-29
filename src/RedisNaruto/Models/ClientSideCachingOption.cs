@@ -10,10 +10,10 @@ public class ClientSideCachingOption
         ExpiredMessageInterval = TimeSpan.FromSeconds(15);
     }
 
-    /// <summary>
-    /// 客户端缓存的模式
-    /// </summary>
-    public ClientSideCachingModeEnum Mode { get; set; }
+    // /// <summary>
+    // /// 客户端缓存的模式
+    // /// </summary>
+    // public ClientSideCachingModeEnum Mode { get; set; }
 
     /// <summary>
     /// key的匹配方式

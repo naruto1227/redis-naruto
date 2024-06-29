@@ -21,9 +21,19 @@ internal class ClientSideCachingRedisResolver: PubSubRedisResolver
         //获取客户端id
         await RedisClient.InitClientIdAsync();
     }
+
+    public string GetClientId()
+    {
+        return RedisClient.ClientId;
+    }
     
     #region 客户端缓存命令
 
+    /// <summary>
+    /// 是否开启
+    /// </summary>
+    public bool IsOpenTracking { get; private set; }
+    
     public virtual async Task BCastAsync()
     {
         if (this._clientSideCachingOption.KeyPrefix?.Length <= 0)
@@ -32,7 +42,7 @@ internal class ClientSideCachingRedisResolver: PubSubRedisResolver
         }
 
         //
-        List<object> argv = new() //todo 临时写法
+        List<object> argv = new() 
         {
             "TRACKING",
             "on",
@@ -47,7 +57,11 @@ internal class ClientSideCachingRedisResolver: PubSubRedisResolver
             argv.Add(se);
         }
 
-        _ = await InvokeSimpleAsync(new Command(RedisCommandName.Client, argv.ToArray()));
+        var res = await InvokeSimpleAsync(new Command(RedisCommandName.Client, argv.ToArray()));
+        if (res=="OK")
+        {
+            IsOpenTracking = true;
+        }
     }
     
     #endregion

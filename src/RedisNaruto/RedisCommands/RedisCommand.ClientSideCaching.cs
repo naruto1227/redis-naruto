@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using RedisNaruto.EventDatas;
 using RedisNaruto.Internal;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Interceptors;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Internal.RedisResolvers;
@@ -22,6 +25,7 @@ public partial class RedisCommand : IRedisCommand
     /// <exception cref="NotImplementedException"></exception>
     public async Task UseClientSideCachingAsync(ClientSideCachingOption option)
     {
+        //todo 需要处理 连接断开后，要清除缓存， 连接断开 要重新连接 然后 重新订阅客户端缓存
         _clientSideCachingRedisResolver = new ClientSideCachingRedisResolver(_redisClientPool, option);
         await _clientSideCachingRedisResolver.InitClientAsync();
         await _clientSideCachingRedisResolver.BCastAsync();
@@ -62,14 +66,19 @@ public partial class RedisCommand : IRedisCommand
     /// </summary>
     private async void StartClientSideCaching()
     {
+        if (_clientSideCachingRedisResolver?.IsOpenTracking==false)
+        {
+            Debug.WriteLine("跟踪未开启成功");
+            return;
+        }
         using (_clientSideCachingRedisResolver)
         {
             using (_sideCachingInterceptor)
             {
                 //开启订阅
-                //todo 记录返回的日志
-                var res = await _clientSideCachingRedisResolver.InvokeAsync<object>(new Command(RedisCommandName.Sub,
+                var res = await _clientSideCachingRedisResolver!.InvokeAsync<object>(new Command(RedisCommandName.Sub,
                     new object[] {"__redis__:invalidate"}));
+                RedisDiagnosticListenerExtensions.ClientSideCachingStart(_clientSideCachingRedisResolver.GetClientId(),res);
                 while (true)
                 {
                     try
@@ -91,8 +100,8 @@ public partial class RedisCommand : IRedisCommand
                     }
                     catch (Exception e)
                     {
-                        //todo 增加事件推送
-                        Console.WriteLine(e);
+                        RedisDiagnosticListenerExtensions.ClientSideCachingException(e);
+                        Debug.Write($"订阅客户端缓存异常,e={e}");
                     }
                 }
             }

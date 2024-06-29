@@ -32,6 +32,14 @@ public static class RedisDiagnosticListenerExtensions
     public const string LockCreateFailMessage= Prefix + nameof(LockCreateFail);
     public const string LockCreateExceptionMessage= Prefix + nameof(LockCreateException);
     
+    public const string ClientSideCachingExceptionMessage= Prefix + nameof(ClientSideCachingException);
+    public const string ClientSideCachingStartMessage= Prefix + nameof(ClientSideCachingStart);
+    public const string ClientSideCachingRemoveMessage= Prefix + nameof(ClientSideCachingRemove);
+    public const string ClientSideCachingUpdateMessage= Prefix + nameof(ClientSideCachingUpdate);
+
+    
+
+    //todo 调整为非对象的形式，改成参数的形式，当监听到订阅的话，才去构建对象
     /// <summary>
     /// 写入缓存前
     /// </summary>
@@ -184,5 +192,49 @@ public static class RedisDiagnosticListenerExtensions
     {
         if (!DiagnosticListener.IsEnabled(LockCreateExceptionMessage)) return;
         DiagnosticListener.Write(LockCreateExceptionMessage, eventData);
+    }
+
+    ///  <summary>
+    /// 客户端缓存执行异常
+    ///  </summary>
+    ///  <param name="clientId">客户端id</param>
+    ///  <param name="result">返回结果</param>
+    ///  <returns></returns>
+    internal static void ClientSideCachingStart(string clientId,object result)
+    {
+        if (!DiagnosticListener.IsEnabled(ClientSideCachingStartMessage)) return;
+        DiagnosticListener.Write(ClientSideCachingStartMessage, new ClientSideCachingStartEventData(clientId,result));
+    }
+    ///  <summary>
+    /// 客户端缓存删除
+    ///  </summary>
+    ///  <param name="key">删除的key</param>
+    ///  <returns></returns>
+    internal static void ClientSideCachingRemove(string key)
+    {
+        if (!DiagnosticListener.IsEnabled(ClientSideCachingRemoveMessage)) return;
+        DiagnosticListener.Write(ClientSideCachingRemoveMessage, new ClientSideCachingRemoveEventData(key));
+    }
+
+    ///  <summary>
+    /// 客户端缓存更新
+    ///  </summary>
+    ///  <param name="key">删除的key</param>
+    ///  <param name="value"></param>
+    ///  <returns></returns>
+    internal static void ClientSideCachingUpdate(string key,object value)
+    {
+        if (!DiagnosticListener.IsEnabled(ClientSideCachingUpdateMessage)) return;
+        DiagnosticListener.Write(ClientSideCachingUpdateMessage, new ClientSideCachingUpdateEventData(key,value));
+    }
+    /// <summary>
+    ///客户端缓存执行异常
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <returns></returns>
+    internal static void ClientSideCachingException(Exception exception)
+    {
+        if (!DiagnosticListener.IsEnabled(ClientSideCachingExceptionMessage)) return;
+        DiagnosticListener.Write(ClientSideCachingExceptionMessage, new ClientSideCachingExceptionEventData(exception));
     }
 }

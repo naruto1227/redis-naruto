@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using RedisNaruto.EventDatas;
+using RedisNaruto.Internal.DiagnosticListeners;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
 using RedisNaruto.Utils;
@@ -28,7 +29,7 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
     {
         _clientSideCachingOption = clientSideCachingOption;
         _redisCommand = redisCommand;
-        _entries = new ConcurrentDictionary<string, CacheItem>();
+        _entries = new ConcurrentDictionary<string, CacheItem>(Environment.ProcessorCount,clientSideCachingOption.Capacity);
         _periodicTimer = new PeriodicTimer(clientSideCachingOption.ExpiredMessageInterval);
         //开启线程 执行定时清理过程
         new Thread(ClearTimeOut).Start();
@@ -98,7 +99,7 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
         {
             if (res.ExpireTime < DateTime.Now)
             {
-                _entries.TryRemove(key, out _);
+                Remove(key);
                 return default;
             }
 
@@ -127,6 +128,7 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
             ExpireTime = DateTime.Now.AddSeconds(expireTime.TotalSeconds),
             LastAccessed = null
         });
+        RedisDiagnosticListenerExtensions.ClientSideCachingUpdate(key,value);
     }
 
     /// <summary>
@@ -136,6 +138,7 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
     public void Remove(string key)
     {
         _entries.TryRemove(key, out _);
+        RedisDiagnosticListenerExtensions.ClientSideCachingRemove(key);
     }
 
     private void DisposeCore(bool isDispose)
