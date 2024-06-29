@@ -146,12 +146,12 @@ public class DistributedLock : IDistributedLock
         //开启新线程 定时延长锁时间
         if (IsAcquired)
         {
-            new LockCreateSuccessEventData(ResourceName,LockId).LockCreateSuccess();
+            RedisDiagnosticListener.LockCreateSuccess(ResourceName,LockId);
             AutoExtenedTime();
         }
         else
         {
-            new LockCreateFailEventData(ResourceName,LockId).LockCreateFail();
+            RedisDiagnosticListener.LockCreateFail(ResourceName,LockId);
         }
     }
 
@@ -225,7 +225,7 @@ public class DistributedLock : IDistributedLock
         }
         catch (Exception ex)
         {
-            new LockCreateExceptionEventData(ResourceName,LockId,ex).LockCreateException();
+            RedisDiagnosticListener.LockCreateException(ResourceName,LockId,ex);
         }
     }
 
@@ -277,7 +277,7 @@ public class DistributedLock : IDistributedLock
         catch (Exception ex)
         {
             //
-            new LockCreateExceptionEventData(ResourceName,LockId,ex).LockCreateException();
+           RedisDiagnosticListener.LockCreateException(ResourceName,LockId,ex);
             return LockStatusEnum.Error;
         }
     }
@@ -301,7 +301,7 @@ public class DistributedLock : IDistributedLock
         }
         catch (Exception ex)
         {
-            new LockCreateExceptionEventData(ResourceName,LockId,ex).LockCreateException();
+            RedisDiagnosticListener.LockCreateException(ResourceName,LockId,ex);
         }
     }
 

@@ -46,7 +46,7 @@ internal class PubSubRedisResolver : DefaultRedisResolver, IDisposable
     {
         cancellationToken.ThrowIfCancellationRequested();
         var res = await RedisClient.ReadMessageAsync();
-        new ReceiveSubMessageEventData(res).ReceiveSub();
+        RedisDiagnosticListener.ReceiveSub(res);
         if (res is T redisValue)
         {
             return redisValue;

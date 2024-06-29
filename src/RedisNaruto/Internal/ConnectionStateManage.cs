@@ -191,7 +191,7 @@ internal static class ConnectionStateManage
             }).FirstOrDefault();
         if (info == null)
         {
-            new SelectRedisClientErrorEventData("",0,null,nameof(NotConnectionException)).SelectRedisClientError();
+            RedisDiagnosticListener.SelectRedisClientError("",0,null,nameof(NotConnectionException));
             throw new NotConnectionException();
         }
 

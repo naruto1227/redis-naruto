@@ -78,7 +78,7 @@ public partial class RedisCommand : IRedisCommand
                 //开启订阅
                 var res = await _clientSideCachingRedisResolver!.InvokeAsync<object>(new Command(RedisCommandName.Sub,
                     new object[] {"__redis__:invalidate"}));
-                RedisDiagnosticListenerExtensions.ClientSideCachingStart(_clientSideCachingRedisResolver.GetClientId(),res);
+                RedisDiagnosticListener.ClientSideCachingStart(_clientSideCachingRedisResolver.GetClientId(),res);
                 while (true)
                 {
                     try
@@ -100,7 +100,7 @@ public partial class RedisCommand : IRedisCommand
                     }
                     catch (Exception e)
                     {
-                        RedisDiagnosticListenerExtensions.ClientSideCachingException(e);
+                        RedisDiagnosticListener.ClientSideCachingException(e);
                         Debug.Write($"订阅客户端缓存异常,e={e}");
                     }
                 }

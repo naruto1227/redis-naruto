@@ -5,7 +5,7 @@ namespace RedisNaruto.EventDatas;
 /// </summary>
 public class SelectRedisClientErrorEventData : EventData
 {
-    public SelectRedisClientErrorEventData(string host, int port, Exception exception,string eventName=nameof(SelectRedisClientErrorEventData)) : base(eventName)
+    public SelectRedisClientErrorEventData(string host, int port, Exception exception,string eventName) : base(nameof(SelectRedisClientErrorEventData))
     {
         Host = host;
         Port = port;

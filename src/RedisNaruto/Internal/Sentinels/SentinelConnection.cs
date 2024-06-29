@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.ObjectPool;
@@ -72,11 +73,11 @@ internal static class SentinelConnection
             //执行获取主节点地址
             await MessageTransport.SendAsync(sentinelTcpClient.GetStream(),
                 new Command(RedisCommandName.Sentinel, argv));
-            new SendSentinelMessageEventData(hostInfo.hostPort.Host, hostInfo.hostPort.Port, RedisCommandName.Sentinel,
-                argv).SendSentinel();
+            RedisDiagnosticListener.SendSentinel(hostInfo.hostPort.Host, hostInfo.hostPort.Port, RedisCommandName.Sentinel,
+                argv);
             var result = await MessageTransport.ReceiveMessageAsync(sentinelTcpClient.GetStream());
-            new ReceiveSentinelMessageEventData(hostInfo.hostPort.Host, hostInfo.hostPort.Port,
-                RedisCommandName.Sentinel, argv, result).ReceiveSentinel();
+            RedisDiagnosticListener.ReceiveSentinel(hostInfo.hostPort.Host, hostInfo.hostPort.Port,
+                RedisCommandName.Sentinel, argv, result);
             if (result is List<object> list)
             {
                 return new HostPort(list[0].ToString(), list[1].ToString().ToInt());
@@ -84,8 +85,8 @@ internal static class SentinelConnection
         }
         catch (Exception e)
         {
-            new SentinelMessageErrorEventData(hostInfo.hostPort.Host,hostInfo.hostPort.Port,e).SentinelMessageError();
-            Console.WriteLine(e);
+            RedisDiagnosticListener.SentinelMessageError(hostInfo.hostPort.Host,hostInfo.hostPort.Port,e);
+            Debug.WriteLine(e);
             throw;
         }
         finally

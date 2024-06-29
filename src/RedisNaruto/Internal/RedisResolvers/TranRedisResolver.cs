@@ -34,14 +34,14 @@ internal class TranRedisResolver : DefaultRedisResolver, IDisposable
     public async Task BeginTranAsync()
     {
         await InvokeAsync<RedisValue>(new Command(RedisCommandName.Multi, null));
-        new BeginTranEventData(_redisClient.CurrentHost, _redisClient.CurrentPort).BeginTran();
+        RedisDiagnosticListener.BeginTran(_redisClient.CurrentHost, _redisClient.CurrentPort);
     }
 
     public override async Task<T> InvokeAsync<T>(Command command)
     {
         _ = await _redisClient.ExecuteSampleAsync(command);
         if (command.Cmd == RedisCommandName.DisCard)
-            new DiscardTranEventData(_redisClient.CurrentHost, _redisClient.CurrentPort).DiscardTran();
+            RedisDiagnosticListener.DiscardTran(_redisClient.CurrentHost, _redisClient.CurrentPort);
         return default;
     }
 
@@ -57,7 +57,7 @@ internal class TranRedisResolver : DefaultRedisResolver, IDisposable
         var resultList = await _redisClient.ExecuteAsync<List<object>>(command);
         if (command.Cmd == RedisCommandName.Exec)
         {
-            new EndTranEventData(_redisClient.CurrentHost, _redisClient.CurrentPort, resultList).EndTran();
+            RedisDiagnosticListener.EndTran(_redisClient.CurrentHost, _redisClient.CurrentPort, resultList);
         }
 
         if (resultList == null)

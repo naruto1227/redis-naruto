@@ -156,7 +156,7 @@ internal class RedisClient : IRedisClient
                 command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
         await MessageSendAsync(stream, command);
         var result = await MessageTransport.ReceiveMessageAsync(stream);
-        new WriteRedisNarutoMessageAfterEventData(command.Cmd, command.Args, result).WriteRedisNarutoAfter();
+       RedisDiagnosticListener.WriteRedisNarutoAfter(command.Cmd, command.Args, result);
         if (result is T redisValue)
         {
             return redisValue;
@@ -178,7 +178,7 @@ internal class RedisClient : IRedisClient
                 command.Cmd is RedisCommandName.Auth or RedisCommandName.Quit or RedisCommandName.Hello);
         await MessageSendAsync(stream, command);
         var result = await MessageTransport.ReceiveSimpleMessageAsync(stream);
-        new WriteRedisNarutoMessageAfterEventData(command.Cmd, command.Args, result).WriteRedisNarutoAfter();
+        RedisDiagnosticListener.WriteRedisNarutoAfter(command.Cmd, command.Args, result);
         return result;
     }
 
@@ -357,7 +357,7 @@ internal class RedisClient : IRedisClient
     /// <param name="command"></param>
     private async Task MessageSendAsync(Stream stream, Command command)
     {
-        new WriteRedisNarutoMessageBeforeEventData(command.Cmd, command.Args).WriteRedisNarutoBefore();
+        RedisDiagnosticListener.WriteRedisNarutoBefore(command.Cmd,command.Args);
         await MessageTransport.SendAsync(stream, command);
         //更新时间
         this.LastDataTime = TimeUtil.GetTimestamp();

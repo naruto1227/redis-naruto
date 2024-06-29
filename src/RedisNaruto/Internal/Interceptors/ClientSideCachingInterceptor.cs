@@ -128,7 +128,7 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
             ExpireTime = DateTime.Now.AddSeconds(expireTime.TotalSeconds),
             LastAccessed = null
         });
-        RedisDiagnosticListenerExtensions.ClientSideCachingUpdate(key,value);
+        RedisDiagnosticListener.ClientSideCachingUpdate(key,value);
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
     public void Remove(string key)
     {
         _entries.TryRemove(key, out _);
-        RedisDiagnosticListenerExtensions.ClientSideCachingRemove(key);
+        RedisDiagnosticListener.ClientSideCachingRemove(key);
     }
 
     private void DisposeCore(bool isDispose)

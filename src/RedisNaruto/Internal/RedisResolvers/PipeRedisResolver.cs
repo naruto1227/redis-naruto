@@ -30,7 +30,7 @@ internal class PipeRedisResolver : DefaultRedisResolver, IDisposable
         _redisClient = await _redisClientPool.RentAsync();
         //ping
         await DoWhileAsync(async rc => await rc.PingAsync(), _redisClient);
-        new BeginPipeEventData(_redisClient.CurrentHost,_redisClient.CurrentPort).BeginPipe();
+        RedisDiagnosticListener.BeginPipe(_redisClient.CurrentHost,_redisClient.CurrentPort);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ internal class PipeRedisResolver : DefaultRedisResolver, IDisposable
         {
             result[i] = await _redisClient.ReadMessageAsync();
         }
-        new EndPipeEventData(_redisClient.CurrentHost,_redisClient.CurrentPort,result).EndPipe();
+        RedisDiagnosticListener.EndPipe(_redisClient.CurrentHost,_redisClient.CurrentPort,result);
         return result;
     }
 

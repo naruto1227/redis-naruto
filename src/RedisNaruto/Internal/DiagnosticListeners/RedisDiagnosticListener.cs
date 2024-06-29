@@ -6,7 +6,7 @@ namespace RedisNaruto.Internal.DiagnosticListeners;
 /// <summary>
 /// 
 /// </summary>
-public static class RedisDiagnosticListenerExtensions
+public static class RedisDiagnosticListener
 {
     private static readonly DiagnosticListener DiagnosticListener = new(DiagnosticListenerName);
 
@@ -27,171 +27,170 @@ public static class RedisDiagnosticListenerExtensions
     public const string DiscardTranMessage = Prefix + nameof(DiscardTran);
     public const string SendSentinelMessage = Prefix + nameof(SendSentinel);
     public const string ReceiveSentinelMessage = Prefix + nameof(ReceiveSentinel);
-    public const string SentinelError= Prefix + nameof(SentinelMessageError);
-    public const string LockCreateSuccessMessage= Prefix + nameof(LockCreateSuccess);
-    public const string LockCreateFailMessage= Prefix + nameof(LockCreateFail);
-    public const string LockCreateExceptionMessage= Prefix + nameof(LockCreateException);
-    
-    public const string ClientSideCachingExceptionMessage= Prefix + nameof(ClientSideCachingException);
-    public const string ClientSideCachingStartMessage= Prefix + nameof(ClientSideCachingStart);
-    public const string ClientSideCachingRemoveMessage= Prefix + nameof(ClientSideCachingRemove);
-    public const string ClientSideCachingUpdateMessage= Prefix + nameof(ClientSideCachingUpdate);
+    public const string SentinelError = Prefix + nameof(SentinelMessageError);
+    public const string LockCreateSuccessMessage = Prefix + nameof(LockCreateSuccess);
+    public const string LockCreateFailMessage = Prefix + nameof(LockCreateFail);
+    public const string LockCreateExceptionMessage = Prefix + nameof(LockCreateException);
 
-    
+    public const string ClientSideCachingExceptionMessage = Prefix + nameof(ClientSideCachingException);
+    public const string ClientSideCachingStartMessage = Prefix + nameof(ClientSideCachingStart);
+    public const string ClientSideCachingRemoveMessage = Prefix + nameof(ClientSideCachingRemove);
+    public const string ClientSideCachingUpdateMessage = Prefix + nameof(ClientSideCachingUpdate);
 
-    //todo 调整为非对象的形式，改成参数的形式，当监听到订阅的话，才去构建对象
     /// <summary>
     /// 写入缓存前
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void WriteRedisNarutoBefore(this WriteRedisNarutoMessageBeforeEventData eventData)
+    internal static void WriteRedisNarutoBefore(string cmd, object[] args)
     {
         if (!DiagnosticListener.IsEnabled(WriteRedisNarutoMessageBefore)) return;
-        DiagnosticListener.Write(WriteRedisNarutoMessageBefore, eventData);
+        DiagnosticListener.Write(WriteRedisNarutoMessageBefore, new WriteRedisNarutoMessageBeforeEventData(cmd, args));
     }
 
     /// <summary>
     /// 写入缓存后
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void WriteRedisNarutoAfter(this WriteRedisNarutoMessageAfterEventData eventData)
+    internal static void WriteRedisNarutoAfter(string cmd, object[] args, object result)
     {
         if (!DiagnosticListener.IsEnabled(WriteRedisNarutoMessageAfter)) return;
-        DiagnosticListener.Write(WriteRedisNarutoMessageAfter, eventData);
+        DiagnosticListener.Write(WriteRedisNarutoMessageAfter,
+            new WriteRedisNarutoMessageAfterEventData(cmd, args, result));
     }
-    
+
     /// <summary>
     /// 选择客户端触发的错误
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void SelectRedisClientError(this SelectRedisClientErrorEventData eventData)
+    internal static void SelectRedisClientError(string host, int port, Exception exception,
+        string eventName = nameof(SelectRedisClientErrorEventData))
     {
         if (!DiagnosticListener.IsEnabled(SelectRedisClientMessageError)) return;
-        DiagnosticListener.Write(SelectRedisClientMessageError, eventData);
+        DiagnosticListener.Write(SelectRedisClientMessageError,
+            new SelectRedisClientErrorEventData(host, port, exception, eventName));
     }
-    
+
     /// <summary>
     /// 开启流水线
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void BeginPipe(this BeginPipeEventData eventData)
+    internal static void BeginPipe(string host, int port)
     {
         if (!DiagnosticListener.IsEnabled(BeginPipeMessage)) return;
-        DiagnosticListener.Write(BeginPipeMessage, eventData);
+        DiagnosticListener.Write(BeginPipeMessage,  new BeginPipeEventData(host,port));
     }
+
     /// <summary>
     /// 结束流水线
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void EndPipe(this EndPipeEventData eventData)
+    internal static void EndPipe(string host, int port, object result)
     {
         if (!DiagnosticListener.IsEnabled(EndPipeMessage)) return;
-        DiagnosticListener.Write(EndPipeMessage, eventData);
+        DiagnosticListener.Write(EndPipeMessage, new EndPipeEventData(host,port,result));
     }
+
     /// <summary>
     /// 接收订阅消息处理
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void ReceiveSub(this ReceiveSubMessageEventData eventData)
+    internal static void ReceiveSub(object result)
     {
         if (!DiagnosticListener.IsEnabled(ReceiveSubMessage)) return;
-        DiagnosticListener.Write(ReceiveSubMessage, eventData);
+        DiagnosticListener.Write(ReceiveSubMessage, new ReceiveSubMessageEventData(result));
     }
+
     /// <summary>
     /// 开启事务
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void BeginTran(this BeginTranEventData eventData)
+    internal static void BeginTran(string host, int port)
     {
         if (!DiagnosticListener.IsEnabled(BeginTranMessage)) return;
-        DiagnosticListener.Write(BeginTranMessage, eventData);
+        DiagnosticListener.Write(BeginTranMessage, new BeginTranEventData(host,port));
     }
+
     /// <summary>
     /// 结束事务
     /// </summary>
-    /// <param name="eventData"></param>
+    
     /// <returns></returns>
-    internal static void EndTran(this EndTranEventData eventData)
+    internal static void EndTran(string host, int port, object result)
     {
         if (!DiagnosticListener.IsEnabled(EndTranMessage)) return;
-        DiagnosticListener.Write(EndTranMessage, eventData);
+        DiagnosticListener.Write(EndTranMessage, new EndTranEventData(host,port, result));
     }
+
     /// <summary>
     /// 取消事务
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void DiscardTran(this DiscardTranEventData eventData)
+    internal static void DiscardTran(string host, int port)
     {
         if (!DiagnosticListener.IsEnabled(DiscardTranMessage)) return;
-        DiagnosticListener.Write(DiscardTranMessage, eventData);
+        DiagnosticListener.Write(DiscardTranMessage,  new DiscardTranEventData(host,port));
     }
+
     /// <summary>
     /// 发送哨兵消息
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void SendSentinel(this SendSentinelMessageEventData eventData)
+    internal static void SendSentinel(string host, int port, string cmd, object[] argv)
     {
         if (!DiagnosticListener.IsEnabled(SendSentinelMessage)) return;
-        DiagnosticListener.Write(SendSentinelMessage, eventData);
+        DiagnosticListener.Write(SendSentinelMessage, new SendSentinelMessageEventData(host, port, cmd,
+            argv));
     }
+
     /// <summary>
     /// 接收哨兵消息
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void ReceiveSentinel(this ReceiveSentinelMessageEventData eventData)
+    internal static void ReceiveSentinel(string host, int port, string cmd, object[] argv, object result)
     {
         if (!DiagnosticListener.IsEnabled(ReceiveSentinelMessage)) return;
-        DiagnosticListener.Write(ReceiveSentinelMessage, eventData);
+        DiagnosticListener.Write(ReceiveSentinelMessage,  new ReceiveSentinelMessageEventData(host, port,
+            cmd, argv, result));
     }
+
     /// <summary>
     ///哨兵错误
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void SentinelMessageError(this SentinelMessageErrorEventData eventData)
+    internal static void SentinelMessageError(string host, int port, Exception exception)
     {
         if (!DiagnosticListener.IsEnabled(SentinelError)) return;
-        DiagnosticListener.Write(SentinelError, eventData);
+        DiagnosticListener.Write(SentinelError,  new SentinelMessageErrorEventData(host,port,exception));
     }
+
     /// <summary>
     ///创建锁成功
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void LockCreateSuccess(this LockCreateSuccessEventData eventData)
+    internal static void LockCreateSuccess(string resourceName, string lockId)
     {
         if (!DiagnosticListener.IsEnabled(LockCreateSuccessMessage)) return;
-        DiagnosticListener.Write(LockCreateSuccessMessage, eventData);
+        DiagnosticListener.Write(LockCreateSuccessMessage,  new LockCreateSuccessEventData(resourceName,lockId));
     }
+
     /// <summary>
     ///获取锁失败
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void LockCreateFail(this LockCreateFailEventData eventData)
+    internal static void LockCreateFail(string resourceName, string lockId)
     {
         if (!DiagnosticListener.IsEnabled(LockCreateFailMessage)) return;
-        DiagnosticListener.Write(LockCreateFailMessage, eventData);
+        DiagnosticListener.Write(LockCreateFailMessage, new LockCreateFailEventData(resourceName,lockId));
     }
+
     /// <summary>
     ///锁报错
     /// </summary>
-    /// <param name="eventData"></param>
     /// <returns></returns>
-    internal static void LockCreateException(this LockCreateExceptionEventData eventData)
+    internal static void LockCreateException(string resourceName, string lockId, Exception exception)
     {
         if (!DiagnosticListener.IsEnabled(LockCreateExceptionMessage)) return;
-        DiagnosticListener.Write(LockCreateExceptionMessage, eventData);
+        DiagnosticListener.Write(LockCreateExceptionMessage,  new LockCreateExceptionEventData(resourceName,lockId,exception));
     }
 
     ///  <summary>
@@ -200,11 +199,12 @@ public static class RedisDiagnosticListenerExtensions
     ///  <param name="clientId">客户端id</param>
     ///  <param name="result">返回结果</param>
     ///  <returns></returns>
-    internal static void ClientSideCachingStart(string clientId,object result)
+    internal static void ClientSideCachingStart(string clientId, object result)
     {
         if (!DiagnosticListener.IsEnabled(ClientSideCachingStartMessage)) return;
-        DiagnosticListener.Write(ClientSideCachingStartMessage, new ClientSideCachingStartEventData(clientId,result));
+        DiagnosticListener.Write(ClientSideCachingStartMessage, new ClientSideCachingStartEventData(clientId, result));
     }
+
     ///  <summary>
     /// 客户端缓存删除
     ///  </summary>
@@ -222,11 +222,12 @@ public static class RedisDiagnosticListenerExtensions
     ///  <param name="key">删除的key</param>
     ///  <param name="value"></param>
     ///  <returns></returns>
-    internal static void ClientSideCachingUpdate(string key,object value)
+    internal static void ClientSideCachingUpdate(string key, object value)
     {
         if (!DiagnosticListener.IsEnabled(ClientSideCachingUpdateMessage)) return;
-        DiagnosticListener.Write(ClientSideCachingUpdateMessage, new ClientSideCachingUpdateEventData(key,value));
+        DiagnosticListener.Write(ClientSideCachingUpdateMessage, new ClientSideCachingUpdateEventData(key, value));
     }
+
     /// <summary>
     ///客户端缓存执行异常
     /// </summary>

@@ -74,7 +74,7 @@ internal class DefaultRedisResolver : IRedisResolver
             var eventArgs = new InterceptorCommandBeforeEventArgs(command);
             CommandBefore?.Invoke(null, eventArgs);
             //判断是否为缓存
-            if (eventArgs.IsCache && eventArgs.Value is RedisValue result)// todo 校验转换
+            if (eventArgs.IsCache && eventArgs.Value is RedisValue result) // todo 校验转换
             {
                 return result;
             }
@@ -158,13 +158,13 @@ internal class DefaultRedisResolver : IRedisResolver
             }
             catch (Exception e)
             {
-                new SelectRedisClientErrorEventData(redisClient.CurrentHost, redisClient.CurrentPort, e)
-                    .SelectRedisClientError();
+                RedisDiagnosticListener
+                    .SelectRedisClientError(redisClient.CurrentHost, redisClient.CurrentPort, e);
                 //判断异常的类型 是否为网络相关的
                 if (e is not IOException or SocketException)
                 {
-                    new SelectRedisClientErrorEventData(redisClient.CurrentHost, redisClient.CurrentPort, e)
-                        .SelectRedisClientError();
+                    RedisDiagnosticListener
+                        .SelectRedisClientError(redisClient.CurrentHost, redisClient.CurrentPort, e);
                     throw;
                 }
 
@@ -179,8 +179,8 @@ internal class DefaultRedisResolver : IRedisResolver
                     }
                     catch (Exception exception)
                     {
-                        new SelectRedisClientErrorEventData(redisClient.CurrentHost, redisClient.CurrentPort, exception)
-                            .SelectRedisClientError();
+                        RedisDiagnosticListener
+                            .SelectRedisClientError(redisClient.CurrentHost, redisClient.CurrentPort, exception);
                         //当没有连接的时候 抛出
                         if (exception is NotConnectionException)
                         {
