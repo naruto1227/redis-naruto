@@ -141,6 +141,14 @@ internal sealed class ClientSideCachingInterceptor : IDisposable
         RedisDiagnosticListener.ClientSideCachingRemove(key);
     }
 
+    /// <summary>
+    /// 清空所有缓存
+    /// </summary>
+    public void Flush()
+    {
+        _entries?.Clear();
+    }
+
     private void DisposeCore(bool isDispose)
     {
         if (isDispose)

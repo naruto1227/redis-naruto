@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net.Sockets;
 using RedisNaruto.EventDatas;
 using RedisNaruto.Internal;
 using RedisNaruto.Internal.DiagnosticListeners;
@@ -84,7 +85,7 @@ public partial class RedisCommand : IRedisCommand
                     try
                     {
                         //接收消息
-                        var message = await _clientSideCachingRedisResolver.ReadMessageAsync<object>();
+                        object message = await _clientSideCachingRedisResolver.ReadMessageAsync<object>();
                         if (message is List<object> result && result.Count == 3)
                         {
                             if (result[2] is List<object> cacheKeys)
@@ -97,6 +98,21 @@ public partial class RedisCommand : IRedisCommand
                                 }
                             }
                         }
+                    }
+                    catch (IOException ioException) when
+                        (ioException.InnerException is SocketException {SocketErrorCode: SocketError.TimedOut}) //过滤超时
+                    {
+                        continue;
+                    }
+                    catch (IOException ioException)
+                    {
+                        //todo 连接断开
+                        this._sideCachingInterceptor.Flush();
+                    }
+                    catch (SocketException socketException)
+                    {
+                        //todo 连接断开
+                        this._sideCachingInterceptor.Flush();
                     }
                     catch (Exception e)
                     {
