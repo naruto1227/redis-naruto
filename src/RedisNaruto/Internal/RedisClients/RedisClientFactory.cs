@@ -100,6 +100,7 @@ internal class RedisClientFactory : IRedisClientFactory
         await tcpClient.ConnectAsync(ips, hostInfo.hostPort.Port,
             cancellationToken);
 
+        //todo ipv6
         return (hostInfo.connectionId, tcpClient, ips.MapToIPv4().ToString(), hostInfo.hostPort.Port);
     }
 

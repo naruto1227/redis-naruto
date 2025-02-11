@@ -131,6 +131,12 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// <returns></returns>
     private void Return([NotNull] IRedisClient redisClient)
     {
+        //返回队列的时候，判断下连接是否是断开的，如果是断开的话，就释放这个资源
+        if (redisClient.IsClose)
+        {
+            redisClient.Close();
+            return;
+        }
         Interlocked.Increment(ref _freeCount);
         //入队
         _freeClients.Enqueue(redisClient);

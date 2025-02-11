@@ -44,6 +44,10 @@ internal interface IRedisClient : IDisposable
     /// </summary>
     long LastDataTime { get; }
     /// <summary>
+    /// 是否关闭
+    /// </summary>
+    bool IsClose { get; }
+    /// <summary>
     /// 初始化客户端id
     /// </summary>
     /// <returns></returns>

@@ -59,10 +59,14 @@ internal class RedisClient : IRedisClient
     /// </summary>
     public int CurrentDb { get; private set; }
 
-    /// <summary>
+    private bool _isClose;
+    public bool IsClose => _isClose?_isClose:!TcpClient.Connected;
+
+    /// <summaryß>
     /// 默认的db
     /// </summary>
     protected int DefaultDb { get; private set; }
+    
     
     /// <summary>
     /// 消息传输
@@ -111,7 +115,7 @@ internal class RedisClient : IRedisClient
     {
         if (isDispose)
         {
-            DisposeTask.Invoke(this);
+            DisposeTask?.Invoke(this);
         }
     }
 
@@ -120,6 +124,7 @@ internal class RedisClient : IRedisClient
     /// </summary>
     public void Close()
     {
+        _isClose = true;
         TcpClient?.Dispose();
         TcpClient = null;
         DisposeTask = null;
