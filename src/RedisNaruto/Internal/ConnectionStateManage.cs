@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.DiagnosticListeners;
@@ -45,12 +46,16 @@ internal static class ConnectionStateManage
         }
 
         //开启后台服务
-        var t1=new Thread(HealCheckAsync);
-        var t2=new Thread(InValidHealCheckAsync);
-        t1.IsBackground = true;
-        t2.IsBackground = true;
-        t1.Start();
-        t2.Start();
+        new Thread(HealCheckAsync)
+        {
+            Name = nameof(HealCheckAsync),
+            IsBackground = true
+        }.Start();
+        new Thread(InValidHealCheckAsync)
+        {
+            IsBackground = true,
+            Name = nameof(InValidHealCheckAsync),
+        }.Start();
     }
 
     /// <summary>
@@ -86,7 +91,8 @@ internal static class ConnectionStateManage
         while (await timer.WaitForNextTickAsync())
         {
             //检查失效的
-            foreach (var connectionState in ConnectionStates.Where(a => a.Value.State == ConnectionStateEnum.InValid))
+            foreach (var connectionState in ConnectionStates.Where(
+                         a => a.Value.State == ConnectionStateEnum.InValid))
             {
                 //存在连接没有释放的需要先释放  SetInValid 会造成需要此操作
                 if (TcpClients.TryRemove(connectionState.Key, out var tcp))
@@ -109,6 +115,7 @@ internal static class ConnectionStateManage
     {
         try
         {
+            Console.WriteLine("HealCheckCoreAsync begin");
             //获取tcp客户端
             if (!TcpClients.TryGetValue(connectionState.Key, out var tcp))
             {
@@ -129,24 +136,24 @@ internal static class ConnectionStateManage
              //写入消息
             await scoket.SendAsync(Ping);
 #elif NET6_0
-            await scoket.SendAsync(Ping,SocketFlags.None);
-#endif 
-          
+            await scoket.SendAsync(Ping, SocketFlags.None);
+#endif
+
             //读取回复
             using (var memory = MemoryPool<byte>.Shared.Rent(512))
             {
 #if Net8
                var es = await scoket.ReceiveAsync(memory.Memory);
 #elif NET6_0
-                var es = await scoket.ReceiveAsync(memory.Memory,SocketFlags.None);
-#endif 
-              
+                var es = await scoket.ReceiveAsync(memory.Memory, SocketFlags.None);
+#endif
+
                 //没有任何消息代表失效
-                 if (es == 0)
-                 {
-                     connectionState.Value.SetInValid("es=0");
-                     return;
-                 }
+                if (es == 0)
+                {
+                    connectionState.Value.SetInValid("es=0");
+                    return;
+                }
             }
 
             connectionState.Value.SetValid();
@@ -174,13 +181,16 @@ internal static class ConnectionStateManage
                 tcp.Dispose();
                 tcp = null;
             }
+
+            Console.WriteLine("HealCheckCoreAsync end");
         }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public static (Guid connectionId, HostPort hostPort) Get()
+    public static (Guid connectionId, HostPort hostPort) Get([CallerMemberName] string mem = "",
+        [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
     {
         var info = ConnectionStates.Where(a => a.Value.State == ConnectionStateEnum.Valid).OrderBy(a => Guid.NewGuid())
             .Select(a => new
@@ -191,7 +201,7 @@ internal static class ConnectionStateManage
             }).FirstOrDefault();
         if (info == null)
         {
-            RedisDiagnosticListener.SelectRedisClientError("",0,null,nameof(NotConnectionException));
+            RedisDiagnosticListener.SelectRedisClientError("", 0, null, nameof(NotConnectionException));
             throw new NotConnectionException();
         }
 
