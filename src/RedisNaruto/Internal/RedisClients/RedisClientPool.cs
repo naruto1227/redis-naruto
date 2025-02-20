@@ -73,8 +73,13 @@ internal sealed class RedisClientPool : IRedisClientPool
     /// <exception cref="OperationCanceledException"></exception>
     public async Task<IRedisClient> RentAsync(CancellationToken cancellationToken = default)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        //指定默认的次数
+        for (var i = 0; i < 5; i++)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
             //从队列中获取
             if (_freeClients.TryDequeue(out var redisClient))
             {
@@ -98,7 +103,7 @@ internal sealed class RedisClientPool : IRedisClientPool
             await Task.Delay(500, cancellationToken);
         }
 
-        throw new OperationCanceledException();
+        throw new OperationCanceledException("没有可用的连接");
     }
 
     /// <summary>
