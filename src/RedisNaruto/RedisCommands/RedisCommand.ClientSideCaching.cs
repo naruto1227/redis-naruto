@@ -67,23 +67,23 @@ public partial class RedisCommand : IRedisCommand
     /// </summary>
     private async void StartClientSideCaching()
     {
-        if (_clientSideCachingRedisResolver?.IsOpenTracking==false)
+        if (_clientSideCachingRedisResolver?.IsOpenTracking == false)
         {
             Debug.WriteLine("跟踪未开启成功");
             return;
         }
+
         using (_clientSideCachingRedisResolver)
         {
             using (_sideCachingInterceptor)
             {
-                //开启订阅
-                var res = await _clientSideCachingRedisResolver!.InvokeAsync<object>(new Command(RedisCommandName.Sub,
-                    new object[] {"__redis__:invalidate"}));
-                RedisDiagnosticListener.ClientSideCachingStart(_clientSideCachingRedisResolver.GetClientId(),res);
+                await OpenClientSideCachingSub();
                 while (true)
                 {
                     try
                     {
+                        //刷新新的连接 如果连接是断开的话
+                        await RefershNewConnection();
                         //接收消息
                         object message = await _clientSideCachingRedisResolver.ReadMessageAsync<object>();
                         if (message is List<object> result && result.Count == 3)
@@ -108,11 +108,13 @@ public partial class RedisCommand : IRedisCommand
                     {
                         //todo 连接断开
                         this._sideCachingInterceptor.Flush();
+                        _isClose = true;
                     }
                     catch (SocketException socketException)
                     {
                         //todo 连接断开
                         this._sideCachingInterceptor.Flush();
+                        _isClose = true;
                     }
                     catch (Exception e)
                     {
@@ -122,5 +124,41 @@ public partial class RedisCommand : IRedisCommand
                 }
             }
         }
+    }
+
+    private bool _isClose;
+
+    /// <summary>
+    /// 开启缓存订阅
+    /// </summary>
+    private async Task OpenClientSideCachingSub()
+    {
+        //开启订阅
+        var res = await _clientSideCachingRedisResolver!.InvokeAsync<object>(new Command(RedisCommandName.Sub,
+            new object[] {"__redis__:invalidate"}));
+        RedisDiagnosticListener.ClientSideCachingStart(_clientSideCachingRedisResolver.GetClientId(), res);
+    }
+
+    /// <summary>
+    /// 刷新新的连接
+    /// </summary>
+    private async Task<bool> RefershNewConnection()
+    {
+        if (!_isClose)
+        {
+            return true;
+        }
+
+        // 使用 _clientSideCachingRedisResolver 刷新新的连接
+        //如果获取失败的话，就暂停 ，如果获取成功就重新 开启订阅模式
+        if (await _clientSideCachingRedisResolver.InitNewClientAsync())
+        {
+            await OpenClientSideCachingSub();
+            _isClose = false;
+            return true;
+        }
+
+        await Task.Delay(1000);
+        return false;
     }
 }
