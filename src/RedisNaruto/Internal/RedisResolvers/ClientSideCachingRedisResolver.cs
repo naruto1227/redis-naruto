@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using RedisNaruto.Internal.Interfaces;
 using RedisNaruto.Internal.Models;
 using RedisNaruto.Models;
@@ -7,10 +8,12 @@ namespace RedisNaruto.Internal.RedisResolvers;
 /// <summary>
 /// 客户端缓存服务
 /// </summary>
-internal class ClientSideCachingRedisResolver: PubSubRedisResolver
+internal class ClientSideCachingRedisResolver : PubSubRedisResolver
 {
     private readonly ClientSideCachingOption _clientSideCachingOption;
-    public ClientSideCachingRedisResolver(IRedisClientPool redisClientPool,ClientSideCachingOption clientSideCachingOption) : base(redisClientPool)
+
+    public ClientSideCachingRedisResolver(IRedisClientPool redisClientPool,
+        ClientSideCachingOption clientSideCachingOption) : base(redisClientPool)
     {
         _clientSideCachingOption = clientSideCachingOption;
     }
@@ -22,18 +25,36 @@ internal class ClientSideCachingRedisResolver: PubSubRedisResolver
         await RedisClient.InitClientIdAsync();
     }
 
+    /// <summary>
+    /// 初始化新的客户端
+    /// </summary>
+    public async Task<bool> InitNewClientAsync()
+    {
+        this.Dispose(true);
+        try
+        {
+            await InitClientAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+        }
+
+        return false;
+    }
+
     public string GetClientId()
     {
         return RedisClient.ClientId;
     }
-    
+
     #region 客户端缓存命令
 
     /// <summary>
     /// 是否开启
     /// </summary>
     public bool IsOpenTracking { get; private set; }
-    
+
     public virtual async Task BCastAsync()
     {
         if (this._clientSideCachingOption.KeyPrefix?.Length <= 0)
@@ -42,7 +63,7 @@ internal class ClientSideCachingRedisResolver: PubSubRedisResolver
         }
 
         //
-        List<object> argv = new() 
+        List<object> argv = new()
         {
             "TRACKING",
             "on",
@@ -58,11 +79,11 @@ internal class ClientSideCachingRedisResolver: PubSubRedisResolver
         }
 
         var res = await InvokeSimpleAsync(new Command(RedisCommandName.Client, argv.ToArray()));
-        if (res=="OK")
+        if (res == "OK")
         {
             IsOpenTracking = true;
         }
     }
-    
+
     #endregion
 }
