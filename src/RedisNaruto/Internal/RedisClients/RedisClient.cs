@@ -127,7 +127,7 @@ internal class RedisClient : IRedisClient
         _isClose = true;
         TcpClient?.Dispose();
         TcpClient = null;
-        DisposeTask = null;
+        // DisposeTask = null;
         GC.SuppressFinalize(this);
     }
     /// <summary>
