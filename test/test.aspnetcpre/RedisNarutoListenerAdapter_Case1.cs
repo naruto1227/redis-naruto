@@ -62,6 +62,11 @@ public class RedisNarutoListenerAdapter_Case1 : IObserver<DiagnosticListener>,IO
         {
             Console.WriteLine($"客户端缓存更新  key={eventData32.Key},value={eventData32.Value}");
         }
+        if (value is {Key: "RedisNaruto:ReceiveSub", Value: ReceiveSubMessageEventData eventData2111})
+        {
+            Console.WriteLine($"接收订阅处理  key={eventData2111.EventName},value={eventData2111.Result}");
+        }
+        
     }
 
     public void OnNext(DiagnosticListener value)

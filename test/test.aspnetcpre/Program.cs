@@ -44,7 +44,7 @@ await redis.UseClientSideCachingAsync(new ClientSideCachingOption
     TimeOut = default,
     Capacity = 0
 });
-
+Console.WriteLine($"当前进程id={Process.GetCurrentProcess().Id}");
 builder.Services.AddSingleton(redis);
 DiagnosticListener.AllListeners.Subscribe(new RedisNarutoListenerAdapter_Case1());
 
