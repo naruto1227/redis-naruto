@@ -34,7 +34,7 @@ internal class ConnectionState
     {
         this.State = ConnectionStateEnum.Valid;
         this.InValidReason = string.Empty;
-        Debug.WriteLine($"连接恢复:host={this.Host},port={this.Port}");
+        Console.WriteLine($"连接恢复:host={this.Host},port={this.Port}");
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ internal class ConnectionState
     {
         this.State = ConnectionStateEnum.InValid;
         this.InValidReason = inValidReason;
-        Debug.WriteLine($"连接失效:host={this.Host},port={this.Port}");
+        Console.WriteLine($"连接失效:host={this.Host},port={this.Port}");
     }
 }
 
