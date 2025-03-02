@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using RedisNaruto.EventDatas;
 using RedisNaruto.Exceptions;
 using RedisNaruto.Internal.DiagnosticListeners;
@@ -88,6 +90,7 @@ internal class DefaultRedisResolver : IRedisResolver
             catch (Exception e)
             {
                 CommandAfter?.Invoke(null, new InterceptorCommandAfterEventArgs(command, null, e));
+                redisClient.Close();
                 throw;
             }
         }
@@ -186,6 +189,7 @@ internal class DefaultRedisResolver : IRedisResolver
                         {
                             throw;
                         }
+                        Console.WriteLine($"{DateTime.Now.Ticks}:连接失败");
                     }
                 }
             }

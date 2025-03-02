@@ -168,7 +168,7 @@ internal static class ConnectionStateManage
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"连接失败,host={connectionState.Value.Host},port={connectionState.Value.Port}");
+            Console.WriteLine($"连接失败,host={connectionState.Value.Host},port={connectionState.Value.Port}");
             connectionState.Value.SetInValid(e.GetBaseException().Message);
         }
         finally
