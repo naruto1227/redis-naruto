@@ -35,29 +35,29 @@ public class BaseTest
         {
             Connection = new string[]
             {
-                "127.0.0.1:55000"
+                "127.0.0.1:56379"
             },
-            UserName = "default",
+            UserName = "",
             DataBase = 4,
-            Password = "redispw",
+            Password = "",
             PoolCount = 10,
             RESP3 = true
         }).GetAwaiter().GetResult();
 
         ConfigurationOptions configurationOptions = ConfigurationOptions.Parse(
-            "127.0.0.1:55000,password=redispw,connectTimeout=2000,defaultDatabase=1");
+            "127.0.0.1:56379,connectTimeout=2000,defaultDatabase=1");
         RedisConn = (ConnectionMultiplexer.Connect(configurationOptions)).GetDatabase();
 
         _redisClient = new RedisClient(new ConnectionStringBuilder
         {
-            Host = "127.0.0.1:55000",
+            Host = "127.0.0.1:56379",
             Protocol = RedisProtocol.RESP2,
-            User = "default",
-            Password = "redispw",
+            // User = "default",
+            // Password = "redispw",
             Database = 2,
         });
 
-        FullRedis = new FullRedis("127.0.0.1:55000", "redispw", 3);
+        FullRedis = new FullRedis("127.0.0.1:56379", "", 3);
 
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < 1000; i++)
