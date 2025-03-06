@@ -48,6 +48,8 @@ internal class ClientSideCachingRedisResolver : PubSubRedisResolver
         return RedisClient.ClientId;
     }
 
+    public ClientSideCachingOption Option => _clientSideCachingOption;
+
     #region 客户端缓存命令
 
     /// <summary>

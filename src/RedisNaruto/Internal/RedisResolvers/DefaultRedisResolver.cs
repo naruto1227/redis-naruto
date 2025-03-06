@@ -71,16 +71,15 @@ internal class DefaultRedisResolver : IRedisResolver
     /// </summary>
     public virtual async Task<RedisValue> InvokeSimpleAsync(Command command)
     {
+        var eventArgs = new InterceptorCommandBeforeEventArgs(command);
+        CommandBefore?.Invoke(null, eventArgs);
+        //判断是否为缓存
+        if (eventArgs.IsCache && eventArgs.Value is RedisValue result && !result.IsEmpty()) 
+        {
+            return result;
+        }
         using (var redisClient = await _redisClientPool.RentAsync())
         {
-            var eventArgs = new InterceptorCommandBeforeEventArgs(command);
-            CommandBefore?.Invoke(null, eventArgs);
-            //判断是否为缓存
-            if (eventArgs.IsCache && eventArgs.Value is RedisValue result) // todo 校验转换
-            {
-                return result;
-            }
-
             try
             {
                 var res = await DoWhileAsync(async rc => await rc.ExecuteSampleAsync(command), redisClient);

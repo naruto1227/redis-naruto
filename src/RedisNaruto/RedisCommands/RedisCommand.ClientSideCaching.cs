@@ -24,16 +24,14 @@ public partial class RedisCommand : IRedisCommand
     /// 启用客户端缓存
     /// </summary>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task UseClientSideCachingAsync(ClientSideCachingOption option)
+    public void UseClientSideCaching(ClientSideCachingOption option)
     {
-        //todo 需要处理 连接断开后，要清除缓存， 连接断开 要重新连接 然后 重新订阅客户端缓存
         _clientSideCachingRedisResolver = new ClientSideCachingRedisResolver(_redisClientPool, option);
-        await _clientSideCachingRedisResolver.InitClientAsync();
-        await _clientSideCachingRedisResolver.BCastAsync();
-        _sideCachingInterceptor = new ClientSideCachingInterceptor(option, this);
-        this.RegisterInterceptorCommandBefore(_sideCachingInterceptor.CommandBefore);
-        this.RegisterInterceptorCommandAfter(_sideCachingInterceptor.CommandAfter);
-        new Thread(StartClientSideCaching).Start();
+        new Thread(OpenClientSideCaching)
+        {
+            IsBackground = true,
+            Name = nameof(UseClientSideCaching)
+        }.Start();
         /*
          * https://redis.io/docs/latest/develop/use/client-side-caching/
          * 客户端缓存 支持两种模式
@@ -63,9 +61,28 @@ public partial class RedisCommand : IRedisCommand
     }
 
     /// <summary>
+    /// 开启客户端缓存
+    /// </summary>
+    private async void OpenClientSideCaching()
+    {
+        try
+        {
+            await _clientSideCachingRedisResolver.InitClientAsync();
+            await _clientSideCachingRedisResolver.BCastAsync();
+            _sideCachingInterceptor = new ClientSideCachingInterceptor(_clientSideCachingRedisResolver.Option, this);
+            this.RegisterInterceptorCommandBefore(_sideCachingInterceptor.CommandBefore);
+            this.RegisterInterceptorCommandAfter(_sideCachingInterceptor.CommandAfter);
+            await StartClientSideCaching();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"开启客户端缓存失败,e={e}");
+        }
+    }
+    /// <summary>
     /// 启用客户端缓存后台订阅服务
     /// </summary>
-    private async void StartClientSideCaching()
+    private async Task StartClientSideCaching()
     {
         if (_clientSideCachingRedisResolver?.IsOpenTracking == false)
         {
@@ -153,6 +170,7 @@ public partial class RedisCommand : IRedisCommand
         //如果获取失败的话，就暂停 ，如果获取成功就重新 开启订阅模式
         if (await _clientSideCachingRedisResolver.InitNewClientAsync())
         {
+            await _clientSideCachingRedisResolver.BCastAsync();
             await OpenClientSideCachingSub();
             _isClose = false;
             return true;

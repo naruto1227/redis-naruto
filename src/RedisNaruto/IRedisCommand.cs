@@ -2125,5 +2125,5 @@ public interface IRedisCommand : IDisposable
     /// 启用客户端缓存
     /// </summary>
     /// <exception cref="NotImplementedException"></exception>
-    Task UseClientSideCachingAsync(ClientSideCachingOption option);
+    void UseClientSideCaching(ClientSideCachingOption option);
 }

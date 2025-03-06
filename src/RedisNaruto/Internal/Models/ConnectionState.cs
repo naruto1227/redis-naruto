@@ -34,7 +34,6 @@ internal class ConnectionState
     {
         this.State = ConnectionStateEnum.Valid;
         this.InValidReason = string.Empty;
-        Console.WriteLine($"连接恢复:host={this.Host},port={this.Port}");
     }
 
     /// <summary>
