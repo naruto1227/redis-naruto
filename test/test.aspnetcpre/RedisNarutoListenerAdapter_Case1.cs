@@ -24,7 +24,8 @@ public class RedisNarutoListenerAdapter_Case1 : IObserver<DiagnosticListener>,IO
         //判断是否为指定的消息
         if (value is {Key: "RedisNaruto:WriteRedisNarutoBefore", Value: WriteRedisNarutoMessageBeforeEventData eventData})
         {
-            Console.WriteLine($"消息发送前 CMD={(eventData.Cmd)}");
+            Console.WriteLine($"消息发送前 {eventData.Cmd}，args=【{JsonSerializer.Serialize(eventData.Args)}】");
+
         }
         if (value is {Key: "RedisNaruto:WriteRedisNarutoAfter", Value: WriteRedisNarutoMessageAfterEventData eventData2})
         {

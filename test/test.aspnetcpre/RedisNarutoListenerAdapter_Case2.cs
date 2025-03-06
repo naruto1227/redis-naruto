@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.Extensions.DiagnosticAdapter;
 using RedisNaruto.EventDatas;
 
@@ -12,7 +13,7 @@ public class RedisNarutoListenerAdapter_Case2 : IObserver<DiagnosticListener>
     [DiagnosticName("RedisNaruto:WriteRedisNarutoBefore")]
     public virtual void WriteRedisNarutoBefore(string cmd,object[] args)
     {
-         Console.WriteLine($"消息发送前 {cmd}");
+         Console.WriteLine($"消息发送前 {cmd}，args=【{JsonSerializer.Serialize(args)}】");
     }
     
     [DiagnosticName("RedisNaruto:WriteRedisNarutoAfter")]

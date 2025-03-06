@@ -33,17 +33,17 @@ var build = new ConnectionBuilder
     RESP3 = true
 };
 var redis = await RedisConnection.CreateAsync(build);
-// await redis.UseClientSideCachingAsync(new ClientSideCachingOption
-// {
-//     // Mode = ClientSideCachingModeEnum.TRACKING,
-//     KeyPrefix = new string[]
-//      {
-//          "test",
-//          "hello"
-//      },
-//     TimeOut = default,
-//     Capacity = 0
-// });
+ redis.UseClientSideCaching(new ClientSideCachingOption
+{
+    // Mode = ClientSideCachingModeEnum.TRACKING,
+    KeyPrefix = new string[]
+     {
+         "test",
+         "hello"
+     },
+    TimeOut = TimeSpan.FromMinutes(3),
+    Capacity = 0
+});
 Console.WriteLine($"当前进程id={Process.GetCurrentProcess().Id}");
 builder.Services.AddSingleton(redis);
 DiagnosticListener.AllListeners.Subscribe(new RedisNarutoListenerAdapter_Case1());
