@@ -21,11 +21,11 @@ c#版本的redis客户端
 - tran
 - pipelining
 - 哨兵
-- 集群
 - RESP2
 - RESP3
 - 分布式lock
 - 客户端缓存
 ### todo
+- 集群
 - function
 - 增加 简易版ioc实现，方便 使用者替换实现（暂时不考虑）
